@@ -4,6 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 const login = "/login";
 const home = "/home";
 
-final appRouterProvider = Provider<GoRouter>((ref) {
-    //todo: routers
-});
+// final appRouterProvider = Provider<GoRouter>((ref) {
+//     //todo: routers
+// });
