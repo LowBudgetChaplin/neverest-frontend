@@ -1,0 +1,9 @@
+{
+  "@@locale": "en",
+  "appTitle": "Neverest",
+  "no_internet_connection": "No internet connection",
+  "increase_version": "Please update the application to the latest version.",
+  "internal_server_error": "An unexpected server error occurred. Please try again later.",
+  "unknown_error": "An unknown error occurred.",
+  "unauthorized": "Your session has expired. Please log in again."
+}

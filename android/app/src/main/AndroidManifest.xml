@@ -2,7 +2,6 @@
     package="com.example.neverest">
    <application
         android:label="neverest"
-        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
