@@ -1,0 +1,9 @@
+{
+  "@@locale": "ro",
+  "appTitle": "Neverest",
+  "no_internet_connection": "Nu există conexiune la internet.",
+  "increase_version": "Vă rugăm să actualizați aplicația la cea mai recentă versiune.",
+  "internal_server_error": "A apărut o eroare neașteptată pe server. Încercați din nou mai târziu.",
+  "unknown_error": "A apărut o eroare necunoscută.",
+  "unauthorized": "Sesiunea a expirat. Vă rugăm să vă autentificați din nou."
+}

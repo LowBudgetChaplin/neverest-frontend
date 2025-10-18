@@ -1,27 +1,104 @@
 name: neverest
-description: A new Flutter project.
-
+description: One step at a time.
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.16.2 <3.0.0"
+  sdk: ^3.5.4
+  flutter: ">=3.24.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
   cupertino_icons: ^1.0.2
   go_router: ^14.2.7
   flutter_riverpod: ^2.5.1
   flutter_dotenv: ^5.1.0
-
+  retrofit: ^4.4.0
+  dio: ^5.8.0+1
+  json_serializable: ^6.9.5
+  flutter_secure_storage: ^9.2.4
+  intl: ^0.20.2
+  json_annotation: ^4.9.0
+  dartz: ^0.10.1
+  internet_connection_checker: ^3.0.1
+  connectivity_plus: ^6.1.4
+  pretty_dio_logger: ^1.4.0
+  shared_preferences: ^2.5.3
+  device_info_plus: ^11.5.0
+  fluttertoast: ^8.2.12
+  uuid: ^4.5.1
+  shimmer: ^3.0.0
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.10
+  flutter_appauth: ^9.0.1
+  jwt_decoder: ^2.0.1
+  local_auth: ^2.3.0
+  package_info_plus: ^8.3.0
+  live_activities: ^2.4.1
+  flutter_local_notifications: ^19.3.1
+  permission_handler: ^12.0.1
+  change_app_package_name: ^1.5.0
+  flutter_svg: ^2.2.0
+  flutter_switch: ^0.3.2
+  scrollable_positioned_list: ^0.3.8
+  image_picker: ^1.2.0
+  path_provider: ^2.1.5
+  flutter_image_compress: ^2.4.0
+  signature: ^6.3.0
+  dotted_border: ^3.1.0
+  geolocator: ^13.0.1
+  geocoding: ^3.0.0
+  url_launcher: ^6.2.5
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^4.0.0
+  retrofit_generator: ^9.3.0
+  build_runner: ^2.3.3
+  analyzer: ^7.5.2 # (mutat aici)
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  # TODO: REPLACE THEM WITH REAL LAUNCHER IMAGES
+  # image_path_android: "assets/images/launcher_android.png"
+  # image_path_ios: "assets/images/launcher_ios.png"
+  adaptive_icon_background: "#FFFFFF"
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
+  generate: true
+
+#  fonts:
+#    - family: PlusJakarta
+#      fonts:
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-ExtraLight.ttf
+#          weight: 200
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Light.ttf
+#          weight: 300
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Regular.ttf
+#          weight: 400
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Medium.ttf
+#          weight: 500
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-SemiBold.ttf
+#          weight: 600
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Bold.ttf
+#          weight: 700
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-ExtraBold.ttf
+#          weight: 800
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Italic.ttf
+#          style: italic
+#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-BoldItalic.ttf
+#          weight: 700
+#          style: italic
+
+  #TODO: if needed, declare the assets paths
+  # assets:
+  #   - assets/images/...

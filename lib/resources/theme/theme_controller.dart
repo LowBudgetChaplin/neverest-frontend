@@ -1,0 +1,1 @@
+enum AppThemeKey {light, dark} //TODO: complete de theme controller
