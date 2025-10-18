@@ -64,7 +64,7 @@
 
 
 
-## TO STUDY: riverod, MVVM and MVI architecture: state management with state(ref.read, ref.watch/ref.listen)
+## TO STUDY: riverpod, MVVM and MVI architecture: state management with state(ref.read, ref.watch/ref.listen)
 
 
 

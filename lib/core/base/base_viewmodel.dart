@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../app/router/routes_manager.dart';
+import '../../resources/routes_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../errors/server_error.dart';
 import '../utils/constants.dart';
