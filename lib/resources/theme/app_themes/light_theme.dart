@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../extensions/app_colors_ext.dart';
-import '../extensions/app_shapes_ext.dart';
-import '../extensions/app_spacing_ext.dart';
-import '../styles_managers/dimens_manager.dart';
+import '../../extensions/app_colors_ext.dart';
+import '../../extensions/app_shapes_ext.dart';
+import '../../extensions/app_spacing_ext.dart';
+import '../../styles_managers/dimens_manager.dart';
 
 
 /// LightTheme aggregates ThemeExtensions for the light palette:
@@ -13,27 +13,27 @@ import '../styles_managers/dimens_manager.dart';
 /// Plug these into `ThemeData.extensions` to make them available via
 /// `Theme.of(context).extension<...>()`.
 class LightTheme {
-  static final colorsLight = AppColorsExt( //TODO: se the theme colors
-    primary: HexColor.fromHex(""),
-    secondary: HexColor.fromHex(""),
-    bgPrimary: HexColor.fromHex(""),
-    bgDefault: HexColor.fromHex(""),
-    bgCardDark: HexColor.fromHex(""),
-    bgCardDefault: HexColor.fromHex(""),
-    borderCardDark: HexColor.fromHex(""),
-    borderCardLight: HexColor.fromHex(""),
-    txtDefault: HexColor.fromHex(""),
-    txtBodyDark: HexColor.fromHex(""),
-    txtBodyLight: HexColor.fromHex(""),
-    txtBtnPrimary: HexColor.fromHex(""),
-    txtBtnOutline: HexColor.fromHex(""),
-    disabled: HexColor.fromHex(""),
+  static final colorsLight = AppColorsExt( //TODO: set the  proper figma theme colors
+    primary: HexColor.fromHex("#6750A4"),
+    secondary: HexColor.fromHex("#625B71"),
+    bgPrimary: HexColor.fromHex("#FFFFFF"),
+    bgDefault: HexColor.fromHex("#F6F6F6"),
+    bgCardDark: HexColor.fromHex("#1E1E1E"),
+    bgCardDefault: HexColor.fromHex("#FFFFFF"),
+    borderCardDark: HexColor.fromHex("#2C2C2C"),
+    borderCardLight: HexColor.fromHex("#E5E5E5"),
+    txtDefault: HexColor.fromHex("#111111"),
+    txtBodyDark: HexColor.fromHex("#2B2B2B"),
+    txtBodyLight: HexColor.fromHex("#757575"),
+    txtBtnPrimary: HexColor.fromHex("#FFFFFF"),
+    txtBtnOutline: HexColor.fromHex("#6750A4"),
+    disabled: HexColor.fromHex("#9E9E9E"),
     disabledLight: HexColor.fromHex("#0DA3A3A3"),
-    error: HexColor.fromHex(""),
-    errorLight: HexColor.fromHex(""),
-    positive:  HexColor.fromHex(""),
-    positiveLight: HexColor.fromHex(""),
-    txtBtnSecondary: HexColor.fromHex(""),
+    error: HexColor.fromHex("#B3261E"),
+    errorLight: HexColor.fromHex("#F2B8B5"),
+    positive: HexColor.fromHex("#2E7D32"),
+    positiveLight: HexColor.fromHex("#A5D6A7"),
+    txtBtnSecondary: HexColor.fromHex("#FFFFFF"),
     bgAppBar: Colors.white,
     bgDialog: Colors.white,
   );

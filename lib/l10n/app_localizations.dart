@@ -130,6 +130,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your session has expired. Please log in again.'**
   String get unauthorized;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @rewards.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewards'**
+  String get rewards;
+
+  /// No description provided for @challenges.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenges'**
+  String get challenges;
+
+  /// No description provided for @social.
+  ///
+  /// In en, this message translates to:
+  /// **'Social'**
+  String get social;
+
+  /// No description provided for @wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet'**
+  String get wallet;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
