@@ -14,7 +14,7 @@ import '../../styles_managers/dimens_manager.dart';
 /// `Theme.of(context).extension<...>()`.
 class LightTheme {
   static final colorsLight = AppColorsExt( //TODO: set the  proper figma theme colors
-    primary: HexColor.fromHex("#6750A4"),
+    primary: HexColor.fromHex("#FF8A4B"),
     secondary: HexColor.fromHex("#625B71"),
     bgPrimary: HexColor.fromHex("#FFFFFF"),
     bgDefault: HexColor.fromHex("#F6F6F6"),

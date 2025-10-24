@@ -2,8 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:neverest/l10n/app_localizations.dart';
 import 'package:neverest/resources/extensions/app_selectors.dart';
+import 'package:neverest/resources/styles/bottom_box_decoration_style.dart';
+
+import '../../resources/styles_managers/assets_manager.dart';
 
 class MainScreen extends ConsumerStatefulWidget{
   const MainScreen({super.key});
@@ -54,13 +58,31 @@ class _MainContentState extends ConsumerState<MainScreen> {
       Center(child: Text(l10n.wallet)),
     ];
 
-    //TODO: only for mock. change them all
     List<BottomNavigationBarItem> navItems = [
-      BottomNavigationBarItem(icon: const Icon(Icons.home), label: l10n.home),
-      BottomNavigationBarItem(icon: const Icon(Icons.card_giftcard_rounded), label: l10n.rewards),
-      BottomNavigationBarItem(icon: const Icon(Icons.leaderboard), label: l10n.challenges),
-      BottomNavigationBarItem(icon: const Icon(Icons.person), label: l10n.social),
-      BottomNavigationBarItem(icon: const Icon(Icons.wallet), label: l10n.wallet),
+      BottomNavigationBarItem(
+          icon: SvgPicture.asset(ImageAssets.home),
+          activeIcon: SvgPicture.asset(ImageAssets.home, colorFilter: ColorFilter.mode(context.colors.primary, BlendMode.srcIn)),
+          label: l10n.home),
+      BottomNavigationBarItem(
+          icon: SvgPicture.asset(ImageAssets.rewards),
+          activeIcon: ImageIcon(const AssetImage(ImageAssets.gift), color: context.colors.primary),
+          // activeIcon: SvgPicture.asset(ImageAssets.home, colorFilter: ColorFilter.mode(context.colors.primary, BlendMode.srcIn)),
+          label: l10n.rewards),
+      BottomNavigationBarItem(
+          icon: SvgPicture.asset(ImageAssets.challenges),
+          activeIcon: ImageIcon(const AssetImage(ImageAssets.gift), color: context.colors.primary),
+          // activeIcon: SvgPicture.asset(ImageAssets.home, colorFilter: ColorFilter.mode(context.colors.primary, BlendMode.srcIn)),
+          label: l10n.challenges),
+      BottomNavigationBarItem(
+          icon: SvgPicture.asset(ImageAssets.social),
+          activeIcon: ImageIcon(const AssetImage(ImageAssets.gift), color: context.colors.primary),
+          // activeIcon: SvgPicture.asset(ImageAssets.home, colorFilter: ColorFilter.mode(context.colors.primary, BlendMode.srcIn)),
+          label: l10n.social),
+      BottomNavigationBarItem(
+          icon: SvgPicture.asset(ImageAssets.wallet),
+          activeIcon: ImageIcon(const AssetImage(ImageAssets.gift), color: context.colors.primary),
+          // activeIcon: SvgPicture.asset(ImageAssets.home, colorFilter: ColorFilter.mode(context.colors.primary, BlendMode.srcIn)),
+          label: l10n.wallet),
     ];
 
     return Scaffold(
@@ -72,7 +94,7 @@ class _MainContentState extends ConsumerState<MainScreen> {
         child: pages[positionIndex],
       ),
       bottomNavigationBar: Container(
-        // decoration: , //TODO: decoration in styles for bottom nav bar
+        decoration: BottomBoxDecoration.bottomBoxDecoration(context),
         padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
         child: BottomNavigationBar(
             currentIndex: positionIndex,

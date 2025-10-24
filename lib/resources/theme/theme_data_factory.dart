@@ -15,6 +15,7 @@ ThemeData makeTheme({
   required AppShapesExt shapes,
 }) {
   return ThemeData(
+    fontFamily: 'PlusJakarta',
     scaffoldBackgroundColor: colors.bgDefault,
     primaryColor: colors.primary,
     textSelectionTheme: TextSelectionThemeData(
