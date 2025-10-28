@@ -42,6 +42,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<key>NSMotionUsageDescription</key>
+	<string>We use motion data to count your steps.</string>
 	<false/>
 </dict>
 </plist>

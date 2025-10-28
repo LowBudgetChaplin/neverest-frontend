@@ -1,14 +1,14 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:neverest/features/home/home_screen.dart';
 import 'package:neverest/l10n/app_localizations.dart';
 import 'package:neverest/resources/extensions/app_selectors.dart';
 import 'package:neverest/resources/styles/bottom_box_decoration_style.dart';
 
 import '../../resources/styles_managers/assets_manager.dart';
 
+/// Main root screen & root bottom navigation bar & root top app bar
 class MainScreen extends ConsumerStatefulWidget{
   const MainScreen({super.key});
 
@@ -16,6 +16,7 @@ class MainScreen extends ConsumerStatefulWidget{
   ConsumerState<MainScreen> createState() => _MainContentState();
 }
 
+/// Main root state
 class _MainContentState extends ConsumerState<MainScreen> {
   int positionIndex = 0;
   late List<Widget> pages;
@@ -27,22 +28,21 @@ class _MainContentState extends ConsumerState<MainScreen> {
     initPages();
   }
 
+  // Initializing pages for each each main screens from the bottom navigation bar based on the user role
   void initPages(){
-    // pages = getPagesByRole();
+    pages = getPagesByRole();
   }
 
-  //TODO: Interface by role
-  // List<Widget> getPagesByRole(){
-  //   final l10n = AppLocalizations.of(context);
-  //
-  //   return [
-  //     Center(child: Text(l10n!.home)),
-  //     Center(child: Text(l10n.rewards)),
-  //     Center(child: Text(l10n.challenges)),
-  //     Center(child: Text(l10n.social)),
-  //     Center(child: Text(l10n.wallet)),
-  //   ];
-  // }
+  //TODO: Interface by role. It's only the customer role for now
+  List<Widget> getPagesByRole(){
+    return [
+      const HomeScreen(),
+      const SizedBox(),
+      const SizedBox(),
+      const SizedBox(),
+      const SizedBox(),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +50,16 @@ class _MainContentState extends ConsumerState<MainScreen> {
     final sp = context.spacing;
     final c = context.colors;
 
+    //TODO: to be replaced. its only for mock to test the screens transition
     pages = [
-      Center(child: Text(l10n!.home)),
-      Center(child: Text(l10n.rewards)),
+      const HomeScreen(),
+      Center(child: Text(l10n!.rewards)),
       Center(child: Text(l10n.challenges)),
       Center(child: Text(l10n.social)),
       Center(child: Text(l10n.wallet)),
     ];
 
+    // Bottom navigation elements for each app menu
     List<BottomNavigationBarItem> navItems = [
       BottomNavigationBarItem(
           icon: SvgPicture.asset(ImageAssets.home),

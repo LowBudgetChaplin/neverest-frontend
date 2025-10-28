@@ -54,6 +54,7 @@ dependencies:
   geocoding: ^3.0.0
   url_launcher: ^6.2.5
   flutter_launcher_icons: ^0.14.4
+  pedometer: ^4.0.1
 
 dev_dependencies:
   flutter_test:
@@ -61,7 +62,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   retrofit_generator: ^9.3.0
   build_runner: ^2.3.3
-  analyzer: ^7.5.2 # (mutat aici)
+  analyzer: ^7.5.2
 
 flutter_launcher_icons:
   android: "launcher_icon"
