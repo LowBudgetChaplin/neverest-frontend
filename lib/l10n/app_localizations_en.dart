@@ -25,4 +25,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unauthorized => 'Your session has expired. Please log in again.';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get rewards => 'Rewards';
+
+  @override
+  String get challenges => 'Challenges';
+
+  @override
+  String get social => 'Social';
+
+  @override
+  String get wallet => 'Wallet';
 }

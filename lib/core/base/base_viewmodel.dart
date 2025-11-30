@@ -97,7 +97,7 @@ abstract class BaseViewModel<T extends BaseState> extends StateNotifier<T> {
     );
   }
 
-  // Sets the screen to the empty state (no data to show)
+  // Sets the screen to the empty state
   void setEmpty() {
     state = copyWithState(flowState: FlowState.empty);
   }

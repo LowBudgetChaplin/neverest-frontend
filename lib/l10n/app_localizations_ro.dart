@@ -25,4 +25,19 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get unauthorized => 'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.';
+
+  @override
+  String get home => 'Acasă';
+
+  @override
+  String get rewards => 'Premii';
+
+  @override
+  String get challenges => 'Challenges';
+
+  @override
+  String get social => 'Social';
+
+  @override
+  String get wallet => 'Portofel';
 }

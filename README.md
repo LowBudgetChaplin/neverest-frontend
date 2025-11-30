@@ -12,10 +12,16 @@
     4. API references
     5. Adding dependencie: pubspec.yaml + app current version
 
+# Build versions
+        - Flutter: 3.35.6/3.35.5 version
+        - Dart: 3.9.2
+        - Java: jdk-17
+        - Kotlin: jvm-target-1.8
+
 # Build || Test || Deploy || Merge
     //TODO: Describe more and show how to build your code and run the tests
     - BUILD:
-            - 
+            -
     - TEST:
             -
     - DEPLOY:
@@ -23,7 +29,7 @@
 
 ## USEFUL TERMINAL COMMANDS
     - run the following command in terminal for updating the translate:
-         flutter gen-10ln
+         flutter gen-l10n
             OR:  flutter pub get (because the project has generate:true in pubspec.yaml)
 
     - run the following command in terminal in case of:
@@ -65,6 +71,10 @@
 
 
 ## TO STUDY: riverpod, MVVM and MVI architecture: state management with state(ref.read, ref.watch/ref.listen)
+
+//TODO: cum raman traducerile in romana pt:
+"Challenges" : "Challenges",
+"Social" : "Social",
 
 
 

@@ -5,5 +5,12 @@
   "increase_version": "Please update the application to the latest version.",
   "internal_server_error": "An unexpected server error occurred. Please try again later.",
   "unknown_error": "An unknown error occurred.",
-  "unauthorized": "Your session has expired. Please log in again."
+  "unauthorized": "Your session has expired. Please log in again.",
+
+  "@@main": "Main",
+  "home": "Home",
+  "rewards": "Rewards",
+  "challenges": "Challenges",
+  "social": "Social",
+  "wallet": "Wallet"
 }

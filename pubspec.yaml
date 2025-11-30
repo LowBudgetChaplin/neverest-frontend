@@ -54,6 +54,7 @@ dependencies:
   geocoding: ^3.0.0
   url_launcher: ^6.2.5
   flutter_launcher_icons: ^0.14.4
+  pedometer: ^4.0.1
 
 dev_dependencies:
   flutter_test:
@@ -61,7 +62,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   retrofit_generator: ^9.3.0
   build_runner: ^2.3.3
-  analyzer: ^7.5.2 # (mutat aici)
+  analyzer: ^7.5.2
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -76,11 +77,13 @@ flutter:
   uses-material-design: true
   generate: true
 
-#  fonts:
-#    - family: PlusJakarta
-#      fonts:
-#        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-ExtraLight.ttf
-#          weight: 200
+
+  fonts:
+    - family: PlusJakarta #TODO: choose font family
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-VariableFont_wght.ttf
+        - asset: assets/fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf
+          style: italic
 #        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Light.ttf
 #          weight: 300
 #        - asset: assets/fonts/plus_jakarta/PlusJakartaSans-Regular.ttf
@@ -99,6 +102,11 @@ flutter:
 #          weight: 700
 #          style: italic
 
-  #TODO: if needed, declare the assets paths
-  # assets:
-  #   - assets/images/...
+
+  assets:
+    - assets/images/ic_challenges.svg
+    - assets/images/ic_home.svg
+    - assets/images/ic_rewards.svg
+    - assets/images/ic_social.svg
+    - assets/images/ic_wallet.svg
+    - assets/images/gift.png

@@ -4,6 +4,7 @@ import 'package:neverest/resources/routes_manager.dart';
 
 import '../l10n/app_localizations.dart';
 import '../l10n/l10n.dart';
+import '../resources/theme/theme_controller.dart';
 
 /// Root widget of the app
 class MainApp extends StatefulWidget {
@@ -19,18 +20,16 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, _) {
-      // Watches the current locale; UI rebuilds when locale changes.
+      // Watches the current locale; UI rebuilds when locale changes
       final locale = ref.watch(localeProvider);
-
-      //TODO: theme provider for theme changing
-      // final theme = ref.watch(themeDataProvider);
-
+      final theme = ref.watch(themeDataProvider);
 
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         onGenerateRoute: RouteGenerator.getRoute,
-        initialRoute: Routes.getStartedRoute, //TODO: change it for now to see your preferred screen to work on until we connect the flux
-        theme: null, //TODO: replace with the actual theme
+        initialRoute: Routes.mainRoute, //TODO: change it for now to see your preferred screen to work on until we connect the flux
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        theme: theme, //TODO: replace with the actual theme
         locale: locale,
         supportedLocales: AppLocalizations.supportedLocales
       );
