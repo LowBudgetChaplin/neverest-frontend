@@ -45,6 +45,8 @@ dependencies:
   flutter_svg: ^2.2.0
   flutter_switch: ^0.3.2
   scrollable_positioned_list: ^0.3.8
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.7
   image_picker: ^1.2.0
   path_provider: ^2.1.5
   flutter_image_compress: ^2.4.0
@@ -55,6 +57,9 @@ dependencies:
   url_launcher: ^6.2.5
   flutter_launcher_icons: ^0.14.4
   pedometer: ^4.0.1
+  firebase_auth: ^4.16.0
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.2.0
 
 dev_dependencies:
   flutter_test:

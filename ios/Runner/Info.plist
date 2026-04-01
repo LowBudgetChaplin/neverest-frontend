@@ -42,8 +42,10 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
 	<key>NSMotionUsageDescription</key>
 	<string>We use motion data to count your steps.</string>
-	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera is used to scan participant QR codes for event check-ins.</string>
 </dict>
 </plist>

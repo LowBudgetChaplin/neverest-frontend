@@ -13,85 +13,120 @@ ThemeData makeTheme({
   required AppColorsExt colors,
   required AppSpacingExt spacing,
   required AppShapesExt shapes,
+  Brightness brightness = Brightness.light,
 }) {
+  final colorScheme = ColorScheme.fromSeed(
+    seedColor: colors.primary,
+    brightness: brightness,
+  );
+
   return ThemeData(
+    useMaterial3: true,
     fontFamily: 'PlusJakarta',
-    scaffoldBackgroundColor: colors.bgDefault,
-    primaryColor: colors.primary,
+    colorScheme: colorScheme,
+    scaffoldBackgroundColor: colorScheme.surface,
+    primaryColor: colorScheme.primary,
     textSelectionTheme: TextSelectionThemeData(
-        cursorColor: colors.primary,
-        selectionColor: colors.primary.withOpacityPercent(0.3),
-        selectionHandleColor: colors.primary
+      cursorColor: colorScheme.primary,
+      selectionColor: colorScheme.primary.withOpacityPercent(0.25),
+      selectionHandleColor: colorScheme.primary,
     ),
 
     // Cupertino theme alignment for IOS style
     cupertinoOverrideTheme: CupertinoThemeData(
-      primaryColor: colors.primary,
+      primaryColor: colorScheme.primary,
     ),
 
-    progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: colors.primary
-    ),
+    progressIndicatorTheme:
+        ProgressIndicatorThemeData(color: colorScheme.primary),
 
     appBarTheme: AppBarTheme(
       centerTitle: false,
-      backgroundColor: colors.bgCardDefault,
-      foregroundColor: colors.txtDefault,
+      backgroundColor: colorScheme.surface,
+      foregroundColor: colorScheme.onSurface,
       elevation: 0,
       shape: Border(
-        bottom: BorderSide(color: colors.borderCardLight, width: 1),
+        bottom: BorderSide(color: colorScheme.outlineVariant, width: 1),
       ),
     ),
 
-    bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Colors.transparent,
-      selectedItemColor: colors.primary,
-      unselectedItemColor: colors.txtBodyLight,
-      selectedLabelStyle: getBodySmallStyleBase(themeColors: colors),
-      unselectedLabelStyle: getBodySmallStyleBase(themeColors: colors),
-      type: BottomNavigationBarType.fixed,
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: colorScheme.surface,
+      indicatorColor: colorScheme.secondaryContainer,
       elevation: 0,
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return getBodySmallStyleBase(
+          themeColors: colors,
+          color:
+              selected ? colorScheme.onSecondaryContainer : colors.txtBodyLight,
+        );
+      }),
     ),
 
     cardTheme: CardThemeData(
-      color: colors.bgCardDefault,
-      elevation: 0,
-      shadowColor: Colors.transparent,
+      color: colorScheme.surfaceContainerLow,
+      elevation: 0.2,
+      shadowColor: Colors.black12,
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(shapes.cardRadius),
-        side: BorderSide(color: colors.borderCardLight, width: 1),
+        borderRadius: BorderRadius.circular(shapes.cardRadius + 2),
+        side: BorderSide(color: colorScheme.outlineVariant, width: 1),
       ),
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: colorScheme.surface,
       isDense: false,
-      contentPadding: EdgeInsets.symmetric(vertical: spacing.textFieldPaddingVertical, horizontal: spacing.textFieldPaddingHorizontal),
-      hintStyle: getBodyMediumStyleBase(themeColors: colors, color: colors.disabled),
-      labelStyle: getBodyMediumStyleBase(themeColors: colors, color: colors.txtBodyLight),
+      contentPadding: EdgeInsets.symmetric(
+        vertical: spacing.textFieldPaddingVertical,
+        horizontal: spacing.textFieldPaddingHorizontal,
+      ),
+      hintStyle:
+          getBodyMediumStyleBase(themeColors: colors, color: colors.disabled),
+      labelStyle: getBodyMediumStyleBase(
+        themeColors: colors,
+        color: colors.txtBodyLight,
+      ),
       floatingLabelBehavior: FloatingLabelBehavior.auto,
       floatingLabelAlignment: FloatingLabelAlignment.start,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(shapes.textFieldRadius),
-        borderSide: BorderSide(color: colors.borderCardLight , width: 1),
+        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(shapes.textFieldRadius),
-        borderSide: BorderSide(color: colors.borderCardLight, width: 1),
+        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(shapes.textFieldRadius),
-        borderSide: BorderSide(color: colors.primary, width: 1),
+        borderSide: BorderSide(color: colorScheme.primary, width: 1.2),
       ),
+    ),
+
+    chipTheme: ChipThemeData(
+      backgroundColor: colorScheme.secondaryContainer,
+      selectedColor: colorScheme.primaryContainer,
+      labelStyle: getBodySmallStyleBase(
+        themeColors: colors,
+        color: colorScheme.onSecondaryContainer,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
 
     // Global text styles settings and theme extensions
     textTheme: TextTheme(
-        bodyMedium: getBodyMediumStyleBase(themeColors: colors, fontWeight: FontWeightManager.semibold)
+      bodyMedium: getBodyMediumStyleBase(
+        themeColors: colors,
+        fontWeight: FontWeightManager.semibold,
+      ),
     ),
     extensions: <ThemeExtension<dynamic>>[
-      colors, shapes, spacing,
+      colors,
+      shapes,
+      spacing,
     ],
   );
 }

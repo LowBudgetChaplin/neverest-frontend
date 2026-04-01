@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // Manages the application language (Locale) with Riverpod and saves it in SharedPreferences to persist between starts
 final localeProvider = StateNotifierProvider<LocaleNotifier, Locale>(
-      (ref) => LocaleNotifier(),
+  (ref) => LocaleNotifier(),
 );
 
 /// StateNotifier that manages the app Locale and persists it to SharedPreferences.
