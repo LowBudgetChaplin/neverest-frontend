@@ -66,7 +66,7 @@ class _MainAppState extends State<MainApp> {
     _accessRepository = AccessRepository(_apiClient);
     _authRepository = AuthRepository(
       tokenStorage: _authTokenStorage,
-      firebaseAuth: FirebaseAuth.instance,
+      firebaseAuth: widget.firebaseReady ? FirebaseAuth.instance : null,
       firebaseReady: widget.firebaseReady,
       firebaseInitError: widget.firebaseInitError,
     );

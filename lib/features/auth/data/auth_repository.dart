@@ -6,7 +6,7 @@ import '../domain/auth_session.dart';
 class AuthRepository {
   AuthRepository({
     required AuthTokenStorage tokenStorage,
-    required FirebaseAuth firebaseAuth,
+    FirebaseAuth? firebaseAuth,
     required bool firebaseReady,
     String? firebaseInitError,
   })  : _tokenStorage = tokenStorage,
@@ -15,7 +15,7 @@ class AuthRepository {
         _firebaseInitError = firebaseInitError;
 
   final AuthTokenStorage _tokenStorage;
-  final FirebaseAuth _firebaseAuth;
+  final FirebaseAuth? _firebaseAuth;
   final bool _firebaseReady;
   final String? _firebaseInitError;
 
@@ -23,8 +23,9 @@ class AuthRepository {
   String? get firebaseInitError => _firebaseInitError;
 
   Future<AuthSession?> restoreSession() async {
-    if (_firebaseReady) {
-      final currentUser = _firebaseAuth.currentUser;
+    final firebaseAuth = _firebaseAuth;
+    if (_firebaseReady && firebaseAuth != null) {
+      final currentUser = firebaseAuth.currentUser;
       if (currentUser != null) {
         final token = await currentUser.getIdToken();
         if (token != null && token.isNotEmpty) {
@@ -48,8 +49,9 @@ class AuthRepository {
 
   Future<AuthSession> signInAnonymously() async {
     _ensureFirebaseReady();
+    final firebaseAuth = _firebaseAuth!;
     try {
-      final credential = await _firebaseAuth.signInAnonymously();
+      final credential = await firebaseAuth.signInAnonymously();
       final user = credential.user;
       if (user == null) {
         throw AuthRepositoryException('Firebase did not return a user.');
@@ -70,8 +72,9 @@ class AuthRepository {
     required String password,
   }) async {
     _ensureFirebaseReady();
+    final firebaseAuth = _firebaseAuth!;
     try {
-      final credential = await _firebaseAuth.signInWithEmailAndPassword(
+      final credential = await firebaseAuth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
@@ -109,13 +112,13 @@ class AuthRepository {
 
   Future<void> signOut() async {
     if (_firebaseReady) {
-      await _firebaseAuth.signOut();
+      await _firebaseAuth?.signOut();
     }
     await _tokenStorage.clearToken();
   }
 
   void _ensureFirebaseReady() {
-    if (!_firebaseReady) {
+    if (!_firebaseReady || _firebaseAuth == null) {
       throw AuthRepositoryException(
         _firebaseInitError ??
             'Firebase is not configured. Add Firebase app config files first.',

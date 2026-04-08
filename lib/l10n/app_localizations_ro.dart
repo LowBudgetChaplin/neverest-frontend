@@ -15,16 +15,19 @@ class AppLocalizationsRo extends AppLocalizations {
   String get no_internet_connection => 'Nu există conexiune la internet.';
 
   @override
-  String get increase_version => 'Vă rugăm să actualizați aplicația la cea mai recentă versiune.';
+  String get increase_version =>
+      'Vă rugăm să actualizați aplicația la cea mai recentă versiune.';
 
   @override
-  String get internal_server_error => 'A apărut o eroare neașteptată pe server. Încercați din nou mai târziu.';
+  String get internal_server_error =>
+      'A apărut o eroare neașteptată pe server. Încercați din nou mai târziu.';
 
   @override
   String get unknown_error => 'A apărut o eroare necunoscută.';
 
   @override
-  String get unauthorized => 'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.';
+  String get unauthorized =>
+      'Sesiunea a expirat. Vă rugăm să vă autentificați din nou.';
 
   @override
   String get home => 'Acasă';

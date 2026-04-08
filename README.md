@@ -58,8 +58,8 @@ Flutter client for the Neverest backend.
 
 ## Stack
 
-- Flutter: `3.35.x`
-- Dart: `3.9.x`
+- Flutter: SDK from `android/local.properties` (recommended `3.41.x`)
+- Dart: version bundled with selected Flutter SDK
 - State management: `flutter_bloc`
 - Networking: `dio`
 - Routing: `go_router`
@@ -72,13 +72,20 @@ Flutter client for the Neverest backend.
 1. Install dependencies:
 
 ```bash
-flutter pub get
+scripts\flutterw.cmd pub get
 ```
 
 2. Start app with backend URL:
 
 ```bash
-flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8080
+scripts\flutterw.cmd run --dart-define=API_BASE_URL=http://10.0.2.2:8080
+```
+
+3. Optional cleanup when switching Flutter SDK:
+
+```bash
+scripts\flutterw.cmd clean
+scripts\flutterw.cmd pub get
 ```
 
 Notes:
@@ -224,8 +231,8 @@ The mobile app now covers the backend functional surface, including admin operat
 ## Verify
 
 ```bash
-flutter analyze
-flutter build apk --debug
+scripts\flutterw.cmd analyze
+scripts\flutterw.cmd build apk --debug
 ```
 
 ## Project Areas (new)

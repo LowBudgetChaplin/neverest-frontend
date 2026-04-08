@@ -64,7 +64,7 @@ ThemeData makeTheme({
       }),
     ),
 
-    cardTheme: CardThemeData(
+    cardTheme: CardTheme(
       color: colorScheme.surfaceContainerLow,
       elevation: 0.2,
       shadowColor: Colors.black12,

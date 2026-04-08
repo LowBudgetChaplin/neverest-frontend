@@ -22,3 +22,20 @@ plugins {
 }
 
 include ":app"
+
+def flutterDefaults = [
+    compileSdkVersion: 35,
+    minSdkVersion: 23,
+    targetSdkVersion: 35,
+]
+
+// Some third-party Android plugins read flutter.* SDK values directly.
+// Define safe defaults for plugin modules when generated state is stale.
+gradle.beforeProject { project ->
+    if (project.path == ':app') {
+        return
+    }
+    if (!project.extensions.extraProperties.has('flutter')) {
+        project.extensions.extraProperties.set('flutter', flutterDefaults)
+    }
+}

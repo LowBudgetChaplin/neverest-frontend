@@ -15,10 +15,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no_internet_connection => 'No internet connection';
 
   @override
-  String get increase_version => 'Please update the application to the latest version.';
+  String get increase_version =>
+      'Please update the application to the latest version.';
 
   @override
-  String get internal_server_error => 'An unexpected server error occurred. Please try again later.';
+  String get internal_server_error =>
+      'An unexpected server error occurred. Please try again later.';
 
   @override
   String get unknown_error => 'An unknown error occurred.';

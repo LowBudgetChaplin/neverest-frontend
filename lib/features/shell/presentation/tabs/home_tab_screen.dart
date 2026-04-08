@@ -116,7 +116,7 @@ class _HeroPanel extends StatelessWidget {
             height: 44,
             width: 44,
             decoration: BoxDecoration(
-              color: colorScheme.surface.withValues(alpha: 0.75),
+              color: colorScheme.surface.withOpacity(0.75),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(

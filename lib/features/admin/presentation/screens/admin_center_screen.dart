@@ -189,7 +189,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: _eventActivity,
+                    value: _eventActivity,
                     items: _activityTypes
                         .map((type) => DropdownMenuItem(
                               value: type,
@@ -320,7 +320,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: _challengeActivity,
+                    value: _challengeActivity,
                     items: _activityTypes
                         .map((type) => DropdownMenuItem(
                               value: type,
@@ -339,7 +339,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: _challengeMode,
+                    value: _challengeMode,
                     items: _challengeModes
                         .map((mode) => DropdownMenuItem(
                               value: mode,
@@ -360,7 +360,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: _challengeFrequency,
+                    value: _challengeFrequency,
                     items: _challengeFrequencies
                         .map((frequency) => DropdownMenuItem(
                               value: frequency,
@@ -631,7 +631,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<bool?>(
-              initialValue: _auditSuccess,
+              value: _auditSuccess,
               decoration: const InputDecoration(labelText: 'Success filter'),
               items: const [
                 DropdownMenuItem<bool?>(
@@ -707,7 +707,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    initialValue: state.selectedActivityType,
+                    value: state.selectedActivityType,
                     items: _activityTypes
                         .map((type) => DropdownMenuItem(
                               value: type,
