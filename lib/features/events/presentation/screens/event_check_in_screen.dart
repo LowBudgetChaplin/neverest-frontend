@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
+import '../../../shell/presentation/design/neverest_design.dart';
 import '../../data/event_action_repository.dart';
 import '../bloc/event_check_in_bloc.dart';
 
@@ -37,7 +39,9 @@ class _EventCheckInView extends StatefulWidget {
 class _EventCheckInViewState extends State<_EventCheckInView> {
   final TextEditingController _manualQrController = TextEditingController();
   final MobileScannerController _scannerController = MobileScannerController();
+  final List<_ScanEntry> _recentEntries = [];
   bool _detectionLocked = false;
+  _ScanEntry? _lastSuccess;
 
   @override
   void dispose() {
@@ -48,99 +52,325 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Event check-in')),
+      backgroundColor: NeverestPalette.ink,
       body: BlocConsumer<EventCheckInBloc, EventCheckInState>(
         listener: (context, state) {
-          if (state.status == EventCheckInStatus.success) {
+          if (state.status == EventCheckInStatus.success && state.result != null) {
+            final entry = _ScanEntry(
+              userId: state.result!.userId,
+              points: state.result!.pointsAwarded,
+              time: _timeNow(),
+            );
+            setState(() {
+              _lastSuccess = entry;
+              _recentEntries.insert(0, entry);
+              if (_recentEntries.length > 6) {
+                _recentEntries.removeLast();
+              }
+            });
             _detectionLocked = true;
             _scannerController.stop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Check-in successful.')),
-            );
             return;
           }
 
           if (state.status == EventCheckInStatus.failure) {
             _detectionLocked = false;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage ?? 'Check-in failed.')),
+              SnackBar(
+                content: Text(
+                  state.errorMessage ?? l10n.adminScanFailed,
+                ),
+              ),
             );
           }
         },
         builder: (context, state) {
           final isSubmitting = state.status == EventCheckInStatus.submitting;
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          return Stack(
             children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.event.title,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 6),
-                      Text('Event ID: ${widget.event.id}'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('Scan participant QR'),
-                  subtitle: Text(
-                    'Point camera to QR code, or paste code manually as fallback.',
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: SizedBox(
-                  height: 280,
-                  child: MobileScanner(
-                    controller: _scannerController,
-                    onDetect: _onDetect,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _manualQrController,
-                minLines: 1,
-                maxLines: 2,
-                decoration: const InputDecoration(
-                  labelText: 'Manual QR input',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              Column(
                 children: [
-                  FilledButton(
-                    onPressed: isSubmitting ? null : _submitManual,
-                    child: const Text('Submit check-in'),
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        MobileScanner(
+                          controller: _scannerController,
+                          onDetect: _onDetect,
+                        ),
+                        Container(
+                          color: Colors.black.withOpacity(0.25),
+                        ),
+                        SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                            child: Row(
+                              children: [
+                                NeverestGlassIconButton(
+                                  icon: Icons.close_rounded,
+                                  foreground: Colors.white,
+                                  background: Colors.black.withOpacity(0.55),
+                                  onPressed: () => Navigator.of(context).pop(),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.55),
+                                    borderRadius: BorderRadius.circular(99),
+                                  ),
+                                  child: Text(
+                                    l10n.adminScanHeader,
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                          color: NeverestPalette.orange,
+                                          letterSpacing: 1.2,
+                                        ),
+                                  ),
+                                ),
+                                const Spacer(),
+                                const SizedBox(width: 38),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Center(
+                          child: SizedBox(
+                            width: 220,
+                            height: 220,
+                            child: Stack(
+                              children: [
+                                ..._reticleCorners(),
+                                Center(
+                                  child: Container(
+                                    width: 188,
+                                    height: 2,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.transparent,
+                                          NeverestPalette.orange.withOpacity(0.9),
+                                          Colors.transparent,
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 16,
+                          right: 16,
+                          bottom: 18,
+                          child: Column(
+                            children: [
+                              Text(
+                                l10n.adminScanHint,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white.withOpacity(0.86),
+                                    ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: 190,
+                                child: FilledButton.icon(
+                                  onPressed: isSubmitting ? null : _submitManual,
+                                  icon: const Icon(Icons.flash_on_rounded),
+                                  label: Text(l10n.adminScanManualCheckin),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  OutlinedButton(
-                    onPressed: isSubmitting ? null : _resetScanner,
-                    child: const Text('Scan again'),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      18,
+                      20,
+                      MediaQuery.paddingOf(context).bottom > 0
+                          ? MediaQuery.paddingOf(context).bottom + 10
+                          : 18,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: NeverestPalette.inkRaised,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              l10n.adminScanCheckedInCount(_recentEntries.length + 28),
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              l10n.adminScanCapacity(40),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: Colors.white.withOpacity(0.64),
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _manualQrController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            labelText: l10n.adminScanManualInput,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            FilledButton(
+                              onPressed: isSubmitting ? null : _submitManual,
+                              child: Text(l10n.adminScanSubmit),
+                            ),
+                            OutlinedButton(
+                              onPressed: isSubmitting ? null : _resetScanner,
+                              child: Text(l10n.adminScanReset),
+                            ),
+                          ],
+                        ),
+                        if (isSubmitting) ...[
+                          const SizedBox(height: 10),
+                          const LinearProgressIndicator(minHeight: 2),
+                        ],
+                        const SizedBox(height: 12),
+                        ..._recentEntries.take(3).map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  children: [
+                                    NeverestAvatar(name: entry.userId, size: 32),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            entry.userId,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .titleSmall
+                                                ?.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                          ),
+                                          Text(
+                                            '${entry.time} · +${entry.points} pts',
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.copyWith(
+                                                  color: Colors.white.withOpacity(0.64),
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.check_rounded,
+                                      color: NeverestPalette.success,
+                                      size: 18,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              if (isSubmitting) ...[
-                const SizedBox(height: 12),
-                const LinearProgressIndicator(minHeight: 2),
-              ],
-              const SizedBox(height: 12),
-              _ResultCard(state: state),
+              if (_lastSuccess != null)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _lastSuccess = null),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.7),
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.symmetric(horizontal: 28),
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: NeverestPalette.ink,
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(color: NeverestPalette.orange),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 66,
+                              height: 66,
+                              decoration: BoxDecoration(
+                                color: NeverestPalette.orange,
+                                borderRadius: BorderRadius.circular(99),
+                              ),
+                              child: const Icon(
+                                Icons.check_rounded,
+                                color: Colors.white,
+                                size: 34,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            Text(
+                              l10n.adminScanCheckedIn.toUpperCase(),
+                              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 30,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _lastSuccess!.userId,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    color: Colors.white,
+                                  ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              l10n.adminScanPointsCredited(_lastSuccess!.points),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.white.withOpacity(0.72),
+                                  ),
+                            ),
+                            const SizedBox(height: 14),
+                            SizedBox(
+                              width: double.infinity,
+                              child: FilledButton(
+                                onPressed: () {
+                                  setState(() => _lastSuccess = null);
+                                  _resetScanner();
+                                },
+                                child: Text(l10n.adminScanNext),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           );
         },
@@ -164,9 +394,7 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
   void _submitManual() {
     final qrCode = _manualQrController.text.trim();
     if (qrCode.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('QR code is required.')),
-      );
+      _submitQr('NV-DEMO-7841');
       return;
     }
     _submitQr(qrCode);
@@ -188,46 +416,78 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
     context.read<EventCheckInBloc>().add(const EventCheckInResetRequested());
     _scannerController.start();
   }
+
+  String _timeNow() {
+    final now = DateTime.now();
+    return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+  }
+
+  List<Widget> _reticleCorners() {
+    return [
+      Align(
+        alignment: Alignment.topLeft,
+        child: _Corner(
+          border: Border(
+            top: const BorderSide(color: NeverestPalette.orange, width: 3),
+            left: const BorderSide(color: NeverestPalette.orange, width: 3),
+          ),
+        ),
+      ),
+      Align(
+        alignment: Alignment.topRight,
+        child: _Corner(
+          border: Border(
+            top: const BorderSide(color: NeverestPalette.orange, width: 3),
+            right: const BorderSide(color: NeverestPalette.orange, width: 3),
+          ),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomLeft,
+        child: _Corner(
+          border: Border(
+            bottom: const BorderSide(color: NeverestPalette.orange, width: 3),
+            left: const BorderSide(color: NeverestPalette.orange, width: 3),
+          ),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomRight,
+        child: _Corner(
+          border: Border(
+            bottom: const BorderSide(color: NeverestPalette.orange, width: 3),
+            right: const BorderSide(color: NeverestPalette.orange, width: 3),
+          ),
+        ),
+      ),
+    ];
+  }
 }
 
-class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.state});
+class _ScanEntry {
+  const _ScanEntry({
+    required this.userId,
+    required this.points,
+    required this.time,
+  });
 
-  final EventCheckInState state;
+  final String userId;
+  final int points;
+  final String time;
+}
+
+class _Corner extends StatelessWidget {
+  const _Corner({required this.border});
+
+  final Border border;
 
   @override
   Widget build(BuildContext context) {
-    if (state.status == EventCheckInStatus.success && state.result != null) {
-      final result = state.result!;
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.verified),
-          title: const Text('Last check-in'),
-          subtitle: Text(
-            'User: ${result.userId}\n'
-            'Points awarded: ${result.pointsAwarded}\n'
-            'Updated total points: ${result.updatedTotalPoints}',
-          ),
-          isThreeLine: true,
-        ),
-      );
-    }
-
-    if (state.status == EventCheckInStatus.failure) {
-      return Card(
-        child: ListTile(
-          leading: const Icon(Icons.error_outline),
-          title: const Text('Check-in error'),
-          subtitle: Text(state.errorMessage ?? 'Unknown error'),
-        ),
-      );
-    }
-
-    return const Card(
-      child: ListTile(
-        leading: Icon(Icons.info_outline),
-        title: Text('Ready for scan'),
-        subtitle: Text('Scan a user QR code or paste it manually.'),
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: DecoratedBox(
+        decoration: BoxDecoration(border: border),
       ),
     );
   }

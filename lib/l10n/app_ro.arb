@@ -1,16 +1,361 @@
 {
   "@@locale": "ro",
   "appTitle": "Neverest",
-  "no_internet_connection": "Nu există conexiune la internet.",
-  "increase_version": "Vă rugăm să actualizați aplicația la cea mai recentă versiune.",
-  "internal_server_error": "A apărut o eroare neașteptată pe server. Încercați din nou mai târziu.",
-  "unknown_error": "A apărut o eroare necunoscută.",
-  "unauthorized": "Sesiunea a expirat. Vă rugăm să vă autentificați din nou.",
+  "no_internet_connection": "Nu exista conexiune la internet",
+  "increase_version": "Te rugam sa actualizezi aplicatia la cea mai noua versiune.",
+  "internal_server_error": "A aparut o eroare de server. Incearca din nou mai tarziu.",
+  "unknown_error": "A aparut o eroare necunoscuta.",
+  "unauthorized": "Sesiunea a expirat. Te rugam sa te autentifici din nou.",
 
-  "@@main": "Main",
-  "home": "Acasă",
-  "rewards": "Premii",
-  "challenges": "Challenges",
+  "home": "Acasa",
+  "rewards": "Recompense",
+  "challenges": "Provocari",
   "social": "Social",
-  "wallet": "Portofel"
+  "wallet": "Portofel",
+
+  "navHome": "Acasa",
+  "navEvents": "Evenimente",
+  "navChallenges": "Obiective",
+  "navLeaderboard": "Clasament",
+  "navRewards": "Beneficii",
+
+  "commonAll": "Toate",
+  "commonNew": "Noi",
+  "commonOverall": "General",
+  "commonPoints": "Puncte",
+  "commonPointsShort": "pct",
+  "commonRefresh": "Reimprospateaza",
+  "commonRetry": "Reincearca",
+  "commonClose": "Inchide",
+  "commonCancel": "Anuleaza",
+  "commonConfirm": "Confirma",
+  "commonEdit": "Editeaza",
+
+  "activityRunning": "Alergare",
+  "activityPadel": "Padel",
+  "activityMountain": "Munte",
+
+  "onboardingSkip": "Sari",
+  "onboardingAlreadyHaveAccount": "Am deja cont",
+  "onboardingHeadline1": "FARA VARF.\nFARA LIMITA.",
+  "onboardingSubtitle1": "Un club pentru miscare, munte si dimineti pentru care merita sa te ridici.",
+  "onboardingCta1": "Incepe",
+  "onboardingHeadline2": "MISCATE.\nCASTIGA PUNCTE.",
+  "onboardingSubtitle2": "Alearga, urca pe munte, joaca padel. Participa la evenimente. Bifeaza provocari saptamanale. Fiecare miscare conteaza.",
+  "onboardingCta2": "Suna bine",
+  "onboardingHeadline3": "CHELTUIESTE\nLOCAL.",
+  "onboardingSubtitle3": "Carturesti, Origo, MOCA, antrenorul tau preferat. Beneficii reale din Bucuresti.",
+  "onboardingCta3": "Hai sa mergem",
+  "onboardingStep": "{current} / {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "homeLiveNow": "Live acum",
+  "homeThisWeek": "Saptamana asta",
+  "homeActivities": "Activitati",
+  "homeStreak": "Streak",
+  "homeStartChallenge": "Incepe provocare",
+  "homeFindEvents": "Gaseste evenimente",
+  "homeTrackingLive": "Tracking · live",
+  "homeSeeAll": "Vezi tot",
+  "homeSpendPoints": "Cheltuie punctele",
+  "homeActiveCount": "{count} active",
+  "@homeActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeThisWeekCount": "{count} saptamana asta",
+  "@homeThisWeekCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "eventsTitle": "Evenimente",
+  "eventsEmptyState": "Nu exista evenimente pentru acest filtru.",
+  "eventsGoingLabel": "participanti",
+  "eventsSubtitle": "{count} saptamana asta · {attending} participanti",
+  "@eventsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "attending": {
+        "type": "int"
+      }
+    }
+  },
+
+  "eventWhen": "Cand",
+  "eventWhere": "Unde",
+  "eventHost": "Gazda",
+  "eventReward": "Recompensa",
+  "eventAbout": "Despre",
+  "eventAboutSample": "Alergare usoara 8K cu grupuri pe ritm si recuperare. Cafea la Origo dupa. Cu ploaie sau fara. Arata QR-ul la intrare pentru puncte.",
+  "eventWhatsappSync": "Postat automat in #announcements si Neverest Strava Club",
+  "eventRoute": "Traseu",
+  "eventAdminCheckIn": "Check-in admin",
+  "eventImGoing": "Particip",
+  "eventGoing": "Esti inscris",
+  "eventAttendeesCount": "{count} participanti",
+  "@eventAttendeesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSpotsLeft": "{count} locuri ramase",
+  "@eventSpotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "challengesTitle": "Provocari",
+  "challengesSubtitle": "Castiga puncte in stilul tau",
+  "challengesEarned": "Castigate",
+  "challengesActiveCount": "Active · {count}",
+  "@challengesActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "challengesCompletedCount": "Finalizate · {count}",
+  "@challengesCompletedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeLiveTracking": "Tracking live",
+  "challengeRouteSubtitle": "Mers sau alergare · 7.4 km",
+  "challengeDistanceSubtitle": "Orice activitate · orice suprafata",
+  "challengeMorningSubtitle": "Muta-te inainte de 8AM · 3 zile",
+  "challengePadelSubtitle": "Inregistrat la evenimente",
+  "challengeForestSubtitle": "6 km · traseu marcat",
+  "challengeDeadlineSun": "Se termina Duminica",
+  "challengeDeadlineJune": "Se termina 1 Iun",
+  "challengeAlwaysOn": "Permanent",
+  "challengeProgress23": "2/3 completate",
+  "challengeDeadlineDays": "{days} zile ramase",
+  "@challengeDeadlineDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "challengePaused": "Pauza",
+  "challengeGpsLive": "GPS · Live",
+  "challengeDestination": "Destinatie",
+  "challengeDestinationValue": "Arcul de Triumf",
+  "challengeRemainingKm": "{distance} km ramasi",
+  "@challengeRemainingKm": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "challengeRouteHeadline": "● Provocare · Centrul Vechi → Arcul de Triumf",
+  "challengeOnFinishPoints": "+{points} pct la final",
+  "@challengeOnFinishPoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeProgressLine": "{percent}% · {currentKm}/{totalKm} km",
+  "@challengeProgressLine": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "currentKm": {},
+      "totalKm": {}
+    }
+  },
+  "challengeTime": "Timp",
+  "challengePace": "Ritm",
+  "challengeSteps": "Pasi",
+  "challengeResume": "Reia",
+  "challengePause": "Pauza",
+  "challengeAdminReviewMode": "Mod revizie admin",
+  "challengeAdminReviewSubtitle": "Activeaza pentru a vedea toate trimiterile si a le revizui.",
+  "challengeNoSubmissions": "Nu exista trimiteri inca.",
+  "challengeNoPersonalSubmissions": "Nu ai trimiteri personale inca.",
+  "challengeProofRequired": "Textul de dovada este obligatoriu.",
+  "challengeMetricMustBeNumeric": "Valoarea metrica trebuie sa fie numerica.",
+  "challengeAdminRequired": "Rolul de admin este necesar pentru revizia trimiterilor.",
+  "challengeApproveSubmission": "Aproba trimiterea",
+  "challengeRejectSubmission": "Respinge trimiterea",
+  "challengeReviewerNoteOptional": "Nota evaluator (optional)",
+  "challengeSubmitProgress": "Trimite progres",
+  "challengeProofLabel": "Text dovada",
+  "challengeMetricLabel": "Valoare metrica (optional)",
+  "challengeSubmit": "Trimite provocarea",
+  "challengeSubmissionId": "Trimitere {id}",
+  "@challengeSubmissionId": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "challengeProofField": "Dovada",
+  "challengeMetricField": "Valoare metrica",
+  "challengeAwardedPoints": "Puncte acordate",
+  "challengeReviewerNote": "Nota evaluator",
+  "challengeApprove": "Aproba",
+  "challengeReject": "Respinge",
+
+  "leaderboardTitle": "Clasament",
+  "leaderboardSubtitle": "Actualizare in fiecare minut",
+
+  "rewardsTitle": "Recompense",
+  "rewardsWallet": "Portofel",
+  "rewardsHistory": "Istoric",
+  "rewardsRedeem": "Redeem",
+  "rewardsCategoryBooks": "Carti",
+  "rewardsCategoryCafe": "Cafea",
+  "rewardsCategoryMusic": "Muzica",
+  "rewardsCategoryGoods": "Produse",
+  "rewardsSubtitle": "{points} pct disponibile",
+  "@rewardsSubtitle": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rewardUnlimited": "Nelimitat",
+  "rewardLocalPartner": "partener local",
+  "rewardCost": "Cost",
+  "rewardYourBalance": "Soldul tau",
+  "rewardHowItWorks": "Cum functioneaza",
+  "rewardStep1Title": "Apasa redeem · punctele se blocheaza",
+  "rewardStep1Subtitle": "Cod generat pentru folosire in locatie",
+  "rewardStep2Title": "Arata codul la casa",
+  "rewardStep2Subtitle": "Valabil 24h dupa redeem",
+  "rewardStep3Title": "Staff confirma · punctele se consuma",
+  "rewardStep3Subtitle": "Bon salvat in portofel",
+  "rewardLocationAddress": "Strada Pictor Verona 13–15",
+  "rewardLocationSchedule": "Bucuresti · Stoc: {stock}",
+  "@rewardLocationSchedule": {
+    "placeholders": {
+      "stock": {}
+    }
+  },
+  "rewardRedeemButton": "Redeem · {points} pct",
+  "@rewardRedeemButton": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardNeedMore": "Mai ai nevoie de {points} puncte",
+  "@rewardNeedMore": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardRedeemedLabel": "Redeemed",
+  "rewardValidUntil": "Valabil pana maine la 18:00",
+
+  "profileTitle": "Profil",
+  "profileLevelLabel": "Climber · Nivel 7",
+  "profileTotalPoints": "Puncte totale",
+  "profileDayStreak": "Streak zile",
+  "profileGlobalRank": "Pozitie globala",
+  "profileByActivity": "Pe activitate",
+  "profileGames": "meciuri",
+  "profileConnections": "Conexiuni",
+  "profileConnectionStrava": "Sincronizare automata activitati",
+  "profileConnectionWhatsapp": "Anunturi evenimente",
+  "profileConnectionComingSoon": "In curand",
+  "profileSettings": "Setari",
+  "profileShowMyQr": "Arata QR-ul meu",
+  "profileAdminCenter": "Centru admin",
+  "profileLinked": "Conectat",
+  "profileConnect": "Conecteaza",
+  "profileDarkTheme": "Tema intunecata",
+  "profileDarkThemeSubtitle": "Mai usor pentru ochi dupa lasarea serii",
+  "profileLanguage": "Limba",
+  "profileSystemLanguage": "Sistem",
+  "profileSync": "Sincronizeaza profilul",
+  "profileSyncFailed": "Sincronizarea profilului a esuat",
+  "profileRankValue": "#{rank} general",
+  "@profileRankValue": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+
+  "qrSignInRequired": "Autentificare necesara",
+  "qrSignInSubtitle": "Autentifica-te mai intai pentru a incarca codul QR.",
+  "qrNotAvailable": "QR indisponibil",
+  "qrUnavailableSubtitle": "QR-ul profilului nu este disponibil inca.",
+  "qrMemberId": "ID membru",
+  "qrShowAtGate": "ARATA ACESTA\nLA INTRARE",
+  "qrScanHint": "Organizatorul scaneaza → punctele sunt creditate",
+  "qrRefreshCountdown": "Se reimprospateaza in 0:42",
+
+  "adminScanHeader": "● Admin · Sunrise Run",
+  "adminScanHint": "Aliniaza QR-ul membrului in interiorul ramei",
+  "adminScanManualCheckin": "Simuleaza check-in",
+  "adminScanManualInput": "Introducere manuala QR",
+  "adminScanSubmit": "Trimite check-in",
+  "adminScanReset": "Scaneaza din nou",
+  "adminScanFailed": "Check-in esuat.",
+  "adminScanCheckedIn": "Check-in realizat",
+  "adminScanPointsCredited": "+{points} pct creditate",
+  "@adminScanPointsCredited": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCheckedInCount": "Check-in · {count}",
+  "@adminScanCheckedInCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCapacity": "{count} capacitate",
+  "@adminScanCapacity": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanNext": "Scanare urmatoare",
+
+  "dashboardLoadFailed": "Datele dashboard nu au putut fi incarcate."
 }

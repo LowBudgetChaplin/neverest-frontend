@@ -20,9 +20,13 @@ class ThemeModeCubit extends Cubit<ThemeMode> {
 
   Future<void> toggle() async {
     final next = state == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    emit(next);
+    await setThemeMode(next);
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    emit(mode);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_prefsKey, next.name);
+    await prefs.setString(_prefsKey, mode.name);
   }
 
   ThemeMode _fromStoredValue(String value) {

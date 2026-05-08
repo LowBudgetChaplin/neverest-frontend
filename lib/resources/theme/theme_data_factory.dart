@@ -1,126 +1,205 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:neverest/core/utils/extensions.dart';
-import 'package:neverest/resources/extensions/app_colors_ext.dart';
-import 'package:neverest/resources/extensions/app_shapes_ext.dart';
-import 'package:neverest/resources/extensions/app_spacing_ext.dart';
 
-import '../styles_managers/font_manager.dart';
-import '../styles_managers/styles_manager.dart';
+import '../extensions/app_colors_ext.dart';
+import '../extensions/app_shapes_ext.dart';
+import '../extensions/app_spacing_ext.dart';
 
-/// App theme changer for text, tabs, appBar, bottomNavgBar etc. depending on the app theme case from theme_controller
 ThemeData makeTheme({
   required AppColorsExt colors,
   required AppSpacingExt spacing,
   required AppShapesExt shapes,
   Brightness brightness = Brightness.light,
 }) {
-  final colorScheme = ColorScheme.fromSeed(
-    seedColor: colors.primary,
+  final isDark = brightness == Brightness.dark;
+  final colorScheme = ColorScheme(
     brightness: brightness,
+    primary: colors.primary,
+    onPrimary: Colors.white,
+    secondary: colors.secondary,
+    onSecondary: isDark ? colors.bgPrimary : colors.bgCardDark,
+    error: colors.error,
+    onError: Colors.white,
+    surface: colors.bgDefault,
+    onSurface: colors.txtDefault,
   );
+
+  final baseTextTheme = ThemeData(
+    brightness: brightness,
+    fontFamily: 'PlusJakarta',
+  ).textTheme;
 
   return ThemeData(
     useMaterial3: true,
     fontFamily: 'PlusJakarta',
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: colorScheme.surface,
-    primaryColor: colorScheme.primary,
+    scaffoldBackgroundColor: colors.bgDefault,
+    primaryColor: colors.primary,
+    dividerColor: isDark ? colors.borderCardDark : colors.borderCardLight,
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: colorScheme.primary,
-      selectionColor: colorScheme.primary.withOpacityPercent(0.25),
-      selectionHandleColor: colorScheme.primary,
+      cursorColor: colors.primary,
+      selectionColor: colors.primary.withOpacity(0.22),
+      selectionHandleColor: colors.primary,
     ),
-
-    // Cupertino theme alignment for IOS style
-    cupertinoOverrideTheme: CupertinoThemeData(
-      primaryColor: colorScheme.primary,
-    ),
-
-    progressIndicatorTheme:
-        ProgressIndicatorThemeData(color: colorScheme.primary),
-
+    cupertinoOverrideTheme: CupertinoThemeData(primaryColor: colors.primary),
+    progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),
     appBarTheme: AppBarTheme(
       centerTitle: false,
-      backgroundColor: colorScheme.surface,
-      foregroundColor: colorScheme.onSurface,
+      backgroundColor: colors.bgAppBar,
+      foregroundColor: colors.txtDefault,
       elevation: 0,
-      shape: Border(
-        bottom: BorderSide(color: colorScheme.outlineVariant, width: 1),
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      titleTextStyle: baseTextTheme.titleMedium?.copyWith(
+        color: colors.txtDefault,
+        fontWeight: FontWeight.w800,
       ),
     ),
-
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colorScheme.surface,
-      indicatorColor: colorScheme.secondaryContainer,
+    cardTheme: CardThemeData(
+      color: isDark ? colors.bgCardDefault : colors.bgCardDefault,
       elevation: 0,
-      labelTextStyle: WidgetStateProperty.resolveWith((states) {
-        final selected = states.contains(WidgetState.selected);
-        return getBodySmallStyleBase(
-          themeColors: colors,
-          color:
-              selected ? colorScheme.onSecondaryContainer : colors.txtBodyLight,
-        );
-      }),
-    ),
-
-    cardTheme: CardTheme(
-      color: colorScheme.surfaceContainerLow,
-      elevation: 0.2,
-      shadowColor: Colors.black12,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(shapes.cardRadius + 2),
-        side: BorderSide(color: colorScheme.outlineVariant, width: 1),
+        borderRadius: BorderRadius.circular(shapes.cardRadius),
+        side: BorderSide(
+          color: isDark ? colors.borderCardDark : colors.borderCardLight,
+        ),
       ),
     ),
-
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: colorScheme.surface,
-      isDense: false,
+      fillColor: isDark ? colors.bgCardDefault : colors.bgPrimary,
       contentPadding: EdgeInsets.symmetric(
         vertical: spacing.textFieldPaddingVertical,
         horizontal: spacing.textFieldPaddingHorizontal,
       ),
-      hintStyle:
-          getBodyMediumStyleBase(themeColors: colors, color: colors.disabled),
-      labelStyle: getBodyMediumStyleBase(
-        themeColors: colors,
-        color: colors.txtBodyLight,
-      ),
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
-      floatingLabelAlignment: FloatingLabelAlignment.start,
+      hintStyle: baseTextTheme.bodyMedium?.copyWith(color: colors.txtBodyLight),
+      labelStyle:
+          baseTextTheme.bodyMedium?.copyWith(color: colors.txtBodyLight),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(shapes.textFieldRadius),
-        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
+        borderSide: BorderSide(
+          color: isDark ? colors.borderCardDark : colors.borderCardLight,
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(shapes.textFieldRadius),
-        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
+        borderSide: BorderSide(
+          color: isDark ? colors.borderCardDark : colors.borderCardLight,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(shapes.textFieldRadius),
-        borderSide: BorderSide(color: colorScheme.primary, width: 1.2),
+        borderSide: BorderSide(color: colors.primary),
       ),
     ),
-
     chipTheme: ChipThemeData(
-      backgroundColor: colorScheme.secondaryContainer,
-      selectedColor: colorScheme.primaryContainer,
-      labelStyle: getBodySmallStyleBase(
-        themeColors: colors,
-        color: colorScheme.onSecondaryContainer,
+      backgroundColor: isDark ? colors.bgCardDefault : colors.bgPrimary,
+      selectedColor: colors.primary.withOpacity(0.14),
+      labelStyle: baseTextTheme.labelSmall?.copyWith(
+        color: colors.txtDefault,
+        fontWeight: FontWeight.w700,
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      side: BorderSide(
+        color: isDark ? colors.borderCardDark : colors.borderCardLight,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(99)),
     ),
-
-    // Global text styles settings and theme extensions
-    textTheme: TextTheme(
-      bodyMedium: getBodyMediumStyleBase(
-        themeColors: colors,
-        fontWeight: FontWeightManager.semibold,
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: colors.bgDefault,
+      indicatorColor: Colors.transparent,
+      elevation: 0,
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return baseTextTheme.labelSmall?.copyWith(
+          color: selected ? colors.primary : colors.txtBodyLight,
+          fontWeight: FontWeight.w700,
+        );
+      }),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: colors.primary,
+        foregroundColor: colors.txtBtnPrimary,
+        minimumSize: const Size(0, 52),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(shapes.buttonRadius),
+        ),
+        textStyle: baseTextTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: colors.txtDefault,
+        minimumSize: const Size(0, 48),
+        side: BorderSide(
+          color: isDark ? colors.borderCardDark : colors.borderCardLight,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(shapes.buttonRadius),
+        ),
+        textStyle: baseTextTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: isDark ? colors.bgCardDefault : colors.bgCardDark,
+      contentTextStyle: baseTextTheme.bodyMedium?.copyWith(
+        color: isDark ? Colors.white : Colors.white,
+      ),
+      behavior: SnackBarBehavior.floating,
+    ),
+    textTheme: baseTextTheme.copyWith(
+      displayLarge: baseTextTheme.displayLarge?.copyWith(
+        fontSize: 60,
+        height: 0.95,
+        color: colors.txtDefault,
+        letterSpacing: 0.7,
+        fontWeight: FontWeight.w800,
+      ),
+      displayMedium: baseTextTheme.displayMedium?.copyWith(
+        fontSize: 42,
+        height: 0.96,
+        color: colors.txtDefault,
+        letterSpacing: 0.5,
+        fontWeight: FontWeight.w800,
+      ),
+      displaySmall: baseTextTheme.displaySmall?.copyWith(
+        fontSize: 30,
+        height: 1,
+        color: colors.txtDefault,
+        letterSpacing: 0.4,
+        fontWeight: FontWeight.w800,
+      ),
+      headlineMedium: baseTextTheme.headlineMedium?.copyWith(
+        fontSize: 24,
+        height: 1,
+        color: colors.txtDefault,
+        fontWeight: FontWeight.w800,
+      ),
+      titleLarge: baseTextTheme.titleLarge?.copyWith(
+        color: colors.txtDefault,
+        fontWeight: FontWeight.w800,
+      ),
+      titleMedium: baseTextTheme.titleMedium?.copyWith(
+        color: colors.txtDefault,
+        fontWeight: FontWeight.w700,
+      ),
+      bodyLarge: baseTextTheme.bodyLarge?.copyWith(
+        color: colors.txtDefault,
+      ),
+      bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+        color: colors.txtDefault,
+      ),
+      bodySmall: baseTextTheme.bodySmall?.copyWith(
+        color: colors.txtBodyLight,
+      ),
+      labelSmall: baseTextTheme.labelSmall?.copyWith(
+        color: colors.txtBodyLight,
+        fontWeight: FontWeight.w700,
       ),
     ),
     extensions: <ThemeExtension<dynamic>>[

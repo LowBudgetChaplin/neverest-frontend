@@ -15,6 +15,7 @@ import '../features/leaderboard/data/leaderboard_repository.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
 import '../features/rewards/data/reward_action_repository.dart';
+import '../features/theme/presentation/app_locale_cubit.dart';
 import '../features/theme/presentation/theme_mode_cubit.dart';
 import '../l10n/app_localizations.dart';
 import '../resources/theme/app_themes/dark_theme.dart';
@@ -132,15 +133,18 @@ class _MainAppState extends State<MainApp> {
             )..refresh(),
           ),
           BlocProvider(create: (_) => ThemeModeCubit()),
+          BlocProvider(create: (_) => AppLocaleCubit()),
         ],
         child: BlocBuilder<ThemeModeCubit, ThemeMode>(
           builder: (context, themeMode) {
+            final locale = context.watch<AppLocaleCubit>().state;
             return MaterialApp.router(
               debugShowCheckedModeBanner: false,
               routerConfig: AppRouter.router,
               theme: lightTheme,
               darkTheme: darkTheme,
               themeMode: themeMode,
+              locale: locale,
               themeAnimationDuration: const Duration(milliseconds: 220),
               themeAnimationCurve: Curves.easeInOutCubic,
               localizationsDelegates: AppLocalizations.localizationsDelegates,

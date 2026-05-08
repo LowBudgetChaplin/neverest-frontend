@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../resources/widgets/app_illustrated_state.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../shell/presentation/design/neverest_design.dart';
 import '../../data/reward_action_repository.dart';
+import '../../domain/reward_redemption_item.dart';
 import '../bloc/reward_action_bloc.dart';
 
 class RewardDetailsScreen extends StatelessWidget {
@@ -45,16 +47,18 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final stockLabel = widget.reward.stock == null
-        ? 'Unlimited'
+        ? l10n.rewardUnlimited
         : widget.reward.stock.toString();
+    final accent = _rewardAccent(widget.reward);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reward details')),
       body: BlocConsumer<RewardActionBloc, RewardActionState>(
         listenWhen: (previous, current) =>
             previous.errorMessage != current.errorMessage ||
-            previous.successMessage != current.successMessage,
+            previous.successMessage != current.successMessage ||
+            previous.lastRedemption != current.lastRedemption,
         listener: (context, state) {
           if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -65,101 +69,260 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
           }
 
           if (state.successMessage != null &&
-              state.successMessage!.isNotEmpty) {
+              state.successMessage!.isNotEmpty &&
+              state.lastRedemption != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.successMessage!)),
             );
-            context.read<RewardActionBloc>().add(const RewardMessagesCleared());
             context
                 .read<DashboardBloc>()
                 .add(const DashboardRefreshRequested());
+            context.read<RewardActionBloc>().add(const RewardMessagesCleared());
+            _showRedeemDialog(context, state.lastRedemption!, widget.reward, accent);
           }
         },
         builder: (context, state) {
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          final points = context.select<ProfileBloc, int>(
+            (bloc) => bloc.state.profile?.availablePoints ?? 1840,
+          );
+          final canRedeem = points >= widget.reward.pointsCost;
+
+          return Column(
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primaryContainer,
-                      Theme.of(context).colorScheme.secondaryContainer,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
                   children: [
-                    Text(
-                      widget.reward.title,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    Container(
+                      height: 286,
+                      decoration: BoxDecoration(
+                        color: accent,
+                      ),
+                      child: Stack(
+                        children: [
+                          const Positioned.fill(
+                            child: NeverestTopographicRings(color: Colors.white, count: 10),
+                          ),
+                          SafeArea(
+                            bottom: false,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      NeverestGlassIconButton(
+                                        icon: Icons.arrow_back_rounded,
+                                        foreground: Colors.white,
+                                        background: Colors.black.withOpacity(0.35),
+                                        onPressed: () => Navigator.of(context).pop(),
+                                      ),
+                                      const Spacer(),
+                                      NeverestGlassIconButton(
+                                        icon: Icons.favorite_border_rounded,
+                                        foreground: Colors.white,
+                                        background: Colors.black.withOpacity(0.35),
+                                        onPressed: () {},
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${_rewardCategory(widget.reward)} · ${l10n.rewardLocalPartner}'
+                                        .toUpperCase(),
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                          color: Colors.white.withOpacity(0.76),
+                                          letterSpacing: 1.4,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    widget.reward.partnerName.toUpperCase(),
+                                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                          color: Colors.white,
+                                          fontSize: 44,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    widget.reward.title,
+                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Text('Partner: ${widget.reward.partnerName}'),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Chip(label: Text('${widget.reward.pointsCost}p')),
-                        Chip(label: Text('Stock: $stockLabel')),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? NeverestPalette.inkRaised
+                              : NeverestPalette.paperRaised,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? NeverestPalette.inkLine
+                                : NeverestPalette.paperLine,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _CostBlock(
+                                label: l10n.rewardCost,
+                                value: '${widget.reward.pointsCost}',
+                                suffix: 'PTS',
+                                accent: true,
+                              ),
+                            ),
+                            Expanded(
+                              child: _CostBlock(
+                                label: l10n.rewardYourBalance,
+                                value: points.toString(),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                      child: Text(
+                        l10n.rewardHowItWorks.toUpperCase(),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          _StepRow(
+                            index: 1,
+                            title: l10n.rewardStep1Title,
+                            subtitle: l10n.rewardStep1Subtitle,
+                          ),
+                          const SizedBox(height: 10),
+                          _StepRow(
+                            index: 2,
+                            title: l10n.rewardStep2Title,
+                            subtitle: l10n.rewardStep2Subtitle,
+                          ),
+                          const SizedBox(height: 10),
+                          _StepRow(
+                            index: 3,
+                            title: l10n.rewardStep3Title,
+                            subtitle: l10n.rewardStep3Subtitle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? NeverestPalette.inkRaised
+                              : NeverestPalette.paperRaised,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? NeverestPalette.inkLine
+                                : NeverestPalette.paperLine,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_on_outlined, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.rewardLocationAddress,
+                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                  Text(
+                                    l10n.rewardLocationSchedule(stockLabel),
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_outward_rounded, size: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                    if (state.redemptions.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
+                        child: Text(
+                          l10n.rewardsHistory.toUpperCase(),
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.8,
+                              ),
+                        ),
+                      ),
+                      ...state.redemptions.map(
+                        (redemption) => Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                          child: _RedemptionTile(item: redemption),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              FilledButton.icon(
-                onPressed: state.isRedeeming ? null : _redeemReward,
-                icon: const Icon(Icons.redeem),
-                label: const Text('Redeem reward'),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: state.isLoading ? null : _loadRedemptions,
-                child: const Text('Refresh my redemptions'),
-              ),
-              if (state.isRedeeming) ...[
-                const SizedBox(height: 10),
-                const LinearProgressIndicator(minHeight: 2),
-              ],
-              const SizedBox(height: 14),
-              if (state.lastRedemption != null)
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.verified),
-                    title: const Text('Latest redemption code'),
-                    subtitle: Text(state.lastRedemption!.redemptionCode),
+              Container(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  10,
+                  16,
+                  MediaQuery.paddingOf(context).bottom > 0
+                      ? MediaQuery.paddingOf(context).bottom + 8
+                      : 18,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.surface.withOpacity(0),
+                      Theme.of(context).colorScheme.surface,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
                 ),
-              if (state.isLoading && state.redemptions.isEmpty)
-                const Center(child: CircularProgressIndicator())
-              else if (state.redemptions.isEmpty)
-                const AppIllustratedState(
-                  icon: Icons.redeem_outlined,
-                  title: 'No redemptions yet',
-                  subtitle: 'Redeem this reward to receive your first code.',
-                )
-              else
-                ...state.redemptions.map(
-                  (redemption) => Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.card_giftcard),
-                      title: Text(redemption.rewardTitle),
-                      subtitle: Text(
-                        'Code: ${redemption.redemptionCode}\n'
-                        'Spent: ${redemption.pointsSpent}p\n'
-                        'Remaining: ${redemption.userAvailablePointsAfterRedemption}p',
-                      ),
-                      isThreeLine: true,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: state.isRedeeming || !canRedeem ? null : _redeemReward,
+                    child: Text(
+                      canRedeem
+                          ? l10n.rewardRedeemButton(widget.reward.pointsCost)
+                          : l10n.rewardNeedMore(widget.reward.pointsCost - points),
                     ),
                   ),
                 ),
+              ),
             ],
           );
         },
@@ -185,4 +348,285 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
   String? _profileUserId() {
     return context.read<ProfileBloc>().state.profile?.id;
   }
+}
+
+class _CostBlock extends StatelessWidget {
+  const _CostBlock({
+    required this.label,
+    required this.value,
+    this.suffix,
+    this.accent = false,
+  });
+
+  final String label;
+  final String value;
+  final String? suffix;
+  final bool accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 1.3),
+        ),
+        const SizedBox(height: 4),
+        RichText(
+          text: TextSpan(
+            text: value,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontSize: 30,
+                  color: accent ? NeverestPalette.orange : null,
+                ),
+            children: [
+              if (suffix != null)
+                TextSpan(
+                  text: ' $suffix',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StepRow extends StatelessWidget {
+  const _StepRow({
+    required this.index,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final int index;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: dark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+            borderRadius: BorderRadius.circular(99),
+            border: Border.all(
+              color: dark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            index.toString(),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: NeverestPalette.orange,
+                  fontWeight: FontWeight.w900,
+                ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RedemptionTile extends StatelessWidget {
+  const _RedemptionTile({required this.item});
+
+  final RewardRedemptionItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: dark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: dark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.rewardTitle,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            item.redemptionCode,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  letterSpacing: 1.2,
+                ),
+          ),
+          Text(
+            '-${item.pointsSpent} pts',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void _showRedeemDialog(
+  BuildContext context,
+  RewardRedemptionItem redemption,
+  RewardSummary reward,
+  Color accent,
+) {
+  final l10n = AppLocalizations.of(context)!;
+  showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: NeverestPalette.ink,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                l10n.rewardRedeemedLabel.toUpperCase(),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: NeverestPalette.orange,
+                      letterSpacing: 1.4,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                reward.partnerName.toUpperCase(),
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontSize: 30,
+                    ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                reward.title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withOpacity(0.74),
+                    ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                width: 170,
+                height: 170,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    const NeverestTopographicRings(color: Colors.black, count: 8),
+                    Center(
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: accent,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.qr_code_2_rounded, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                redemption.redemptionCode,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      letterSpacing: 2.2,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.rewardValidUntil,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.commonClose),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+String _rewardCategory(RewardSummary reward) {
+  final partner = reward.partnerName.toLowerCase();
+  final title = reward.title.toLowerCase();
+  if (partner.contains('cartur') || title.contains('book')) {
+    return 'BOOKS';
+  }
+  if (partner.contains('origo') || title.contains('coffee')) {
+    return 'CAFÉ';
+  }
+  if (title.contains('vinyl') || title.contains('music')) {
+    return 'MUSIC';
+  }
+  if (partner.contains('moca') || title.contains('order')) {
+    return 'GOODS';
+  }
+  return 'PARTNER';
+}
+
+Color _rewardAccent(RewardSummary reward) {
+  final category = _rewardCategory(reward);
+  if (category == 'BOOKS') {
+    return const Color(0xFFA85D3C);
+  }
+  if (category == 'CAFÉ') {
+    return const Color(0xFF3B2A1E);
+  }
+  if (category == 'MUSIC') {
+    return const Color(0xFF1E2C3B);
+  }
+  if (category == 'GOODS') {
+    return const Color(0xFF2B4733);
+  }
+  return const Color(0xFF5A2D1E);
 }
