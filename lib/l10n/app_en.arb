@@ -314,6 +314,35 @@
     }
   },
 
+  "authTitle": "Account access",
+  "authLoginSubtitle": "Sign in to sync profile, rewards, and event progress.",
+  "authRegisterSubtitle": "Create a Neverest account in a few seconds.",
+  "authTabLogin": "Login",
+  "authTabRegister": "Register",
+  "authEmailLabel": "Email",
+  "authPasswordLabel": "Password",
+  "authConfirmPasswordLabel": "Confirm password",
+  "authDisplayNameLabel": "Display name (optional)",
+  "authLoginButton": "Log in",
+  "authRegisterButton": "Create account",
+  "authSwitchToRegister": "Need an account? Register",
+  "authSwitchToLogin": "Already have an account? Log in",
+  "authCredentialsRequired": "Email and password are required.",
+  "authPasswordMinLength": "Password must have at least 6 characters.",
+  "authPasswordsMismatch": "Passwords do not match.",
+  "authSessionActive": "Active session",
+  "authSignedAs": "Signed in as {identity}",
+  "@authSignedAs": {
+    "placeholders": {
+      "identity": {}
+    }
+  },
+  "authContinue": "Continue",
+  "authSignOut": "Sign out",
+  "authManageSession": "Manage account",
+  "authCardTitle": "Account",
+  "authCardSubtitle": "Log in or register to sync your profile and points.",
+
   "qrSignInRequired": "Sign in required",
   "qrSignInSubtitle": "Sign in first to load your QR code.",
   "qrNotAvailable": "QR not available",

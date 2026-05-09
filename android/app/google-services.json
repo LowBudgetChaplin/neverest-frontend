@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "113150489355",
+    "project_id": "neverest-1c714",
+    "storage_bucket": "neverest-1c714.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:113150489355:android:ae4e7fde813286bd98a80e",
+        "android_client_info": {
+          "package_name": "com.example.neverest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_cF-b10RATKuy8z04Cw3SEy20l6_zrCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

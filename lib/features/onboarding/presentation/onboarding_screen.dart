@@ -7,9 +7,11 @@ class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({
     super.key,
     required this.onFinished,
+    this.onOpenAuth,
   });
 
   final VoidCallback onFinished;
+  final Future<void> Function()? onOpenAuth;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -158,7 +160,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   if (_step == 0) ...[
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: widget.onFinished,
+                      onPressed: () async {
+                        if (widget.onOpenAuth != null) {
+                          await widget.onOpenAuth!();
+                          return;
+                        }
+                        widget.onFinished();
+                      },
                       child: Text(
                         l10n.onboardingAlreadyHaveAccount,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(

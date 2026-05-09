@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-
+import 'firebase_options.dart';
 import 'app/app.dart';
 
 /// App entry point for Neverest mobile frontend.
@@ -17,7 +17,9 @@ Future<void> main() async {
 
 Future<_FirebaseInitResult> _initializeFirebase() async {
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     return const _FirebaseInitResult(ready: true);
   } catch (error) {
     return _FirebaseInitResult(

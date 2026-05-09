@@ -93,6 +93,39 @@ class AuthRepository {
     }
   }
 
+  Future<AuthSession> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    _ensureFirebaseReady();
+    final firebaseAuth = _firebaseAuth!;
+    try {
+      final credential = await firebaseAuth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+      final user = credential.user;
+      if (user == null) {
+        throw AuthRepositoryException('Firebase did not return a user.');
+      }
+
+      final normalizedName = displayName?.trim();
+      if (normalizedName != null && normalizedName.isNotEmpty) {
+        await user.updateDisplayName(normalizedName);
+      }
+
+      final token = await user.getIdToken(true);
+      if (token == null || token.isEmpty) {
+        throw AuthRepositoryException('Could not generate Firebase ID token.');
+      }
+      await _tokenStorage.saveToken(token);
+      return _toFirebaseSession(user, token);
+    } on FirebaseAuthException catch (error) {
+      throw AuthRepositoryException(error.message ?? error.code);
+    }
+  }
+
   Future<AuthSession> saveManualToken(String token) async {
     final normalized = token.trim();
     if (normalized.isEmpty) {

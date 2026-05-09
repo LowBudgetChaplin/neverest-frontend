@@ -314,6 +314,35 @@
     }
   },
 
+  "authTitle": "Acces cont",
+  "authLoginSubtitle": "Autentifica-te pentru a sincroniza profilul, recompensele si progresul la evenimente.",
+  "authRegisterSubtitle": "Creeaza un cont Neverest in cateva secunde.",
+  "authTabLogin": "Login",
+  "authTabRegister": "Inregistrare",
+  "authEmailLabel": "Email",
+  "authPasswordLabel": "Parola",
+  "authConfirmPasswordLabel": "Confirma parola",
+  "authDisplayNameLabel": "Nume afisat (optional)",
+  "authLoginButton": "Autentificare",
+  "authRegisterButton": "Creeaza cont",
+  "authSwitchToRegister": "Nu ai cont? Inregistreaza-te",
+  "authSwitchToLogin": "Ai deja cont? Autentifica-te",
+  "authCredentialsRequired": "Email-ul si parola sunt obligatorii.",
+  "authPasswordMinLength": "Parola trebuie sa aiba cel putin 6 caractere.",
+  "authPasswordsMismatch": "Parolele nu coincid.",
+  "authSessionActive": "Sesiune activa",
+  "authSignedAs": "Autentificat ca {identity}",
+  "@authSignedAs": {
+    "placeholders": {
+      "identity": {}
+    }
+  },
+  "authContinue": "Continua",
+  "authSignOut": "Deconectare",
+  "authManageSession": "Gestioneaza contul",
+  "authCardTitle": "Cont",
+  "authCardSubtitle": "Autentifica-te sau inregistreaza-te pentru a sincroniza profilul si punctele.",
+
   "qrSignInRequired": "Autentificare necesara",
   "qrSignInSubtitle": "Autentifica-te mai intai pentru a incarca codul QR.",
   "qrNotAvailable": "QR indisponibil",

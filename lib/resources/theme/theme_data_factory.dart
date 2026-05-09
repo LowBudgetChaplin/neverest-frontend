@@ -55,7 +55,7 @@ ThemeData makeTheme({
         fontWeight: FontWeight.w800,
       ),
     ),
-    cardTheme: CardThemeData(
+    cardTheme: ThemeData(brightness: brightness).cardTheme.copyWith(
       color: isDark ? colors.bgCardDefault : colors.bgCardDefault,
       elevation: 0,
       margin: EdgeInsets.zero,

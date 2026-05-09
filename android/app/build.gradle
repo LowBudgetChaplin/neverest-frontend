@@ -2,7 +2,9 @@ plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
     id "dev.flutter.flutter-gradle-plugin"
-    // id "com.google.gms.google-services"
+    // START: FlutterFire Configuration
+    id "com.google.gms.google-services"
+    // END: FlutterFire Configuration
     // id "com.google.firebase.crashlytics"
 }
 
@@ -27,7 +29,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.neverest"
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 23
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
