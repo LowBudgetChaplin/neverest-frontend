@@ -19,13 +19,25 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
   String _filter = 'ALL';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final dashboardState = context.read<DashboardBloc>().state;
+      if (dashboardState.status == DashboardStatus.initial) {
+        context.read<DashboardBloc>().add(const DashboardLoadRequested());
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        final sourceEvents = state.data?.events.isNotEmpty == true
-            ? state.data!.events
-            : _fallbackEvents;
+        final sourceEvents = state.data?.events ?? const <EventSummary>[];
         final filtered = _filter == 'ALL'
             ? sourceEvents
             : sourceEvents
@@ -93,7 +105,49 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            if (filtered.isEmpty)
+            if (state.status == DashboardStatus.loading && sourceEvents.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Se incarca evenimente...',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (state.status == DashboardStatus.failure &&
+                sourceEvents.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.errorMessage ?? l10n.dashboardLoadFailed,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: () => context
+                          .read<DashboardBloc>()
+                          .add(const DashboardRefreshRequested()),
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: Text(l10n.commonRetry),
+                    ),
+                  ],
+                ),
+              )
+            else if (filtered.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
@@ -293,6 +347,7 @@ class _AttendeesStack extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 60,
+      height: 24,
       child: Stack(
         children: List.generate(3, (index) {
           final hues = [42.0, 180.0, 285.0];
@@ -318,29 +373,3 @@ class _AttendeesStack extends StatelessWidget {
   }
 }
 
-const _fallbackEvents = [
-  EventSummary(
-    id: 'e1',
-    title: 'Sunrise Run · Herăstrău',
-    activityType: 'RUNNING',
-    location: 'Herăstrău Park · Gate 2',
-    startsAt: '2026-05-11T07:00:00',
-    pointsReward: 80,
-  ),
-  EventSummary(
-    id: 'e2',
-    title: 'Padel Mixer Doubles',
-    activityType: 'PADEL',
-    location: 'Tenis Club Bucharest',
-    startsAt: '2026-05-12T18:30:00',
-    pointsReward: 100,
-  ),
-  EventSummary(
-    id: 'e3',
-    title: 'Bucegi Day Hike',
-    activityType: 'MOUNTAIN',
-    location: 'Bucegi · Bușteni base',
-    startsAt: '2026-05-18T06:00:00',
-    pointsReward: 200,
-  ),
-];

@@ -34,21 +34,15 @@ class HomeTabScreen extends StatelessWidget {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final data = state.data;
-        final events = data == null || data.events.isEmpty
-            ? _fallbackEvents
-            : data.events;
-        final challenges = data == null || data.challenges.isEmpty
-            ? _fallbackChallenges
-            : data.challenges;
-        final rewards = data == null || data.rewards.isEmpty
-            ? _fallbackRewards
-            : data.rewards;
-        final liveChallenge = challenges.first;
-        final mainReward = rewards.first;
-        final totalPoints = profile?.totalPoints ?? 1840;
-        final weekPoints = 320;
-        final weekKm = 24.6;
-        final streak = 12;
+        final events = data?.events ?? const <EventSummary>[];
+        final challenges = data?.challenges ?? const <ChallengeSummary>[];
+        final rewards = data?.rewards ?? const <RewardSummary>[];
+        final liveChallenge = challenges.isEmpty ? null : challenges.first;
+        final mainReward = rewards.isEmpty ? null : rewards.first;
+        final totalPoints = profile?.totalPoints ?? 0;
+        final weekPoints = 0;
+        final weekKm = 0.0;
+        final streak = 0;
 
         return ListView(
           padding: EdgeInsets.only(
@@ -131,30 +125,32 @@ class HomeTabScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            NeverestSectionHeader(
-              title: l10n.homeLiveNow,
-              trailing: TextButton(
-                onPressed: () => onSelectTab(2),
-                child: Text(l10n.commonAll),
+            if (liveChallenge != null) ...[
+              NeverestSectionHeader(
+                title: l10n.homeLiveNow,
+                trailing: TextButton(
+                  onPressed: () => onSelectTab(2),
+                  child: Text(l10n.commonAll),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _LiveCard(
-                challenge: liveChallenge,
-                progress: 0.46,
-                subtitle: l10n.challengeRouteSubtitle,
-                trackingLabel: l10n.homeTrackingLive,
-                onTap: () {
-                  Navigator.of(context).push(
-                    AppPageRoute.fadeSlide(
-                      ChallengeDetailsScreen(challenge: liveChallenge),
-                    ),
-                  );
-                },
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _LiveCard(
+                  challenge: liveChallenge,
+                  progress: 0.0,
+                  subtitle: l10n.challengeRouteSubtitle,
+                  trackingLabel: l10n.homeTrackingLive,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      AppPageRoute.fadeSlide(
+                        ChallengeDetailsScreen(challenge: liveChallenge),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
+            ],
             const SizedBox(height: 22),
             NeverestSectionHeader(
               title: l10n.homeThisWeek,
@@ -164,43 +160,61 @@ class HomeTabScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 200,
-              child: ListView.separated(
+            if (events.isEmpty)
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                scrollDirection: Axis.horizontal,
-                itemCount: events.take(3).length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final event = events[index];
-                  return _EventSmallCard(
-                    event: event,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        AppPageRoute.fadeSlide(EventDetailsScreen(event: event)),
-                      );
-                    },
-                  );
-                },
+                child: Text(
+                  l10n.eventsEmptyState,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )
+            else
+              SizedBox(
+                height: 200,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: events.take(3).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final event = events[index];
+                    return _EventSmallCard(
+                      event: event,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          AppPageRoute.fadeSlide(EventDetailsScreen(event: event)),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
             const SizedBox(height: 20),
             NeverestSectionHeader(title: l10n.homeSpendPoints),
             const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _RewardSpotlight(
-                reward: mainReward,
-                pointsLabel: l10n.commonPointsShort,
-                onTap: () {
-                  Navigator.of(context).push(
-                    AppPageRoute.fadeSlide(
-                      RewardDetailsScreen(reward: mainReward),
-                    ),
-                  );
-                },
+            if (mainReward == null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  l10n.eventsEmptyState,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _RewardSpotlight(
+                  reward: mainReward,
+                  pointsLabel: l10n.commonPointsShort,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      AppPageRoute.fadeSlide(
+                        RewardDetailsScreen(reward: mainReward),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
             if (state.status == DashboardStatus.failure) ...[
               const SizedBox(height: 18),
               Padding(
@@ -380,7 +394,7 @@ class _HomeHeroCard extends StatelessWidget {
                   children: [
                     _HeroStat(label: weekLabel, value: weekKm.toStringAsFixed(1), unit: 'KM'),
                     const SizedBox(width: 20),
-                    _HeroStat(label: activitiesLabel, value: '4'),
+                    _HeroStat(label: activitiesLabel, value: '0'),
                     const SizedBox(width: 20),
                     _HeroStat(
                       label: streakLabel,
@@ -864,80 +878,3 @@ class _RewardSpotlight extends StatelessWidget {
   }
 }
 
-const _fallbackEvents = [
-  EventSummary(
-    id: 'e1',
-    title: 'Sunrise Run · Herăstrău',
-    activityType: 'RUNNING',
-    location: 'Herăstrău Park · Gate 2',
-    startsAt: '2026-05-11T07:00:00',
-    pointsReward: 80,
-  ),
-  EventSummary(
-    id: 'e2',
-    title: 'Padel Mixer Doubles',
-    activityType: 'PADEL',
-    location: 'Tenis Club Bucharest',
-    startsAt: '2026-05-12T18:30:00',
-    pointsReward: 100,
-  ),
-  EventSummary(
-    id: 'e3',
-    title: 'Bucegi Day Hike',
-    activityType: 'MOUNTAIN',
-    location: 'Bucegi · Bușteni base',
-    startsAt: '2026-05-18T06:00:00',
-    pointsReward: 200,
-  ),
-];
-
-const _fallbackChallenges = [
-  ChallengeSummary(
-    id: 'c1',
-    title: 'Centrul Vechi → Arcul de Triumf',
-    activityType: 'RUNNING',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 120,
-  ),
-  ChallengeSummary(
-    id: 'c2',
-    title: '50K Weekly Distance',
-    activityType: 'RUNNING',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 200,
-  ),
-  ChallengeSummary(
-    id: 'c3',
-    title: 'Three Mornings Streak',
-    activityType: 'RUNNING',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 80,
-  ),
-];
-
-const _fallbackRewards = [
-  RewardSummary(
-    id: 'r1',
-    title: '20% off any book',
-    partnerName: 'Cărturești',
-    pointsCost: 400,
-    stock: 20,
-  ),
-  RewardSummary(
-    id: 'r2',
-    title: 'Free filter coffee',
-    partnerName: 'Origo Coffee',
-    pointsCost: 150,
-    stock: 50,
-  ),
-  RewardSummary(
-    id: 'r3',
-    title: '15% off entire order',
-    partnerName: 'MOCA',
-    pointsCost: 350,
-    stock: 12,
-  ),
-];

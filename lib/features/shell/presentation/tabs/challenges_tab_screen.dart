@@ -23,9 +23,43 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        final source = state.data?.challenges.isNotEmpty == true
-            ? state.data!.challenges
-            : _fallbackChallenges;
+        final source = state.data?.challenges ?? const <ChallengeSummary>[];
+        if (source.isEmpty) {
+          return ListView(
+            padding: EdgeInsets.only(
+              left: 0,
+              right: 0,
+              top: MediaQuery.paddingOf(context).top + 10,
+              bottom: 106,
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.challengesTitle.toUpperCase(),
+                  style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        fontSize: 38,
+                      ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.challengesSubtitle,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.eventsEmptyState,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          );
+        }
         final items = _toChallengeItems(source, l10n);
         final active = items.where((item) => !item.done).toList();
         final done = items.where((item) => item.done).toList();
@@ -71,16 +105,6 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                     label: l10n.challengesCompletedCount(done.length),
                     selected: _showCompleted,
                     onTap: () => setState(() => _showCompleted = true),
-                  ),
-                  const Spacer(),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(0, 36),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                    ),
-                    onPressed: () {},
-                    icon: const Icon(Icons.add_rounded, size: 16),
-                    label: Text(l10n.commonNew),
                   ),
                 ],
               ),
@@ -396,45 +420,3 @@ class _ChallengeItem {
   String get id => summary.id;
 }
 
-const _fallbackChallenges = [
-  ChallengeSummary(
-    id: 'c1',
-    title: 'Centrul Vechi → Arcul de Triumf',
-    activityType: 'RUNNING',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 120,
-  ),
-  ChallengeSummary(
-    id: 'c2',
-    title: '50K Weekly Distance',
-    activityType: 'RUNNING',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 200,
-  ),
-  ChallengeSummary(
-    id: 'c3',
-    title: 'Three Mornings Streak',
-    activityType: 'RUNNING',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 80,
-  ),
-  ChallengeSummary(
-    id: 'c4',
-    title: 'Padel: Win 5 Games',
-    activityType: 'PADEL',
-    frequency: 'MONTHLY',
-    mode: 'OFFLINE',
-    pointsReward: 150,
-  ),
-  ChallengeSummary(
-    id: 'c5',
-    title: 'Forest Trail · Băneasa Loop',
-    activityType: 'MOUNTAIN',
-    frequency: 'WEEKLY',
-    mode: 'ONLINE',
-    pointsReward: 90,
-  ),
-];

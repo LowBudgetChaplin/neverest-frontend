@@ -59,18 +59,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      if (!_repository.firebaseReady) {
-        emit(
-          state.copyWith(
-            status: AuthStatus.unavailable,
-            clearSession: true,
-            message: _repository.firebaseInitError ??
-                'Firebase auth is not configured yet.',
-          ),
-        );
-        return;
-      }
-
       emit(
         state.copyWith(
           status: AuthStatus.unauthenticated,
@@ -172,14 +160,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.signOut();
       emit(
         state.copyWith(
-          status: _repository.firebaseReady
-              ? AuthStatus.unauthenticated
-              : AuthStatus.unavailable,
+          status: AuthStatus.unauthenticated,
           clearSession: true,
-          message: _repository.firebaseReady
-              ? _registerSuccessMessage
-              : (_repository.firebaseInitError ??
-                  'Firebase auth is not configured yet.'),
+          message: _registerSuccessMessage,
         ),
       );
     } on AuthRepositoryException catch (error) {
@@ -241,14 +224,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await _repository.clearManualToken();
     emit(
       state.copyWith(
-        status: _repository.firebaseReady
-            ? AuthStatus.unauthenticated
-            : AuthStatus.unavailable,
+        status: AuthStatus.unauthenticated,
         clearSession: true,
-        message: _repository.firebaseReady
-            ? null
-            : (_repository.firebaseInitError ??
-                'Firebase auth is not configured yet.'),
+        message: null,
       ),
     );
   }
@@ -261,14 +239,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.signOut();
       emit(
         state.copyWith(
-          status: _repository.firebaseReady
-              ? AuthStatus.unauthenticated
-              : AuthStatus.unavailable,
+          status: AuthStatus.unauthenticated,
           clearSession: true,
-          message: _repository.firebaseReady
-              ? null
-              : (_repository.firebaseInitError ??
-                  'Firebase auth is not configured yet.'),
+          message: null,
         ),
       );
     } catch (error) {
@@ -306,9 +279,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.signOut();
       emit(
         state.copyWith(
-          status: _repository.firebaseReady
-              ? AuthStatus.unauthenticated
-              : AuthStatus.unavailable,
+          status: AuthStatus.unauthenticated,
           clearSession: true,
           message:
               'Session expired or token invalid. Please sign in again to continue.',

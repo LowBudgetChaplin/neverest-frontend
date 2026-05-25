@@ -21,9 +21,7 @@ class _LeaderboardTabScreenState extends State<LeaderboardTabScreen> {
     final l10n = AppLocalizations.of(context)!;
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        final rows = state.data?.leaderboard.isNotEmpty == true
-            ? state.data!.leaderboard
-            : _fallbackLeaderboard;
+        final rows = state.data?.leaderboard ?? const <LeaderboardEntrySummary>[];
         final normalized = rows
             .map(
               (entry) => _LeaderboardRow(
@@ -34,7 +32,7 @@ class _LeaderboardTabScreenState extends State<LeaderboardTabScreen> {
             )
             .toList()
           ..sort((a, b) => b.points.compareTo(a.points));
-        final top3 = normalized.take(3).toList();
+        final top3 = normalized.length >= 3 ? normalized.take(3).toList() : <_LeaderboardRow>[];
         final others = normalized.skip(3).toList();
 
         return ListView(
@@ -332,13 +330,3 @@ String _weeklyDeltaFor(String source) {
   return '+$value this week';
 }
 
-const _fallbackLeaderboard = [
-  LeaderboardEntrySummary(userId: 'u1', displayName: 'Maria Popescu', points: 4820),
-  LeaderboardEntrySummary(userId: 'u2', displayName: 'Tudor Ene', points: 4205),
-  LeaderboardEntrySummary(userId: 'u3', displayName: 'Sara Dinu', points: 3870),
-  LeaderboardEntrySummary(userId: 'u4', displayName: 'Bogdan V.', points: 3640),
-  LeaderboardEntrySummary(userId: 'u5', displayName: 'Alex Marin', points: 3210),
-  LeaderboardEntrySummary(userId: 'u6', displayName: 'Ioana C.', points: 3050),
-  LeaderboardEntrySummary(userId: 'u7', displayName: 'Răzvan T.', points: 2890),
-  LeaderboardEntrySummary(userId: 'u8', displayName: 'Andrei Ionescu', points: 1840),
-];

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../features/access/data/access_repository.dart';
 import '../features/access/presentation/cubit/access_cubit.dart';
@@ -25,16 +24,8 @@ import 'router/app_router.dart';
 import 'services/api_client.dart';
 import 'services/auth_token_storage.dart';
 
-/// Root widget with BLoC and repository wiring.
 class MainApp extends StatefulWidget {
-  const MainApp({
-    super.key,
-    required this.firebaseReady,
-    this.firebaseInitError,
-  });
-
-  final bool firebaseReady;
-  final String? firebaseInitError;
+  const MainApp({super.key});
 
   @override
   State<MainApp> createState() => _MainAppState();
@@ -67,9 +58,7 @@ class _MainAppState extends State<MainApp> {
     _accessRepository = AccessRepository(_apiClient);
     _authRepository = AuthRepository(
       tokenStorage: _authTokenStorage,
-      firebaseAuth: widget.firebaseReady ? FirebaseAuth.instance : null,
-      firebaseReady: widget.firebaseReady,
-      firebaseInitError: widget.firebaseInitError,
+      apiClient: _apiClient,
     );
     _profileRepository = ProfileRepository(_apiClient);
   }

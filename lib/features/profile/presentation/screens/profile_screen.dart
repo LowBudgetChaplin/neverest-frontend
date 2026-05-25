@@ -119,21 +119,7 @@ class ProfileScreen extends StatelessWidget {
                 _ConnectionRow(
                   icon: Icons.directions_run_rounded,
                   title: 'Strava',
-                  subtitle: l10n.profileConnectionStrava,
-                  linked: true,
-                ),
-                const SizedBox(height: 8),
-                _ConnectionRow(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  title: 'WhatsApp',
-                  subtitle: l10n.profileConnectionWhatsapp,
-                  linked: true,
-                ),
-                const SizedBox(height: 8),
-                _ConnectionRow(
-                  icon: Icons.watch_rounded,
-                  title: 'Garmin / Apple Watch',
-                  subtitle: l10n.profileConnectionComingSoon,
+                  subtitle: 'TODO: integrarea Strava va fi adaugata ulterior.',
                   linked: false,
                 ),
               ],

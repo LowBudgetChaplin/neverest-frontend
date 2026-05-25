@@ -26,6 +26,17 @@ class _MainShellScreenState extends State<MainShellScreen> {
   int _selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _syncShellDataForCurrentAuthState();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isLoading = context.select<DashboardBloc, bool>(
       (bloc) => bloc.state.status == DashboardStatus.loading,
@@ -150,6 +161,23 @@ class _MainShellScreenState extends State<MainShellScreen> {
     Navigator.of(context).push(
       AppPageRoute.fadeSlide(const AdminCenterScreen()),
     );
+  }
+
+  void _syncShellDataForCurrentAuthState() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState.status != AuthStatus.authenticated) {
+      context.read<AccessCubit>().refresh();
+      return;
+    }
+
+    context.read<ProfileBloc>().add(
+          ProfileLoadRequested(
+            suggestedDisplayName: _suggestDisplayName(authState),
+            preferMeEndpoints: true,
+          ),
+        );
+    context.read<DashboardBloc>().add(const DashboardLoadRequested());
+    context.read<AccessCubit>().refresh();
   }
 
   String _suggestDisplayName(AuthState authState) {

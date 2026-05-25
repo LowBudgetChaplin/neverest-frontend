@@ -23,13 +23,11 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final points = context.select<ProfileBloc, int>(
-      (bloc) => bloc.state.profile?.availablePoints ?? 1840,
+      (bloc) => bloc.state.profile?.availablePoints ?? 0,
     );
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
-        final source = state.data?.rewards.isNotEmpty == true
-            ? state.data!.rewards
-            : _fallbackRewards;
+        final source = state.data?.rewards ?? const <RewardSummary>[];
         final categories = <String>{
           'ALL',
           ...source.map(_rewardCategory),
@@ -361,33 +359,3 @@ Color _rewardAccent(RewardSummary reward) {
   };
 }
 
-const _fallbackRewards = [
-  RewardSummary(
-    id: 'r1',
-    title: '20% off any book',
-    partnerName: 'Cărturești',
-    pointsCost: 400,
-    stock: 20,
-  ),
-  RewardSummary(
-    id: 'r2',
-    title: 'Free filter coffee',
-    partnerName: 'Origo Coffee',
-    pointsCost: 150,
-    stock: 50,
-  ),
-  RewardSummary(
-    id: 'r3',
-    title: 'BUY 1 GET 1 vinyl',
-    partnerName: 'Bazar de Muzică',
-    pointsCost: 600,
-    stock: 10,
-  ),
-  RewardSummary(
-    id: 'r4',
-    title: '15% off entire order',
-    partnerName: 'MOCA',
-    pointsCost: 350,
-    stock: 12,
-  ),
-];
