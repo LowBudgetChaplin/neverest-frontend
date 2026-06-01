@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,6 +6,8 @@ import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
+import '../../../strava/domain/strava_models.dart';
+import '../../../strava/presentation/cubit/strava_cubit.dart';
 import '../../data/challenge_action_repository.dart';
 import '../../domain/challenge_submission_item.dart';
 import '../bloc/challenge_action_bloc.dart';
@@ -43,30 +43,19 @@ class _ChallengeDetailsView extends StatefulWidget {
 class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
   final TextEditingController _proofController = TextEditingController();
   final TextEditingController _metricController = TextEditingController();
-  Timer? _timer;
-  int _seconds = 1333;
-  int _meters = 3380;
-  bool _paused = false;
   bool _adminView = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSubmissions());
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_paused) {
-        return;
-      }
-      setState(() {
-        _seconds += 1;
-        _meters += 2;
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSubmissions();
+      context.read<StravaCubit>().loadStatus();
     });
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _proofController.dispose();
     _metricController.dispose();
     super.dispose();
@@ -79,10 +68,6 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
       (cubit) => cubit.state.canOpenAdminCenter,
     );
     final effectiveAdminView = _adminView && canUseAdminFeatures;
-    final progress = (_meters / 7400).clamp(0.0, 1.0);
-    final pace = ((_seconds / 60) / (_meters / 1000)).clamp(4.0, 9.0);
-    final paceMin = pace.floor();
-    final paceSec = ((pace - paceMin) * 60).round().toString().padLeft(2, '0');
     final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -116,269 +101,47 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
             padding: EdgeInsets.only(
               left: 0,
               right: 0,
-              top: MediaQuery.paddingOf(context).top,
+              top: MediaQuery.paddingOf(context).top + 8,
               bottom: 30,
             ),
             children: [
-              SizedBox(
-                height: 306,
-                child: Stack(
-                  fit: StackFit.expand,
+              // ── Header ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: Row(
                   children: [
-                    NeverestMapMock(progress: progress, dark: dark),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      child: Row(
+                    NeverestGlassIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          NeverestGlassIconButton(
-                            icon: Icons.close_rounded,
-                            foreground: dark ? Colors.white : Colors.black,
-                            background: dark
-                                ? Colors.black.withOpacity(0.55)
-                                : Colors.white.withOpacity(0.85),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: dark
-                                  ? Colors.black.withOpacity(0.55)
-                                  : Colors.white.withOpacity(0.85),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: NeverestPalette.orange,
-                                    borderRadius: BorderRadius.circular(99),
-                                  ),
+                          Text(
+                            widget.challenge.title,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  _paused
-                                      ? l10n.challengePaused
-                                      : l10n.challengeGpsLive,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: dark ? Colors.white : Colors.black,
-                                        letterSpacing: 1.1,
-                                      ),
-                                ),
-                              ],
-                            ),
                           ),
-                          const Spacer(),
-                          const SizedBox(width: 38),
+                          Text(
+                            '${widget.challenge.activityType} · +${widget.challenge.pointsReward} pct',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: NeverestPalette.orange,
+                                ),
+                          ),
                         ],
                       ),
                     ),
-                    Positioned(
-                      left: 16,
-                      right: 16,
-                      bottom: 14,
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: dark
-                              ? Colors.black.withOpacity(0.62)
-                              : Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.challengeDestination,
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    letterSpacing: 1.1,
-                                  ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              l10n.challengeDestinationValue,
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                            ),
-                            Text(
-                              l10n.challengeRemainingKm(
-                                ((7400 - _meters) / 1000)
-                                    .clamp(0, 20)
-                                    .toStringAsFixed(2),
-                              ),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: NeverestPalette.orange,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: dark
-                              ? NeverestPalette.inkLine
-                              : NeverestPalette.paperLine,
-                          borderRadius: BorderRadius.circular(99),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Text(
-                          l10n.challengeRouteHeadline,
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: NeverestPalette.orange,
-                                letterSpacing: 1.2,
-                              ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          l10n.challengeOnFinishPoints(
-                            widget.challenge.pointsReward,
-                          ),
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      (_meters / 1000).toStringAsFixed(2),
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                            fontSize: 76,
-                          ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12, left: 6),
-                      child: Text(
-                        'KM',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: Theme.of(context).textTheme.bodySmall?.color,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: NeverestProgressBar(value: progress),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
-                child: Row(
-                  children: [
-                    Text(
-                      l10n.challengeProgressLine(
-                        (progress * 100).round(),
-                        (_meters / 1000).toStringAsFixed(2),
-                        '7.4',
-                      ),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const Spacer(),
-                    Text(
-                      l10n.challengeOnFinishPoints(widget.challenge.pointsReward),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: NeverestPalette.orange,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _SubStat(
-                        label: l10n.challengeTime,
-                        value: _formatTime(_seconds),
-                      ),
-                    ),
-                    Expanded(
-                      child: _SubStat(
-                        label: l10n.challengePace,
-                        value: '$paceMin:$paceSec',
-                        unit: '/km',
-                      ),
-                    ),
-                    Expanded(
-                      child: _SubStat(
-                        label: l10n.challengeSteps,
-                        value: (_meters * 1.34).round().toString(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => setState(() => _paused = !_paused),
-                        icon: Icon(
-                          _paused ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                        ),
-                        label:
-                            Text(_paused ? l10n.challengeResume : l10n.challengePause),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    SizedBox(
-                      width: 56,
-                      height: 56,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: NeverestPalette.danger,
-                          shape: const CircleBorder(),
-                          padding: EdgeInsets.zero,
-                        ),
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Icon(Icons.stop_rounded),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              // ── Verificare Strava ────────────────────────────────────
+              _StravaActivitySection(challenge: widget.challenge),
+              const SizedBox(height: 16),
+              // ── Trimite dovadă ───────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _SubmissionComposer(
@@ -549,15 +312,6 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
     return _adminView && hasAdminAccess;
   }
 
-  String _formatTime(int totalSeconds) {
-    final hours = totalSeconds ~/ 3600;
-    final minutes = (totalSeconds % 3600) ~/ 60;
-    final seconds = totalSeconds % 60;
-    if (hours == 0) {
-      return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    }
-    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-  }
 }
 
 class _SubmissionComposer extends StatelessWidget {
@@ -720,16 +474,266 @@ class _SubmissionCard extends StatelessWidget {
   }
 }
 
-class _SubStat extends StatelessWidget {
-  const _SubStat({
-    required this.label,
-    required this.value,
-    this.unit,
+class _StravaActivitySection extends StatelessWidget {
+  const _StravaActivitySection({required this.challenge});
+  final ChallengeSummary challenge;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final stravaState = context.watch<StravaCubit>().state;
+    final status = stravaState.status;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.directions_run_rounded, size: 16, color: NeverestPalette.orange),
+                const SizedBox(width: 6),
+                Text(
+                  'VERIFICARE STRAVA',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: NeverestPalette.orange,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (status == null || !status.connected) ...[
+              Text(
+                'Conectează-ți contul Strava pentru a verifica automat dacă ai completat traseul.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ] else if (stravaState.isVerifying) ...[
+              const Row(
+                children: [
+                  SizedBox(
+                    width: 16, height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 10),
+                  Text('Se verifică activitățile Strava...'),
+                ],
+              ),
+            ] else if (stravaState.verification != null) ...[
+              _VerificationResult(
+                verification: stravaState.verification!,
+                isDark: isDark,
+                onClear: () => context.read<StravaCubit>().clearVerification(),
+              ),
+            ] else ...[
+              Text(
+                'Strava conectat ca ${status.athleteName ?? "Atlet"}. Apasă pentru a verifica dacă ai completat traseul.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => context.read<StravaCubit>().verifyChallenge(challenge.id),
+                  icon: const Icon(Icons.verified_rounded, size: 16),
+                  label: const Text('Verifică cu Strava'),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VerificationResult extends StatelessWidget {
+  const _VerificationResult({
+    required this.verification,
+    required this.isDark,
+    required this.onClear,
   });
 
+  final StravaChallengeVerification verification;
+  final bool isDark;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = verification.verified ? NeverestPalette.success : NeverestPalette.danger;
+    final icon = verification.verified ? Icons.check_circle_rounded : Icons.cancel_rounded;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                verification.verificationMessage,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+            GestureDetector(
+              onTap: onClear,
+              child: Icon(Icons.close_rounded, size: 16,
+                  color: Theme.of(context).textTheme.bodySmall?.color),
+            ),
+          ],
+        ),
+        if (verification.matchingActivities.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Activități compatibile:',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
+          ),
+          const SizedBox(height: 6),
+          ...verification.matchingActivities.take(3).map(
+            (a) => _StravaActivityCard(activity: a, isDark: isDark),
+          ),
+        ],
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onClear,
+            icon: const Icon(Icons.refresh_rounded, size: 14),
+            label: const Text('Verifică din nou'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StravaActivityCard extends StatelessWidget {
+  const _StravaActivityCard({required this.activity, required this.isDark});
+  final StravaActivity activity;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  activity.name,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: NeverestPalette.orange.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  activity.type,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: NeverestPalette.orange,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _StatChip(label: 'KM', value: activity.distanceKm.toStringAsFixed(2)),
+              const SizedBox(width: 14),
+              _StatChip(label: 'DURATĂ', value: activity.formattedDuration),
+              const SizedBox(width: 14),
+              _StatChip(label: 'RITM', value: activity.formattedPace),
+              const SizedBox(width: 14),
+              _StatChip(label: 'ELEVAȚIE', value: '${activity.totalElevationGain.toStringAsFixed(0)}m'),
+            ],
+          ),
+          if (activity.startLatLng != null || activity.endLatLng != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.location_on_outlined, size: 14, color: NeverestPalette.orange),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _formatLatLng(activity.startLatLng, activity.endLatLng),
+                    style: Theme.of(context).textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (activity.startDateLocal.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              _formatDate(activity.startDateLocal),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatLatLng(List<double>? start, List<double>? end) {
+    final parts = <String>[];
+    if (start != null) {
+      parts.add('Start: ${start[0].toStringAsFixed(4)}, ${start[1].toStringAsFixed(4)}');
+    }
+    if (end != null) {
+      parts.add('Final: ${end[0].toStringAsFixed(4)}, ${end[1].toStringAsFixed(4)}');
+    }
+    return parts.join(' → ');
+  }
+
+  String _formatDate(String iso) {
+    try {
+      final dt = DateTime.parse(iso);
+      return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year} '
+          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return iso;
+    }
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({required this.label, required this.value});
   final String label;
   final String value;
-  final String? unit;
 
   @override
   Widget build(BuildContext context) {
@@ -737,26 +741,15 @@ class _SubStat extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                letterSpacing: 1.1,
-              ),
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
         ),
-        const SizedBox(height: 2),
-        RichText(
-          text: TextSpan(
-            text: value,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 30),
-            children: [
-              if (unit != null)
-                TextSpan(
-                  text: unit,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-            ],
-          ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],
     );
   }
 }
+

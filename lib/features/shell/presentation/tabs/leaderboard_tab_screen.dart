@@ -80,13 +80,6 @@ class _LeaderboardTabScreenState extends State<LeaderboardTabScreen> {
                   ),
                   const SizedBox(width: 8),
                   NeverestFilterChip(
-                    label: l10n.activityPadel,
-                    selected: _selectedActivity == 'PADEL',
-                    icon: Icons.sports_tennis_rounded,
-                    onTap: () => setState(() => _selectedActivity = 'PADEL'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
                     label: l10n.activityMountain,
                     selected: _selectedActivity == 'MOUNTAIN',
                     icon: Icons.terrain_rounded,
@@ -123,7 +116,7 @@ class _Podium extends StatelessWidget {
       return const SizedBox.shrink();
     }
     return SizedBox(
-      height: 196,
+      height: 260,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [

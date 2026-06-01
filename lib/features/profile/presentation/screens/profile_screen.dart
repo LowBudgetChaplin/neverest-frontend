@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../admin/presentation/screens/admin_center_screen.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../dashboard/domain/dashboard_data.dart';
+import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
-import '../../../shell/presentation/tabs/widgets/auth_session_card.dart';
+import '../../../strava/presentation/cubit/strava_cubit.dart';
 import '../../../theme/presentation/app_locale_cubit.dart';
 import '../../../theme/presentation/theme_mode_cubit.dart';
 import '../bloc/profile_bloc.dart';
@@ -25,9 +29,11 @@ class ProfileScreen extends StatelessWidget {
     final themeMode = context.watch<ThemeModeCubit>().state;
     final localeCode = context.watch<AppLocaleCubit>().currentCode;
 
+    final dashboardState = context.watch<DashboardBloc>().state;
     final profile = profileState.profile;
     final displayName = profile?.displayName ?? _suggestDisplayName(authState);
-    final points = profile?.totalPoints ?? 1840;
+    final points = profile?.totalPoints ?? 0;
+    final rank = _computeRank(dashboardState.data?.leaderboard, profile?.id, displayName);
 
     return Scaffold(
       body: ListView(
@@ -72,8 +78,8 @@ class ProfileScreen extends StatelessWidget {
               displayName: displayName,
               points: points,
               streak: 12,
-              rank: 14,
-              level: l10n.profileLevelLabel,
+              rank: rank,
+              onEditTap: () => _showEditProfileDialog(context, displayName),
             ),
           ),
           const SizedBox(height: 20),
@@ -114,16 +120,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                _ConnectionRow(
-                  icon: Icons.directions_run_rounded,
-                  title: 'Strava',
-                  subtitle: 'TODO: integrarea Strava va fi adaugata ulterior.',
-                  linked: false,
-                ),
-              ],
-            ),
+            child: _StravaConnectionRow(onConnect: () => _connectStrava(context)),
           ),
           const SizedBox(height: 20),
           NeverestSectionHeader(title: l10n.profileSettings),
@@ -183,13 +180,65 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                      side: BorderSide(color: Theme.of(context).colorScheme.error.withOpacity(0.4)),
+                    ),
+                    onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
+                    icon: const Icon(Icons.logout_rounded),
+                    label: Text(l10n.authSignOut),
+                  ),
+                ),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: AuthSessionCard(),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _connectStrava(BuildContext context) async {
+    try {
+      final url = await context.read<StravaCubit>().getConnectUrl();
+      if (url.isNotEmpty) {
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Eroare Strava: $e')),
+        );
+      }
+    }
+  }
+
+  void _showEditProfileDialog(BuildContext context, String currentName) {
+    final controller = TextEditingController(text: currentName);
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.commonEdit),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context)!.authDisplayNameLabel,
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(AppLocalizations.of(context)!.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+            },
+            child: Text(AppLocalizations.of(context)!.commonConfirm),
           ),
         ],
       ),
@@ -203,6 +252,19 @@ class ProfileScreen extends StatelessWidget {
             preferMeEndpoints: true,
           ),
         );
+  }
+
+  int _computeRank(List<LeaderboardEntrySummary>? leaderboard, String? userId, String displayName) {
+    if (leaderboard == null || leaderboard.isEmpty) return 0;
+    final sorted = [...leaderboard]..sort((a, b) => b.points.compareTo(a.points));
+    for (int i = 0; i < sorted.length; i++) {
+      final entry = sorted[i];
+      if ((userId != null && entry.userId == userId) ||
+          entry.displayName.toLowerCase() == displayName.toLowerCase()) {
+        return i + 1;
+      }
+    }
+    return 0;
   }
 
   String _suggestDisplayName(AuthState authState) {
@@ -226,14 +288,14 @@ class _ProfileIdentityCard extends StatelessWidget {
     required this.points,
     required this.streak,
     required this.rank,
-    required this.level,
+    required this.onEditTap,
   });
 
   final String displayName;
   final int points;
   final int streak;
   final int rank;
-  final String level;
+  final VoidCallback onEditTap;
 
   @override
   Widget build(BuildContext context) {
@@ -280,16 +342,11 @@ class _ProfileIdentityCard extends StatelessWidget {
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '$level · @andrei',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
                         ],
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: () {},
+                      onPressed: onEditTap,
                       child: Text(l10n.commonEdit),
                     ),
                   ],
@@ -315,7 +372,7 @@ class _ProfileIdentityCard extends StatelessWidget {
                     Expanded(
                       child: _ProfileMetric(
                         label: l10n.profileGlobalRank,
-                        value: '#$rank',
+                        value: rank > 0 ? '#$rank' : '-',
                       ),
                     ),
                   ],
@@ -439,6 +496,106 @@ class _ActivityRow extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StravaConnectionRow extends StatefulWidget {
+  const _StravaConnectionRow({required this.onConnect});
+  final VoidCallback onConnect;
+
+  @override
+  State<_StravaConnectionRow> createState() => _StravaConnectionRowState();
+}
+
+class _StravaConnectionRowState extends State<_StravaConnectionRow>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StravaCubit>().loadStatus();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // When user returns to app after OAuth flow, refresh Strava status
+    if (state == AppLifecycleState.resumed) {
+      context.read<StravaCubit>().loadStatus();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final stravaState = context.watch<StravaCubit>().state;
+    final status = stravaState.status;
+    final linked = status?.connected == true;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.directions_run_rounded, size: 19),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Strava',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  linked
+                      ? (status!.athleteName ?? 'Conectat')
+                      : l10n.profileConnectionStrava,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          if (linked)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '● ${l10n.profileLinked}',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: NeverestPalette.success,
+                      ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => context.read<StravaCubit>().disconnect(),
+                  child: Icon(Icons.link_off_rounded, size: 16,
+                      color: Theme.of(context).textTheme.bodySmall?.color),
+                ),
+              ],
+            )
+          else
+            OutlinedButton(
+              onPressed: widget.onConnect,
+              child: Text(l10n.profileConnect),
+            ),
         ],
       ),
     );

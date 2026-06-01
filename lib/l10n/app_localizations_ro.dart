@@ -423,6 +423,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get rewardsCategoryGoods => 'Produse';
 
   @override
+  String get rewardsCategoryPrint => 'Print';
+
+  @override
+  String get rewardsHistoryEmpty => 'Nu ai recompense revendicate inca.';
+
+  @override
   String rewardsSubtitle(int points) {
     return '$points pct disponibile';
   }

@@ -118,13 +118,6 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                                         background: Colors.black.withOpacity(0.35),
                                         onPressed: () => Navigator.of(context).pop(),
                                       ),
-                                      const Spacer(),
-                                      NeverestGlassIconButton(
-                                        icon: Icons.favorite_border_rounded,
-                                        foreground: Colors.white,
-                                        background: Colors.black.withOpacity(0.35),
-                                        onPressed: () {},
-                                      ),
                                     ],
                                   ),
                                   const Spacer(),
@@ -253,7 +246,7 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    l10n.rewardLocationAddress,
+                                    widget.reward.address ?? l10n.rewardLocationAddress,
                                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                           fontWeight: FontWeight.w700,
                                         ),
@@ -599,14 +592,17 @@ void _showRedeemDialog(
 String _rewardCategory(RewardSummary reward) {
   final partner = reward.partnerName.toLowerCase();
   final title = reward.title.toLowerCase();
-  if (partner.contains('cartur') || title.contains('book')) {
+  if (partner.contains('cartur') || title.contains('book') || title.contains('carte')) {
     return 'BOOKS';
   }
-  if (partner.contains('origo') || title.contains('coffee')) {
+  if (partner.contains('tiny cup') || partner.contains('origo') || title.contains('coffee') || title.contains('cafea')) {
     return 'CAFÉ';
   }
-  if (title.contains('vinyl') || title.contains('music')) {
+  if (partner.contains('bazar') || partner.contains('muzic') || title.contains('vinyl') || title.contains('music')) {
     return 'MUSIC';
+  }
+  if (partner.contains('print') || title.contains('print')) {
+    return 'PRINT';
   }
   if (partner.contains('moca') || title.contains('order')) {
     return 'GOODS';
@@ -615,18 +611,12 @@ String _rewardCategory(RewardSummary reward) {
 }
 
 Color _rewardAccent(RewardSummary reward) {
-  final category = _rewardCategory(reward);
-  if (category == 'BOOKS') {
-    return const Color(0xFFA85D3C);
-  }
-  if (category == 'CAFÉ') {
-    return const Color(0xFF3B2A1E);
-  }
-  if (category == 'MUSIC') {
-    return const Color(0xFF1E2C3B);
-  }
-  if (category == 'GOODS') {
-    return const Color(0xFF2B4733);
-  }
-  return const Color(0xFF5A2D1E);
+  return switch (_rewardCategory(reward)) {
+    'BOOKS' => const Color(0xFFA85D3C),
+    'CAFÉ' => const Color(0xFF3B2A1E),
+    'MUSIC' => const Color(0xFF1E2C3B),
+    'PRINT' => const Color(0xFF2A3B4A),
+    'GOODS' => const Color(0xFF2B4733),
+    _ => const Color(0xFF5A2D1E),
+  };
 }

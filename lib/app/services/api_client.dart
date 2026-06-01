@@ -91,6 +91,24 @@ class ApiClient {
     }
   }
 
+  Future<Response<dynamic>> delete(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    bool skipAuthFailureHandling = false,
+  }) async {
+    try {
+      return await _dio.delete<dynamic>(
+        path,
+        queryParameters: queryParameters,
+        options: skipAuthFailureHandling
+            ? Options(extra: {_skipAuthFailureHandlingKey: true})
+            : null,
+      );
+    } on DioException catch (error) {
+      throw _toApiException(error);
+    }
+  }
+
   ApiException _toApiException(DioException error) {
     return ApiException(
       _extractErrorMessage(error),

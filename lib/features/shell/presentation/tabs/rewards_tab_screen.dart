@@ -7,6 +7,7 @@ import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../rewards/presentation/screens/reward_details_screen.dart';
+import '../../../rewards/presentation/screens/reward_history_screen.dart';
 import '../design/neverest_design.dart';
 
 class RewardsTabScreen extends StatefulWidget {
@@ -53,13 +54,6 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                     ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                l10n.rewardsSubtitle(points),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
             const SizedBox(height: 14),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -67,6 +61,9 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                 points: points,
                 walletLabel: l10n.rewardsWallet,
                 historyLabel: l10n.rewardsHistory,
+                onHistoryTap: () => Navigator.of(context).push(
+                  AppPageRoute.fadeSlide(const RewardHistoryScreen()),
+                ),
               ),
             ),
             const SizedBox(height: 14),
@@ -137,11 +134,13 @@ class _WalletCard extends StatelessWidget {
     required this.points,
     required this.walletLabel,
     required this.historyLabel,
+    required this.onHistoryTap,
   });
 
   final int points;
   final String walletLabel;
   final String historyLabel;
+  final VoidCallback onHistoryTap;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +191,7 @@ class _WalletCard extends StatelessWidget {
                     minimumSize: const Size(0, 36),
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
-                  onPressed: () {},
+                  onPressed: onHistoryTap,
                   icon: const Icon(Icons.history_rounded, size: 16),
                   label: Text(historyLabel),
                 ),
@@ -299,16 +298,6 @@ class _RewardGridCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 2),
                       Text(pointsLabel, style: Theme.of(context).textTheme.labelSmall),
-                      const Spacer(),
-                      Text(
-                        canRedeem ? '$redeemLabel →' : '${reward.pointsCost - myPoints}+',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: canRedeem
-                                  ? NeverestPalette.orange
-                                  : Theme.of(context).textTheme.bodySmall?.color,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
                     ],
                   ),
                 ],
@@ -324,14 +313,17 @@ class _RewardGridCard extends StatelessWidget {
 String _rewardCategory(RewardSummary reward) {
   final partner = reward.partnerName.toLowerCase();
   final title = reward.title.toLowerCase();
-  if (partner.contains('cartur') || title.contains('book')) {
+  if (partner.contains('cartur') || title.contains('book') || title.contains('carte')) {
     return 'BOOKS';
   }
-  if (partner.contains('origo') || title.contains('coffee')) {
+  if (partner.contains('tiny cup') || partner.contains('origo') || title.contains('coffee') || title.contains('cafea')) {
     return 'CAFE';
   }
-  if (title.contains('vinyl') || title.contains('music')) {
+  if (partner.contains('bazar') || partner.contains('muzic') || title.contains('vinyl') || title.contains('music')) {
     return 'MUSIC';
+  }
+  if (partner.contains('print') || title.contains('print')) {
+    return 'PRINT';
   }
   if (partner.contains('moca') || title.contains('order')) {
     return 'GOODS';
@@ -345,6 +337,7 @@ String _localizedCategoryLabel(AppLocalizations l10n, String category) {
     'CAFE' => l10n.rewardsCategoryCafe,
     'MUSIC' => l10n.rewardsCategoryMusic,
     'GOODS' => l10n.rewardsCategoryGoods,
+    'PRINT' => l10n.rewardsCategoryPrint,
     _ => l10n.commonAll,
   };
 }
@@ -354,6 +347,7 @@ Color _rewardAccent(RewardSummary reward) {
     'BOOKS' => const Color(0xFFA85D3C),
     'CAFE' => const Color(0xFF3B2A1E),
     'MUSIC' => const Color(0xFF1E2C3B),
+    'PRINT' => const Color(0xFF2A3B4A),
     'GOODS' => const Color(0xFF2B4733),
     _ => const Color(0xFF5A2D1E),
   };

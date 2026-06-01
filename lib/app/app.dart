@@ -14,6 +14,8 @@ import '../features/leaderboard/data/leaderboard_repository.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
 import '../features/rewards/data/reward_action_repository.dart';
+import '../features/strava/data/strava_repository.dart';
+import '../features/strava/presentation/cubit/strava_cubit.dart';
 import '../features/theme/presentation/app_locale_cubit.dart';
 import '../features/theme/presentation/theme_mode_cubit.dart';
 import '../l10n/app_localizations.dart';
@@ -43,6 +45,7 @@ class _MainAppState extends State<MainApp> {
   late final AccessRepository _accessRepository;
   late final AuthRepository _authRepository;
   late final ProfileRepository _profileRepository;
+  late final StravaRepository _stravaRepository;
 
   @override
   void initState() {
@@ -61,6 +64,7 @@ class _MainAppState extends State<MainApp> {
       apiClient: _apiClient,
     );
     _profileRepository = ProfileRepository(_apiClient);
+    _stravaRepository = StravaRepository(_apiClient);
   }
 
   @override
@@ -97,6 +101,7 @@ class _MainAppState extends State<MainApp> {
         RepositoryProvider.value(value: _accessRepository),
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _profileRepository),
+        RepositoryProvider.value(value: _stravaRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -120,6 +125,9 @@ class _MainAppState extends State<MainApp> {
             create: (context) => AccessCubit(
               repository: _accessRepository,
             )..refresh(),
+          ),
+          BlocProvider(
+            create: (context) => StravaCubit(_stravaRepository),
           ),
           BlocProvider(create: (_) => ThemeModeCubit()),
           BlocProvider(create: (_) => AppLocaleCubit()),

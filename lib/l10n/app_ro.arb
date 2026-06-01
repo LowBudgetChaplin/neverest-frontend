@@ -237,6 +237,8 @@
   "rewardsCategoryCafe": "Cafea",
   "rewardsCategoryMusic": "Muzica",
   "rewardsCategoryGoods": "Produse",
+  "rewardsCategoryPrint": "Print",
+  "rewardsHistoryEmpty": "Nu ai recompense revendicate inca.",
   "rewardsSubtitle": "{points} pct disponibile",
   "@rewardsSubtitle": {
     "placeholders": {

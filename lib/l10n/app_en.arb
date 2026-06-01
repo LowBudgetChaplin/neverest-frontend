@@ -237,6 +237,8 @@
   "rewardsCategoryCafe": "Café",
   "rewardsCategoryMusic": "Music",
   "rewardsCategoryGoods": "Goods",
+  "rewardsCategoryPrint": "Print",
+  "rewardsHistoryEmpty": "No claimed rewards yet.",
   "rewardsSubtitle": "{points} pts available",
   "@rewardsSubtitle": {
     "placeholders": {

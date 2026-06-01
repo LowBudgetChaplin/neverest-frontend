@@ -875,6 +875,18 @@ abstract class AppLocalizations {
   /// **'Goods'**
   String get rewardsCategoryGoods;
 
+  /// No description provided for @rewardsCategoryPrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get rewardsCategoryPrint;
+
+  /// No description provided for @rewardsHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No claimed rewards yet.'**
+  String get rewardsHistoryEmpty;
+
   /// No description provided for @rewardsSubtitle.
   ///
   /// In en, this message translates to:
