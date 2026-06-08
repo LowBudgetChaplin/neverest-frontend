@@ -25,7 +25,6 @@ class AccessRepository {
             .toList();
       }
     } on ApiException catch (error) {
-      // When backend runs in strict auth mode and user is not logged in.
       if (error.statusCode != 401 && error.statusCode != 403) {
         rethrow;
       }

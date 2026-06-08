@@ -1,146 +1,185 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
+import '../../shell/presentation/design/neverest_design.dart';
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({
     super.key,
     required this.onFinished,
+    this.onOpenAuth,
   });
 
   final VoidCallback onFinished;
+  final Future<void> Function()? onOpenAuth;
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _controller = PageController();
-  int _index = 0;
-
-  static const _slides = [
-    _SlideModel(
-      icon: Icons.terrain_outlined,
-      title: 'One step at a time',
-      subtitle:
-          'Join activities, complete challenges and grow your Neverest progress.',
-    ),
-    _SlideModel(
-      icon: Icons.qr_code_2,
-      title: 'Fast event check-in',
-      subtitle:
-          'Use your personal QR code and validate attendance instantly at events.',
-    ),
-    _SlideModel(
-      icon: Icons.card_giftcard,
-      title: 'Points into rewards',
-      subtitle:
-          'Redeem points at local partners and keep climbing the leaderboard.',
-    ),
-  ];
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  int _step = 0;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isLast = _index == _slides.length - 1;
+    final l10n = AppLocalizations.of(context)!;
+    final slides = [
+      _SlideModel(
+        headline: l10n.onboardingHeadline1,
+        subtitle: l10n.onboardingSubtitle1,
+        cta: l10n.onboardingCta1,
+      ),
+      _SlideModel(
+        headline: l10n.onboardingHeadline2,
+        subtitle: l10n.onboardingSubtitle2,
+        cta: l10n.onboardingCta2,
+      ),
+      _SlideModel(
+        headline: l10n.onboardingHeadline3,
+        subtitle: l10n.onboardingSubtitle3,
+        cta: l10n.onboardingCta3,
+      ),
+    ];
+
+    final current = slides[_step];
+    final isLast = _step == slides.length - 1;
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: widget.onFinished,
-                  child: const Text('Skip'),
+      backgroundColor: NeverestPalette.ink,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: NeverestTopographicLines(
+              color: NeverestPalette.orange,
+              density: 18,
+              opacity: 0.58,
+            ),
+          ),
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                  center: const Alignment(0, 0.72),
+                  radius: 0.7,
+                  colors: [
+                    NeverestPalette.orange.withOpacity(0.2),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _controller,
-                  itemCount: _slides.length,
-                  onPageChanged: (value) => setState(() => _index = value),
-                  itemBuilder: (context, slideIndex) {
-                    final slide = _slides[slideIndex];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const NeverestLogo(compact: true, foreground: Colors.white),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: widget.onFinished,
+                        child: Text(
+                          l10n.onboardingSkip,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Colors.white.withOpacity(0.76),
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 280),
-                          curve: Curves.easeOutCubic,
-                          height: 130,
-                          width: 130,
-                          decoration: BoxDecoration(
-                            color: scheme.secondaryContainer,
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: Icon(
-                            slide.icon,
-                            size: 62,
-                            color: scheme.onSecondaryContainer,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
                         Text(
-                          slide.title,
-                          style: Theme.of(context).textTheme.headlineSmall,
-                          textAlign: TextAlign.center,
+                          l10n.onboardingStep(_step + 1, slides.length),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: NeverestPalette.orange,
+                                letterSpacing: 2,
+                              ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 14),
                         Text(
-                          slide.subtitle,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          textAlign: TextAlign.center,
+                          current.headline,
+                          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                                color: Colors.white,
+                                fontSize: 66,
+                              ),
+                        ),
+                        const SizedBox(height: 18),
+                        Text(
+                          current.subtitle,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: Colors.white.withOpacity(0.76),
+                                height: 1.45,
+                              ),
                         ),
                       ],
-                    );
-                  },
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _slides.length,
-                  (dotIndex) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 240),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 8,
-                    width: dotIndex == _index ? 24 : 8,
-                    decoration: BoxDecoration(
-                      color: dotIndex == _index
-                          ? scheme.primary
-                          : scheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(999),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 22),
+                  Row(
+                    children: List.generate(
+                      slides.length,
+                      (index) => Expanded(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 220),
+                          margin: EdgeInsets.only(
+                            right: index == slides.length - 1 ? 0 : 6,
+                          ),
+                          height: 3,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(99),
+                            color: index <= _step
+                                ? NeverestPalette.orange
+                                : Colors.white.withOpacity(0.2),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        if (isLast) {
+                          widget.onFinished();
+                          return;
+                        }
+                        setState(() => _step += 1);
+                      },
+                      iconAlignment: IconAlignment.end,
+                      icon: const Icon(Icons.arrow_forward_rounded),
+                      label: Text(current.cta),
+                    ),
+                  ),
+                  if (_step == 0) ...[
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () async {
+                        if (widget.onOpenAuth != null) {
+                          await widget.onOpenAuth!();
+                          return;
+                        }
+                        widget.onFinished();
+                      },
+                      child: Text(
+                        l10n.onboardingAlreadyHaveAccount,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.white.withOpacity(0.72),
+                            ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    if (isLast) {
-                      widget.onFinished();
-                    } else {
-                      _controller.nextPage(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOutCubic,
-                      );
-                    }
-                  },
-                  child: Text(isLast ? 'Start Neverest' : 'Continue'),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -148,12 +187,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class _SlideModel {
   const _SlideModel({
-    required this.icon,
-    required this.title,
+    required this.headline,
     required this.subtitle,
+    required this.cta,
   });
 
-  final IconData icon;
-  final String title;
+  final String headline;
   final String subtitle;
+  final String cta;
 }

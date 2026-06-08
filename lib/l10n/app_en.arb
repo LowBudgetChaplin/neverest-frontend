@@ -7,10 +7,386 @@
   "unknown_error": "An unknown error occurred.",
   "unauthorized": "Your session has expired. Please log in again.",
 
-  "@@main": "Main",
   "home": "Home",
   "rewards": "Rewards",
   "challenges": "Challenges",
   "social": "Social",
-  "wallet": "Wallet"
+  "wallet": "Wallet",
+
+  "navHome": "Home",
+  "navEvents": "Events",
+  "navChallenges": "Goals",
+  "navLeaderboard": "Ranks",
+  "navRewards": "Perks",
+
+  "commonAll": "All",
+  "commonNew": "New",
+  "commonOverall": "Overall",
+  "commonPoints": "Points",
+  "commonPointsShort": "pts",
+  "commonRefresh": "Refresh",
+  "commonRetry": "Retry",
+  "commonClose": "Close",
+  "commonCancel": "Cancel",
+  "commonConfirm": "Confirm",
+  "commonEdit": "Edit",
+
+  "activityRunning": "Running",
+  "activityPadel": "Padel",
+  "activityMountain": "Mountain",
+
+  "onboardingSkip": "Skip",
+  "onboardingAlreadyHaveAccount": "I already have an account",
+  "onboardingHeadline1": "NO SUMMIT.\nNO LIMIT.",
+  "onboardingSubtitle1": "A club for movement, mountains, and mornings worth showing up to.",
+  "onboardingCta1": "Get started",
+  "onboardingHeadline2": "MOVE.\nEARN POINTS.",
+  "onboardingSubtitle2": "Run, hike, play padel. Show up at events. Hit weekly challenges. Every move counts.",
+  "onboardingCta2": "Sounds good",
+  "onboardingHeadline3": "SPEND THEM\nLOCALLY.",
+  "onboardingSubtitle3": "Cărturești, Origo, MOCA, your favorite coach. Real perks from real Bucharest.",
+  "onboardingCta3": "Let's go",
+  "onboardingStep": "{current} / {total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+
+  "homeLiveNow": "Live now",
+  "homeThisWeek": "This week",
+  "homeActivities": "Activities",
+  "homeStreak": "Streak",
+  "homeStartChallenge": "Start challenge",
+  "homeFindEvents": "Find events",
+  "homeTrackingLive": "Tracking · live",
+  "homeSeeAll": "See all",
+  "homeSpendPoints": "Spend your points",
+  "homeActiveCount": "{count} active",
+  "@homeActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeThisWeekCount": "{count} this week",
+  "@homeThisWeekCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "eventsTitle": "Events",
+  "eventsEmptyState": "No events match this filter.",
+  "eventsGoingLabel": "going",
+  "eventsSubtitle": "{count} this week · {attending} attending",
+  "@eventsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "attending": {
+        "type": "int"
+      }
+    }
+  },
+
+  "eventWhen": "When",
+  "eventWhere": "Where",
+  "eventHost": "Host",
+  "eventReward": "Reward",
+  "eventAbout": "About",
+  "eventAboutSample": "Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.",
+  "eventWhatsappSync": "Auto-posted to #announcements and Neverest Strava Club",
+  "eventRoute": "Route",
+  "eventAdminCheckIn": "Admin check-in",
+  "eventImGoing": "I'm going",
+  "eventGoing": "You're in",
+  "eventAttendeesCount": "{count} going",
+  "@eventAttendeesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventSpotsLeft": "{count} spots left",
+  "@eventSpotsLeft": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "challengesTitle": "Challenges",
+  "challengesSubtitle": "Earn points your way",
+  "challengesEarned": "Earned",
+  "challengesActiveCount": "Active · {count}",
+  "@challengesActiveCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "challengesCompletedCount": "Completed · {count}",
+  "@challengesCompletedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeLiveTracking": "Live tracking",
+  "challengeRouteSubtitle": "Walk or run · 7.4 km",
+  "challengeDistanceSubtitle": "Any activity · all surfaces",
+  "challengeMorningSubtitle": "Move before 8AM · 3 days",
+  "challengePadelSubtitle": "Logged at events",
+  "challengeForestSubtitle": "6 km · marked route",
+  "challengeDeadlineSun": "Ends Sun",
+  "challengeDeadlineJune": "Ends Jun 1",
+  "challengeAlwaysOn": "Always on",
+  "challengeProgress23": "2/3 done",
+  "challengeDeadlineDays": "{days} days left",
+  "@challengeDeadlineDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+
+  "challengePaused": "Paused",
+  "challengeGpsLive": "GPS · Live",
+  "challengeDestination": "Destination",
+  "challengeDestinationValue": "Arcul de Triumf",
+  "challengeRemainingKm": "{distance} km to go",
+  "@challengeRemainingKm": {
+    "placeholders": {
+      "distance": {}
+    }
+  },
+  "challengeRouteHeadline": "● Challenge · Centrul Vechi → Arcul de Triumf",
+  "challengeOnFinishPoints": "+{points} pts on finish",
+  "@challengeOnFinishPoints": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "challengeProgressLine": "{percent}% · {currentKm}/{totalKm} km",
+  "@challengeProgressLine": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      },
+      "currentKm": {},
+      "totalKm": {}
+    }
+  },
+  "challengeTime": "Time",
+  "challengePace": "Pace",
+  "challengeSteps": "Steps",
+  "challengeResume": "Resume",
+  "challengePause": "Pause",
+  "challengeAdminReviewMode": "Admin review mode",
+  "challengeAdminReviewSubtitle": "Enable to list all submissions and review.",
+  "challengeNoSubmissions": "No submissions yet.",
+  "challengeNoPersonalSubmissions": "No personal submissions yet.",
+  "challengeProofRequired": "Proof text is required.",
+  "challengeMetricMustBeNumeric": "Metric value must be numeric.",
+  "challengeAdminRequired": "Admin role is required for submission review.",
+  "challengeApproveSubmission": "Approve submission",
+  "challengeRejectSubmission": "Reject submission",
+  "challengeReviewerNoteOptional": "Reviewer note (optional)",
+  "challengeSubmitProgress": "Submit progress",
+  "challengeProofLabel": "Proof text",
+  "challengeMetricLabel": "Metric value (optional)",
+  "challengeSubmit": "Submit challenge",
+  "challengeSubmissionId": "Submission {id}",
+  "@challengeSubmissionId": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "challengeProofField": "Proof",
+  "challengeMetricField": "Metric value",
+  "challengeAwardedPoints": "Awarded points",
+  "challengeReviewerNote": "Reviewer note",
+  "challengeApprove": "Approve",
+  "challengeReject": "Reject",
+
+  "leaderboardTitle": "Leaderboard",
+  "leaderboardSubtitle": "Updates every minute",
+
+  "rewardsTitle": "Rewards",
+  "rewardsWallet": "Wallet",
+  "rewardsHistory": "History",
+  "rewardsRedeem": "Redeem",
+  "rewardsCategoryBooks": "Books",
+  "rewardsCategoryCafe": "Café",
+  "rewardsCategoryMusic": "Music",
+  "rewardsCategoryGoods": "Goods",
+  "rewardsCategoryPrint": "Print",
+  "rewardsHistoryEmpty": "No claimed rewards yet.",
+  "rewardsSubtitle": "{points} pts available",
+  "@rewardsSubtitle": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+
+  "rewardUnlimited": "Unlimited",
+  "rewardLocalPartner": "local partner",
+  "rewardCost": "Cost",
+  "rewardYourBalance": "Your balance",
+  "rewardHowItWorks": "How it works",
+  "rewardStep1Title": "Tap redeem · points held",
+  "rewardStep1Subtitle": "Code generated for in-store use",
+  "rewardStep2Title": "Show code at the counter",
+  "rewardStep2Subtitle": "Valid 24h after redeem",
+  "rewardStep3Title": "Staff confirms · points spent",
+  "rewardStep3Subtitle": "Receipt saved to your wallet",
+  "rewardLocationAddress": "Strada Pictor Verona 13–15",
+  "rewardLocationSchedule": "Bucharest · Stock: {stock}",
+  "@rewardLocationSchedule": {
+    "placeholders": {
+      "stock": {}
+    }
+  },
+  "rewardRedeemButton": "Redeem · {points} pts",
+  "@rewardRedeemButton": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardNeedMore": "{points} more points needed",
+  "@rewardNeedMore": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "rewardRedeemedLabel": "Redeemed",
+  "rewardValidUntil": "Valid until tomorrow 18:00",
+
+  "profileTitle": "Profile",
+  "profileLevelLabel": "Climber · Lvl 7",
+  "profileTotalPoints": "Total pts",
+  "profileDayStreak": "Day streak",
+  "profileGlobalRank": "Global rank",
+  "profileByActivity": "By activity",
+  "profileGames": "games",
+  "profileConnections": "Connections",
+  "profileConnectionStrava": "Auto-sync activities",
+  "profileConnectionWhatsapp": "Event announcements",
+  "profileConnectionComingSoon": "Coming soon",
+  "profileSettings": "Settings",
+  "profileShowMyQr": "Show my QR",
+  "profileAdminCenter": "Admin center",
+  "profileLinked": "Linked",
+  "profileConnect": "Connect",
+  "profileDarkTheme": "Dark theme",
+  "profileDarkThemeSubtitle": "Easier on the eyes after dark",
+  "profileLanguage": "Language",
+  "profileSystemLanguage": "System",
+  "profileSync": "Sync profile",
+  "profileSyncFailed": "Profile sync failed",
+  "profileRankValue": "#{rank} general",
+  "@profileRankValue": {
+    "placeholders": {
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+
+  "authTitle": "Account access",
+  "authLoginSubtitle": "Sign in to sync profile, rewards, and event progress.",
+  "authRegisterSubtitle": "Create a Neverest account in a few seconds.",
+  "authTabLogin": "Login",
+  "authTabRegister": "Register",
+  "authEmailLabel": "Email",
+  "authPasswordLabel": "Password",
+  "authConfirmPasswordLabel": "Confirm password",
+  "authDisplayNameLabel": "Display name (optional)",
+  "authLoginButton": "Log in",
+  "authRegisterButton": "Create account",
+  "authSwitchToRegister": "Need an account? Register",
+  "authSwitchToLogin": "Already have an account? Log in",
+  "authCredentialsRequired": "Email and password are required.",
+  "authPasswordMinLength": "Password must have at least 6 characters.",
+  "authPasswordsMismatch": "Passwords do not match.",
+  "authSessionActive": "Active session",
+  "authSignedAs": "Signed in as {identity}",
+  "@authSignedAs": {
+    "placeholders": {
+      "identity": {}
+    }
+  },
+  "authContinue": "Continue",
+  "authSignOut": "Sign out",
+  "authManageSession": "Manage account",
+  "authCardTitle": "Account",
+  "authCardSubtitle": "Log in or register to sync your profile and points.",
+
+  "qrSignInRequired": "Sign in required",
+  "qrSignInSubtitle": "Sign in first to load your QR code.",
+  "qrNotAvailable": "QR not available",
+  "qrUnavailableSubtitle": "Profile QR is not available yet.",
+  "qrMemberId": "Member ID",
+  "qrShowAtGate": "SHOW THIS\nAT THE GATE",
+  "qrScanHint": "Organizer scans → points credited",
+  "qrRefreshCountdown": "Refreshes in 0:42",
+
+  "adminScanHeader": "● Admin · Sunrise Run",
+  "adminScanHint": "Align member QR inside the frame",
+  "adminScanManualCheckin": "Simulate check-in",
+  "adminScanManualInput": "Manual QR input",
+  "adminScanSubmit": "Submit check-in",
+  "adminScanReset": "Scan again",
+  "adminScanFailed": "Check-in failed.",
+  "adminScanCheckedIn": "Checked in",
+  "adminScanPointsCredited": "+{points} pts credited",
+  "@adminScanPointsCredited": {
+    "placeholders": {
+      "points": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCheckedInCount": "Checked in · {count}",
+  "@adminScanCheckedInCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCapacity": "{count} cap",
+  "@adminScanCapacity": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanNext": "Next scan",
+
+  "dashboardLoadFailed": "Could not load dashboard data."
 }

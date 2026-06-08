@@ -6,8 +6,9 @@ import '../../access/presentation/cubit/access_cubit.dart';
 import '../../admin/presentation/screens/admin_center_screen.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../shell/presentation/design/neverest_design.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
-import '../../theme/presentation/theme_mode_cubit.dart';
+import '../../../l10n/app_localizations.dart';
 import 'tabs/challenges_tab_screen.dart';
 import 'tabs/events_tab_screen.dart';
 import 'tabs/home_tab_screen.dart';
@@ -24,21 +25,16 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> {
   int _selectedIndex = 0;
 
-  static const _titles = [
-    'Neverest',
-    'Events',
-    'Challenges',
-    'Rewards',
-    'Leaderboard',
-  ];
-
-  static const _tabs = [
-    HomeTabScreen(),
-    EventsTabScreen(),
-    ChallengesTabScreen(),
-    RewardsTabScreen(),
-    LeaderboardTabScreen(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _syncShellDataForCurrentAuthState();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,9 +44,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final canOpenAdminCenter = context.select<AccessCubit, bool>(
       (cubit) => cubit.state.canOpenAdminCenter,
     );
-    final isDarkMode = context.select<ThemeModeCubit, bool>(
-      (cubit) => cubit.state == ThemeMode.dark,
-    );
+    final l10n = AppLocalizations.of(context)!;
 
     return MultiBlocListener(
       listeners: [
@@ -106,89 +100,84 @@ class _MainShellScreenState extends State<MainShellScreen> {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(_titles[_selectedIndex]),
-              Text(
-                'Neverest Club',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-            ],
-          ),
-          actions: [
-            if (canOpenAdminCenter)
-              IconButton(
-                tooltip: 'Admin center',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    AppPageRoute.fadeSlide(const AdminCenterScreen()),
-                  );
-                },
-                icon: const Icon(Icons.admin_panel_settings_outlined),
-              ),
-            IconButton(
-              tooltip:
-                  isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
-              onPressed: () => context.read<ThemeModeCubit>().toggle(),
-              icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-            ),
-            IconButton(
-              tooltip: 'Refresh from backend',
-              onPressed: isLoading
-                  ? null
-                  : () {
-                      context
-                          .read<DashboardBloc>()
-                          .add(const DashboardRefreshRequested());
-                    },
-              icon: const Icon(Icons.refresh),
-            ),
-          ],
-        ),
+        floatingActionButton: isLoading
+            ? FloatingActionButton.small(
+                onPressed: null,
+                backgroundColor: NeverestPalette.orange.withOpacity(0.4),
+                child: const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+              )
+            : null,
         body: IndexedStack(
           index: _selectedIndex,
-          children: _tabs,
+          children: [
+            HomeTabScreen(
+              onSelectTab: _selectTab,
+              onOpenAdmin: canOpenAdminCenter ? _openAdminCenter : null,
+            ),
+            const EventsTabScreen(),
+            const ChallengesTabScreen(),
+            const LeaderboardTabScreen(),
+            const RewardsTabScreen(),
+          ],
         ),
-        bottomNavigationBar: NavigationBar(
-          height: 74,
+        bottomNavigationBar: _NeverestBottomNav(
           selectedIndex: _selectedIndex,
-          onDestinationSelected: (value) {
-            setState(() {
-              _selectedIndex = value;
-            });
-          },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Home',
+          onSelected: _selectTab,
+          items: [
+            _NavItem(icon: Icons.home_rounded, label: l10n.navHome),
+            _NavItem(icon: Icons.calendar_month_rounded, label: l10n.navEvents),
+            _NavItem(
+              icon: Icons.bolt_rounded,
+              label: l10n.navChallenges,
+              center: true,
             ),
-            NavigationDestination(
-              icon: Icon(Icons.event_outlined),
-              selectedIcon: Icon(Icons.event),
-              label: 'Events',
+            _NavItem(
+              icon: Icons.emoji_events_rounded,
+              label: l10n.navLeaderboard,
             ),
-            NavigationDestination(
-              icon: Icon(Icons.flag_outlined),
-              selectedIcon: Icon(Icons.flag),
-              label: 'Challenges',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.card_giftcard_outlined),
-              selectedIcon: Icon(Icons.card_giftcard),
-              label: 'Rewards',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.emoji_events_outlined),
-              selectedIcon: Icon(Icons.emoji_events),
-              label: 'Leaderboard',
-            ),
+            _NavItem(icon: Icons.redeem_rounded, label: l10n.navRewards),
           ],
         ),
       ),
     );
+  }
+
+  void _selectTab(int value) {
+    if (_selectedIndex == value) {
+      return;
+    }
+    setState(() {
+      _selectedIndex = value;
+    });
+  }
+
+  void _openAdminCenter() {
+    Navigator.of(context).push(
+      AppPageRoute.fadeSlide(const AdminCenterScreen()),
+    );
+  }
+
+  void _syncShellDataForCurrentAuthState() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState.status != AuthStatus.authenticated) {
+      context.read<AccessCubit>().refresh();
+      return;
+    }
+
+    context.read<ProfileBloc>().add(
+          ProfileLoadRequested(
+            suggestedDisplayName: _suggestDisplayName(authState),
+            preferMeEndpoints: true,
+          ),
+        );
+    context.read<DashboardBloc>().add(const DashboardLoadRequested());
+    context.read<AccessCubit>().refresh();
   }
 
   String _suggestDisplayName(AuthState authState) {
@@ -207,4 +196,128 @@ class _MainShellScreenState extends State<MainShellScreen> {
     }
     return 'Neverest User';
   }
+}
+
+class _NeverestBottomNav extends StatelessWidget {
+  const _NeverestBottomNav({
+    required this.selectedIndex,
+    required this.onSelected,
+    required this.items,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+  final List<_NavItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(8, 4, 8, bottomInset > 0 ? bottomInset : 10),
+        child: SizedBox(
+          height: 70,
+          child: Row(
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final selected = index == selectedIndex;
+              if (item.center) {
+                return Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(28),
+                    onTap: () => onSelected(index),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: NeverestPalette.orange,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color:
+                                    NeverestPalette.orange.withOpacity(0.45),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const SizedBox(
+                            width: 50,
+                            height: 50,
+                            child: Icon(
+                              Icons.bolt_rounded,
+                              color: Colors.white,
+                              size: 25,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          item.label.toUpperCase(),
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                letterSpacing: 0.9,
+                                color: isDark
+                                    ? NeverestPalette.inkMuted
+                                    : NeverestPalette.paperMuted,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              final color = selected
+                  ? NeverestPalette.orange
+                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+              return Expanded(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => onSelected(index),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(item.icon, color: color, size: 23),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.label.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: color,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.9,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    this.center = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool center;
 }

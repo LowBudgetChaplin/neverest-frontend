@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../features/access/data/access_repository.dart';
 import '../features/access/presentation/cubit/access_cubit.dart';
@@ -15,6 +14,9 @@ import '../features/leaderboard/data/leaderboard_repository.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
 import '../features/rewards/data/reward_action_repository.dart';
+import '../features/strava/data/strava_repository.dart';
+import '../features/strava/presentation/cubit/strava_cubit.dart';
+import '../features/theme/presentation/app_locale_cubit.dart';
 import '../features/theme/presentation/theme_mode_cubit.dart';
 import '../l10n/app_localizations.dart';
 import '../resources/theme/app_themes/dark_theme.dart';
@@ -24,16 +26,8 @@ import 'router/app_router.dart';
 import 'services/api_client.dart';
 import 'services/auth_token_storage.dart';
 
-/// Root widget with BLoC and repository wiring.
 class MainApp extends StatefulWidget {
-  const MainApp({
-    super.key,
-    required this.firebaseReady,
-    this.firebaseInitError,
-  });
-
-  final bool firebaseReady;
-  final String? firebaseInitError;
+  const MainApp({super.key});
 
   @override
   State<MainApp> createState() => _MainAppState();
@@ -51,6 +45,7 @@ class _MainAppState extends State<MainApp> {
   late final AccessRepository _accessRepository;
   late final AuthRepository _authRepository;
   late final ProfileRepository _profileRepository;
+  late final StravaRepository _stravaRepository;
 
   @override
   void initState() {
@@ -66,11 +61,10 @@ class _MainAppState extends State<MainApp> {
     _accessRepository = AccessRepository(_apiClient);
     _authRepository = AuthRepository(
       tokenStorage: _authTokenStorage,
-      firebaseAuth: widget.firebaseReady ? FirebaseAuth.instance : null,
-      firebaseReady: widget.firebaseReady,
-      firebaseInitError: widget.firebaseInitError,
+      apiClient: _apiClient,
     );
     _profileRepository = ProfileRepository(_apiClient);
+    _stravaRepository = StravaRepository(_apiClient);
   }
 
   @override
@@ -107,6 +101,7 @@ class _MainAppState extends State<MainApp> {
         RepositoryProvider.value(value: _accessRepository),
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _profileRepository),
+        RepositoryProvider.value(value: _stravaRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -131,16 +126,22 @@ class _MainAppState extends State<MainApp> {
               repository: _accessRepository,
             )..refresh(),
           ),
+          BlocProvider(
+            create: (context) => StravaCubit(_stravaRepository),
+          ),
           BlocProvider(create: (_) => ThemeModeCubit()),
+          BlocProvider(create: (_) => AppLocaleCubit()),
         ],
         child: BlocBuilder<ThemeModeCubit, ThemeMode>(
           builder: (context, themeMode) {
+            final locale = context.watch<AppLocaleCubit>().state;
             return MaterialApp.router(
               debugShowCheckedModeBanner: false,
               routerConfig: AppRouter.router,
               theme: lightTheme,
               darkTheme: darkTheme,
               themeMode: themeMode,
+              locale: locale,
               themeAnimationDuration: const Duration(milliseconds: 220),
               themeAnimationCurve: Curves.easeInOutCubic,
               localizationsDelegates: AppLocalizations.localizationsDelegates,

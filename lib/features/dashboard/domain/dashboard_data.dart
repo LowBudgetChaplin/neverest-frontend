@@ -79,6 +79,7 @@ class RewardSummary {
     required this.partnerName,
     required this.pointsCost,
     required this.stock,
+    this.address,
   });
 
   factory RewardSummary.fromJson(Map<String, dynamic> json) {
@@ -88,6 +89,7 @@ class RewardSummary {
       partnerName: json['partnerName'] as String? ?? 'Local partner',
       pointsCost: (json['pointsCost'] as num?)?.toInt() ?? 0,
       stock: (json['stock'] as num?)?.toInt(),
+      address: json['address'] as String?,
     );
   }
 
@@ -96,6 +98,7 @@ class RewardSummary {
   final String partnerName;
   final int pointsCost;
   final int? stock;
+  final String? address;
 }
 
 class LeaderboardEntrySummary {

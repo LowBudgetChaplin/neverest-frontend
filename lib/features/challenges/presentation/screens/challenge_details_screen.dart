@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../resources/widgets/app_illustrated_state.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../shell/presentation/design/neverest_design.dart';
+import '../../../strava/domain/strava_models.dart';
+import '../../../strava/presentation/cubit/strava_cubit.dart';
 import '../../data/challenge_action_repository.dart';
 import '../../domain/challenge_submission_item.dart';
 import '../bloc/challenge_action_bloc.dart';
@@ -45,7 +48,10 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSubmissions());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadSubmissions();
+      context.read<StravaCubit>().loadStatus();
+    });
   }
 
   @override
@@ -57,13 +63,14 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final canUseAdminFeatures = context.select<AccessCubit, bool>(
       (cubit) => cubit.state.canOpenAdminCenter,
     );
     final effectiveAdminView = _adminView && canUseAdminFeatures;
+    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Challenge details')),
       body: BlocConsumer<ChallengeActionBloc, ChallengeActionState>(
         listenWhen: (previous, current) =>
             previous.errorMessage != current.errorMessage ||
@@ -91,149 +98,102 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
         builder: (context, state) {
           final isBusy = state.isSubmitting || state.isReviewing;
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              left: 0,
+              right: 0,
+              top: MediaQuery.paddingOf(context).top + 8,
+              bottom: 30,
+            ),
             children: [
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primaryContainer,
-                      Theme.of(context).colorScheme.secondaryContainer,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              // ── Header ──────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: Row(
                   children: [
-                    Text(
-                      widget.challenge.title,
-                      style: Theme.of(context).textTheme.titleLarge,
+                    NeverestGlassIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      onPressed: () => Navigator.of(context).pop(),
                     ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Chip(label: Text(widget.challenge.activityType)),
-                        Chip(label: Text(widget.challenge.frequency)),
-                        Chip(label: Text(widget.challenge.mode)),
-                        Chip(label: Text('+${widget.challenge.pointsReward}p')),
-                      ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.challenge.title,
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          Text(
+                            '${widget.challenge.activityType} · +${widget.challenge.pointsReward} pct',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: NeverestPalette.orange,
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Submit progress',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _proofController,
-                        enabled: !isBusy,
-                        minLines: 2,
-                        maxLines: 4,
-                        decoration: const InputDecoration(
-                          labelText: 'Proof text',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _metricController,
-                        enabled: !isBusy,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: const InputDecoration(
-                          labelText: 'Metric value (optional)',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          FilledButton(
-                            onPressed: isBusy ? null : _submitChallenge,
-                            child: const Text('Submit challenge'),
-                          ),
-                          OutlinedButton(
-                            onPressed:
-                                state.isLoading ? null : _loadSubmissions,
-                            child: const Text('Refresh submissions'),
-                          ),
-                        ],
-                      ),
-                      if (state.isSubmitting) ...[
-                        const SizedBox(height: 10),
-                        const LinearProgressIndicator(minHeight: 2),
-                      ],
-                    ],
-                  ),
+              const SizedBox(height: 20),
+              // ── Verificare Strava ────────────────────────────────────
+              _StravaActivitySection(challenge: widget.challenge),
+              const SizedBox(height: 16),
+              // ── Trimite dovadă ───────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _SubmissionComposer(
+                  isBusy: isBusy,
+                  isLoading: state.isLoading,
+                  proofController: _proofController,
+                  metricController: _metricController,
+                  onSubmit: _submitChallenge,
+                  onRefresh: _loadSubmissions,
+                  showProgress: state.isSubmitting,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               if (canUseAdminFeatures)
-                SwitchListTile(
-                  value: _adminView,
-                  onChanged: state.isLoading
-                      ? null
-                      : (value) {
-                          setState(() {
-                            _adminView = value;
-                          });
-                          _loadSubmissions();
-                        },
-                  title: const Text('Admin review mode'),
-                  subtitle:
-                      const Text('Enable to list all submissions and review.'),
-                )
-              else
-                const Card(
-                  child: ListTile(
-                    leading: Icon(Icons.lock_outline),
-                    title: Text('Admin review locked'),
-                    subtitle: Text(
-                      'Submission review is available only for organizer accounts.',
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: SwitchListTile.adaptive(
+                    value: _adminView,
+                    onChanged: state.isLoading
+                        ? null
+                        : (value) {
+                            setState(() => _adminView = value);
+                            _loadSubmissions();
+                          },
+                    title: Text(l10n.challengeAdminReviewMode),
+                    subtitle: Text(l10n.challengeAdminReviewSubtitle),
                   ),
                 ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               if (state.isLoading && state.submissions.isEmpty)
                 const Center(child: CircularProgressIndicator())
               else if (state.submissions.isEmpty)
-                AppIllustratedState(
-                  icon: Icons.inbox_outlined,
-                  title: effectiveAdminView
-                      ? 'No submissions yet'
-                      : 'No personal submissions',
-                  subtitle: effectiveAdminView
-                      ? 'Users have not submitted this challenge yet.'
-                      : 'Submit your first challenge progress.',
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    effectiveAdminView
+                        ? l10n.challengeNoSubmissions
+                        : l10n.challengeNoPersonalSubmissions,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 )
               else
                 ...state.submissions.map(
-                  (submission) => _SubmissionCard(
-                    submission: submission,
-                    adminView: effectiveAdminView,
-                    isReviewing: state.isReviewing,
-                    onApprove: () =>
-                        _reviewSubmission(submission, approved: true),
-                    onReject: () =>
-                        _reviewSubmission(submission, approved: false),
+                  (submission) => Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                    child: _SubmissionCard(
+                      submission: submission,
+                      adminView: effectiveAdminView,
+                      isReviewing: state.isReviewing,
+                      onApprove: () => _reviewSubmission(submission, approved: true),
+                      onReject: () => _reviewSubmission(submission, approved: false),
+                    ),
                   ),
                 ),
             ],
@@ -254,10 +214,11 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
   }
 
   void _submitChallenge() {
+    final l10n = AppLocalizations.of(context)!;
     final proof = _proofController.text.trim();
     if (proof.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Proof text is required.')),
+        SnackBar(content: Text(l10n.challengeProofRequired)),
       );
       return;
     }
@@ -266,7 +227,7 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
     final metricValue = metricRaw.isEmpty ? null : double.tryParse(metricRaw);
     if (metricRaw.isNotEmpty && metricValue == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Metric value must be numeric.')),
+        SnackBar(content: Text(l10n.challengeMetricMustBeNumeric)),
       );
       return;
     }
@@ -285,11 +246,10 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
     ChallengeSubmissionItem submission, {
     required bool approved,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_isAdminModeEnabled()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Admin role is required for submission review.'),
-        ),
+        SnackBar(content: Text(l10n.challengeAdminRequired)),
       );
       return;
     }
@@ -299,25 +259,28 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text(approved ? 'Approve submission' : 'Reject submission'),
+          title: Text(
+            approved
+                ? l10n.challengeApproveSubmission
+                : l10n.challengeRejectSubmission,
+          ),
           content: TextField(
             controller: noteController,
             minLines: 2,
             maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Reviewer note (optional)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l10n.challengeReviewerNoteOptional,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.commonCancel),
             ),
             FilledButton(
               onPressed: () =>
                   Navigator.of(dialogContext).pop(noteController.text),
-              child: const Text('Confirm'),
+              child: Text(l10n.commonConfirm),
             ),
           ],
         );
@@ -348,6 +311,88 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
     final hasAdminAccess = context.read<AccessCubit>().state.canOpenAdminCenter;
     return _adminView && hasAdminAccess;
   }
+
+}
+
+class _SubmissionComposer extends StatelessWidget {
+  const _SubmissionComposer({
+    required this.isBusy,
+    required this.isLoading,
+    required this.proofController,
+    required this.metricController,
+    required this.onSubmit,
+    required this.onRefresh,
+    required this.showProgress,
+  });
+
+  final bool isBusy;
+  final bool isLoading;
+  final TextEditingController proofController;
+  final TextEditingController metricController;
+  final VoidCallback onSubmit;
+  final VoidCallback onRefresh;
+  final bool showProgress;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.challengeSubmitProgress,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: proofController,
+            enabled: !isBusy,
+            minLines: 2,
+            maxLines: 4,
+            decoration: InputDecoration(labelText: l10n.challengeProofLabel),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: metricController,
+            enabled: !isBusy,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(labelText: l10n.challengeMetricLabel),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              FilledButton(
+                onPressed: isBusy ? null : onSubmit,
+                child: Text(l10n.challengeSubmit),
+              ),
+              OutlinedButton(
+                onPressed: isLoading ? null : onRefresh,
+                child: Text(l10n.commonRefresh),
+              ),
+            ],
+          ),
+          if (showProgress) ...[
+            const SizedBox(height: 10),
+            const LinearProgressIndicator(minHeight: 2),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class _SubmissionCard extends StatelessWidget {
@@ -367,47 +412,142 @@ class _SubmissionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isPending = submission.status.toUpperCase() == 'PENDING';
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  l10n.challengeSubmissionId(submission.id),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+              ),
+              NeverestFilterChip(
+                label: submission.status,
+                selected: isPending,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text('${l10n.challengeProofField}: ${submission.proofText}'),
+          if (submission.metricValue != null)
+            Text('${l10n.challengeMetricField}: ${submission.metricValue}'),
+          Text('${l10n.challengeAwardedPoints}: ${submission.awardedPoints}'),
+          if (submission.reviewerNote != null &&
+              submission.reviewerNote!.isNotEmpty)
+            Text('${l10n.challengeReviewerNote}: ${submission.reviewerNote}'),
+          if (adminView && isPending) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton(
+                  onPressed: isReviewing ? null : onApprove,
+                  child: Text(l10n.challengeApprove),
+                ),
+                OutlinedButton(
+                  onPressed: isReviewing ? null : onReject,
+                  child: Text(l10n.challengeReject),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StravaActivitySection extends StatelessWidget {
+  const _StravaActivitySection({required this.challenge});
+  final ChallengeSummary challenge;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final stravaState = context.watch<StravaCubit>().state;
+    final status = stravaState.status;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    'Submission ${submission.id}',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
+                const Icon(Icons.directions_run_rounded, size: 16, color: NeverestPalette.orange),
+                const SizedBox(width: 6),
+                Text(
+                  'VERIFICARE STRAVA',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: NeverestPalette.orange,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w800,
+                      ),
                 ),
-                Chip(label: Text(submission.status)),
               ],
             ),
-            const SizedBox(height: 6),
-            Text('Proof: ${submission.proofText}'),
-            if (submission.metricValue != null)
-              Text('Metric value: ${submission.metricValue}'),
-            Text('Awarded points: ${submission.awardedPoints}'),
-            if (submission.reviewerNote != null &&
-                submission.reviewerNote!.isNotEmpty)
-              Text('Reviewer note: ${submission.reviewerNote}'),
-            if (adminView && isPending) ...[
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+            const SizedBox(height: 8),
+            if (status == null || !status.connected) ...[
+              Text(
+                'Conectează-ți contul Strava pentru a verifica automat dacă ai completat traseul.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ] else if (stravaState.isVerifying) ...[
+              const Row(
                 children: [
-                  FilledButton(
-                    onPressed: isReviewing ? null : onApprove,
-                    child: const Text('Approve'),
+                  SizedBox(
+                    width: 16, height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  OutlinedButton(
-                    onPressed: isReviewing ? null : onReject,
-                    child: const Text('Reject'),
-                  ),
+                  SizedBox(width: 10),
+                  Text('Se verifică activitățile Strava...'),
                 ],
+              ),
+            ] else if (stravaState.verification != null) ...[
+              _VerificationResult(
+                verification: stravaState.verification!,
+                isDark: isDark,
+                onClear: () => context.read<StravaCubit>().clearVerification(),
+              ),
+            ] else ...[
+              Text(
+                'Strava conectat ca ${status.athleteName ?? "Atlet"}. Apasă pentru a verifica dacă ai completat traseul.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => context.read<StravaCubit>().verifyChallenge(challenge.id),
+                  icon: const Icon(Icons.verified_rounded, size: 16),
+                  label: const Text('Verifică cu Strava'),
+                ),
               ),
             ],
           ],
@@ -416,3 +556,200 @@ class _SubmissionCard extends StatelessWidget {
     );
   }
 }
+
+class _VerificationResult extends StatelessWidget {
+  const _VerificationResult({
+    required this.verification,
+    required this.isDark,
+    required this.onClear,
+  });
+
+  final StravaChallengeVerification verification;
+  final bool isDark;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = verification.verified ? NeverestPalette.success : NeverestPalette.danger;
+    final icon = verification.verified ? Icons.check_circle_rounded : Icons.cancel_rounded;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                verification.verificationMessage,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+            ),
+            GestureDetector(
+              onTap: onClear,
+              child: Icon(Icons.close_rounded, size: 16,
+                  color: Theme.of(context).textTheme.bodySmall?.color),
+            ),
+          ],
+        ),
+        if (verification.matchingActivities.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Text(
+            'Activități compatibile:',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
+          ),
+          const SizedBox(height: 6),
+          ...verification.matchingActivities.take(3).map(
+            (a) => _StravaActivityCard(activity: a, isDark: isDark),
+          ),
+        ],
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: onClear,
+            icon: const Icon(Icons.refresh_rounded, size: 14),
+            label: const Text('Verifică din nou'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StravaActivityCard extends StatelessWidget {
+  const _StravaActivityCard({required this.activity, required this.isDark});
+  final StravaActivity activity;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  activity.name,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: NeverestPalette.orange.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  activity.type,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: NeverestPalette.orange,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _StatChip(label: 'KM', value: activity.distanceKm.toStringAsFixed(2)),
+              const SizedBox(width: 14),
+              _StatChip(label: 'DURATĂ', value: activity.formattedDuration),
+              const SizedBox(width: 14),
+              _StatChip(label: 'RITM', value: activity.formattedPace),
+              const SizedBox(width: 14),
+              _StatChip(label: 'ELEVAȚIE', value: '${activity.totalElevationGain.toStringAsFixed(0)}m'),
+            ],
+          ),
+          if (activity.startLatLng != null || activity.endLatLng != null) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.location_on_outlined, size: 14, color: NeverestPalette.orange),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _formatLatLng(activity.startLatLng, activity.endLatLng),
+                    style: Theme.of(context).textTheme.bodySmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (activity.startDateLocal.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              _formatDate(activity.startDateLocal),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _formatLatLng(List<double>? start, List<double>? end) {
+    final parts = <String>[];
+    if (start != null) {
+      parts.add('Start: ${start[0].toStringAsFixed(4)}, ${start[1].toStringAsFixed(4)}');
+    }
+    if (end != null) {
+      parts.add('Final: ${end[0].toStringAsFixed(4)}, ${end[1].toStringAsFixed(4)}');
+    }
+    return parts.join(' → ');
+  }
+
+  String _formatDate(String iso) {
+    try {
+      final dt = DateTime.parse(iso);
+      return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year} '
+          '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return iso;
+    }
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ],
+    );
+  }
+}
+

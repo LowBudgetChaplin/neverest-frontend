@@ -19,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthRestoreRequested>(_onRestoreRequested);
     on<AuthAnonymousSignInRequested>(_onAnonymousSignInRequested);
     on<AuthEmailPasswordSignInRequested>(_onEmailPasswordSignInRequested);
+    on<AuthEmailPasswordRegisterRequested>(_onEmailPasswordRegisterRequested);
     on<AuthManualTokenSubmitted>(_onManualTokenSubmitted);
     on<AuthManualTokenCleared>(_onManualTokenCleared);
     on<AuthSignOutRequested>(_onSignOutRequested);
@@ -37,6 +38,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _repository;
   late final StreamSubscription<ApiAuthFailure> _apiAuthFailureSubscription;
   bool _isSessionInvalidationInProgress = false;
+  static const _registerSuccessMessage =
+      'Account created successfully. Please sign in.';
 
   Future<void> _onRestoreRequested(
     AuthRestoreRequested event,
@@ -51,18 +54,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             status: AuthStatus.authenticated,
             session: session,
             clearMessage: true,
-          ),
-        );
-        return;
-      }
-
-      if (!_repository.firebaseReady) {
-        emit(
-          state.copyWith(
-            status: AuthStatus.unavailable,
-            clearSession: true,
-            message: _repository.firebaseInitError ??
-                'Firebase auth is not configured yet.',
           ),
         );
         return;
@@ -108,6 +99,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           message: error.message,
         ),
       );
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          clearSession: true,
+          message: error.toString(),
+        ),
+      );
     }
   }
 
@@ -136,6 +135,52 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           message: error.message,
         ),
       );
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          clearSession: true,
+          message: error.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onEmailPasswordRegisterRequested(
+    AuthEmailPasswordRegisterRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading, clearMessage: true));
+    try {
+      await _repository.registerWithEmailAndPassword(
+        email: event.email,
+        password: event.password,
+        displayName: event.displayName,
+      );
+      await _repository.signOut();
+      emit(
+        state.copyWith(
+          status: AuthStatus.unauthenticated,
+          clearSession: true,
+          message: _registerSuccessMessage,
+        ),
+      );
+    } on AuthRepositoryException catch (error) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          clearSession: true,
+          message: error.message,
+        ),
+      );
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          clearSession: true,
+          message: error.toString(),
+        ),
+      );
     }
   }
 
@@ -161,6 +206,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           message: error.message,
         ),
       );
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          clearSession: true,
+          message: error.toString(),
+        ),
+      );
     }
   }
 
@@ -171,14 +224,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await _repository.clearManualToken();
     emit(
       state.copyWith(
-        status: _repository.firebaseReady
-            ? AuthStatus.unauthenticated
-            : AuthStatus.unavailable,
+        status: AuthStatus.unauthenticated,
         clearSession: true,
-        message: _repository.firebaseReady
-            ? null
-            : (_repository.firebaseInitError ??
-                'Firebase auth is not configured yet.'),
+        message: null,
       ),
     );
   }
@@ -187,19 +235,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSignOutRequested event,
     Emitter<AuthState> emit,
   ) async {
-    await _repository.signOut();
-    emit(
-      state.copyWith(
-        status: _repository.firebaseReady
-            ? AuthStatus.unauthenticated
-            : AuthStatus.unavailable,
-        clearSession: true,
-        message: _repository.firebaseReady
-            ? null
-            : (_repository.firebaseInitError ??
-                'Firebase auth is not configured yet.'),
-      ),
-    );
+    try {
+      await _repository.signOut();
+      emit(
+        state.copyWith(
+          status: AuthStatus.unauthenticated,
+          clearSession: true,
+          message: null,
+        ),
+      );
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.failure,
+          clearSession: true,
+          message: error.toString(),
+        ),
+      );
+    }
   }
 
   Future<void> _onSessionInvalidated(
@@ -226,9 +279,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _repository.signOut();
       emit(
         state.copyWith(
-          status: _repository.firebaseReady
-              ? AuthStatus.unauthenticated
-              : AuthStatus.unavailable,
+          status: AuthStatus.unauthenticated,
           clearSession: true,
           message:
               'Session expired or token invalid. Please sign in again to continue.',

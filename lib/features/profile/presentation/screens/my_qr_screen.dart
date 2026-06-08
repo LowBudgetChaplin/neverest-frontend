@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-import '../../../../resources/widgets/app_illustrated_state.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../shell/presentation/design/neverest_design.dart';
 import '../bloc/profile_bloc.dart';
 
 class MyQrScreen extends StatelessWidget {
@@ -11,73 +12,203 @@ class MyQrScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('My QR')),
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, authState) {
-          if (!authState.isAuthenticated) {
-            return const AppIllustratedState(
-              icon: Icons.lock_outline,
-              title: 'Sign in required',
-              subtitle: 'Sign in first to load your QR code.',
-            );
-          }
+      backgroundColor: NeverestPalette.ink,
+      body: Stack(
+        children: [
+          const Positioned.fill(
+            child: NeverestTopographicLines(
+              color: NeverestPalette.orange,
+              density: 14,
+              opacity: 0.55,
+            ),
+          ),
+          SafeArea(
+            child: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                if (!authState.isAuthenticated) {
+                  return _StateMessage(
+                    title: l10n.qrSignInRequired,
+                    subtitle: l10n.qrSignInSubtitle,
+                  );
+                }
 
-          return BlocBuilder<ProfileBloc, ProfileState>(
-            builder: (context, profileState) {
-              if (profileState.status == ProfileStatus.loading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+                return BlocBuilder<ProfileBloc, ProfileState>(
+                  builder: (context, profileState) {
+                    if (profileState.status == ProfileStatus.loading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-              if (profileState.status == ProfileStatus.failure) {
-                return _ProfileFailure(
-                  errorMessage: profileState.errorMessage,
-                  onRetry: () => _retryProfileSync(context, authState),
+                    if (profileState.status == ProfileStatus.failure) {
+                      return _StateMessage(
+                        title: l10n.profileSyncFailed,
+                        subtitle:
+                            profileState.errorMessage ?? l10n.qrUnavailableSubtitle,
+                        actionLabel: l10n.commonRetry,
+                        onActionTap: () => _retryProfileSync(context, authState),
+                      );
+                    }
+
+                    final profile = profileState.profile;
+                    if (profile == null || profile.qrCode.trim().isEmpty) {
+                      return _StateMessage(
+                        title: l10n.qrNotAvailable,
+                        subtitle: l10n.qrUnavailableSubtitle,
+                        actionLabel: l10n.profileSync,
+                        onActionTap: () => _retryProfileSync(context, authState),
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                          child: Row(
+                            children: [
+                              NeverestGlassIconButton(
+                                icon: Icons.close_rounded,
+                                foreground: Colors.white,
+                                background: Colors.white.withOpacity(0.1),
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                              const Spacer(),
+                              Text(
+                                l10n.qrMemberId.toUpperCase(),
+                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                      color: Colors.white.withOpacity(0.65),
+                                      letterSpacing: 1.4,
+                                    ),
+                              ),
+                              const Spacer(),
+                              const SizedBox(width: 38),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    l10n.qrShowAtGate,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .displaySmall
+                                        ?.copyWith(
+                                          color: Colors.white,
+                                          fontSize: 34,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    l10n.qrScanHint,
+                                    textAlign: TextAlign.center,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.white.withOpacity(0.74),
+                                        ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        QrImageView(
+                                          data: profile.qrCode,
+                                          version: QrVersions.auto,
+                                          size: 230,
+                                          backgroundColor: Colors.white,
+                                        ),
+                                        Container(
+                                          width: 58,
+                                          height: 58,
+                                          decoration: BoxDecoration(
+                                            color: NeverestPalette.orange,
+                                            borderRadius: BorderRadius.circular(14),
+                                            border: Border.all(
+                                              color: Colors.white,
+                                              width: 4,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.terrain_rounded,
+                                            color: Colors.white,
+                                            size: 30,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    profile.displayName,
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    profile.qrCode,
+                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                          color: Colors.white.withOpacity(0.64),
+                                          letterSpacing: 1.2,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 9,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(99),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.schedule_rounded,
+                                          size: 14,
+                                          color: Colors.white70,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          l10n.qrRefreshCountdown,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .labelSmall
+                                              ?.copyWith(
+                                                color: Colors.white.withOpacity(0.75),
+                                                letterSpacing: 0.9,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
-              }
-
-              final profile = profileState.profile;
-              if (profile == null || profile.qrCode.trim().isEmpty) {
-                return _ProfileUnavailable(
-                  onRetry: () => _retryProfileSync(context, authState),
-                );
-              }
-
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          QrImageView(
-                            data: profile.qrCode,
-                            version: QrVersions.auto,
-                            size: 260,
-                            backgroundColor: Colors.white,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            profile.displayName,
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            profile.qrCode,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -100,49 +231,67 @@ class MyQrScreen extends StatelessWidget {
       return session.displayName!.trim();
     }
     if (session.email != null && session.email!.trim().isNotEmpty) {
-      final username = session.email!.trim().split('@').first;
-      if (username.isNotEmpty) {
-        return username;
-      }
+      return session.email!.trim().split('@').first;
     }
     return 'Neverest User';
   }
 }
 
-class _ProfileUnavailable extends StatelessWidget {
-  const _ProfileUnavailable({required this.onRetry});
-
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppIllustratedState(
-      icon: Icons.qr_code_2_outlined,
-      title: 'QR not available',
-      subtitle: 'Profile QR is not available yet.',
-      actionLabel: 'Sync profile',
-      onActionTap: onRetry,
-    );
-  }
-}
-
-class _ProfileFailure extends StatelessWidget {
-  const _ProfileFailure({
-    required this.errorMessage,
-    required this.onRetry,
+class _StateMessage extends StatelessWidget {
+  const _StateMessage({
+    required this.title,
+    required this.subtitle,
+    this.actionLabel,
+    this.onActionTap,
   });
 
-  final String? errorMessage;
-  final VoidCallback onRetry;
+  final String title;
+  final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onActionTap;
 
   @override
   Widget build(BuildContext context) {
-    return AppIllustratedState(
-      icon: Icons.error_outline,
-      title: 'Profile sync failed',
-      subtitle: errorMessage ?? 'Could not load profile QR.',
-      actionLabel: 'Retry',
-      onActionTap: onRetry,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.09),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withOpacity(0.74),
+                    ),
+              ),
+              if (actionLabel != null && onActionTap != null) ...[
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: onActionTap,
+                  child: Text(actionLabel!),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

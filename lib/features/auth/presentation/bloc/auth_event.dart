@@ -28,6 +28,21 @@ final class AuthEmailPasswordSignInRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+final class AuthEmailPasswordRegisterRequested extends AuthEvent {
+  const AuthEmailPasswordRegisterRequested({
+    required this.email,
+    required this.password,
+    this.displayName,
+  });
+
+  final String email;
+  final String password;
+  final String? displayName;
+
+  @override
+  List<Object?> get props => [email, password, displayName];
+}
+
 final class AuthManualTokenSubmitted extends AuthEvent {
   const AuthManualTokenSubmitted(this.token);
 

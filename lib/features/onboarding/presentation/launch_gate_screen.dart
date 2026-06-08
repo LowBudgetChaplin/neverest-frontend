@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../auth/presentation/bloc/auth_bloc.dart';
+import '../../auth/presentation/screens/auth_menu_screen.dart';
 import '../../shell/presentation/main_shell_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -49,23 +52,50 @@ class _LaunchGateScreenState extends State<LaunchGateScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return _launchLoading();
     }
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 240),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      child: _showOnboarding
-          ? OnboardingScreen(
-              key: const ValueKey('onboarding'),
-              onFinished: _finishOnboarding,
-            )
-          : const MainShellScreen(
-              key: ValueKey('main-shell'),
-            ),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 240),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          child: _showOnboarding
+              ? OnboardingScreen(
+                  key: const ValueKey('onboarding'),
+                  onFinished: _finishOnboarding,
+                  onOpenAuth: _finishOnboarding,
+                )
+              : _childForAuthState(authState),
+        );
+      },
+    );
+  }
+
+  Widget _childForAuthState(AuthState authState) {
+    switch (authState.status) {
+      case AuthStatus.authenticated:
+        return const MainShellScreen(
+          key: ValueKey('main-shell'),
+        );
+      case AuthStatus.initial:
+      case AuthStatus.loading:
+        return _launchLoading(key: const ValueKey('auth-loading'));
+      case AuthStatus.unauthenticated:
+      case AuthStatus.unavailable:
+      case AuthStatus.failure:
+        return const AuthMenuScreen(
+          key: ValueKey('auth-menu'),
+          initialMode: AuthMenuMode.login,
+        );
+    }
+  }
+
+  Widget _launchLoading({Key? key}) {
+    return Scaffold(
+      key: key,
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 }
