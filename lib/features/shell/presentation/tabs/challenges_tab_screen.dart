@@ -42,13 +42,13 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                       ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  l10n.challengesSubtitle,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 20),
+              //   child: Text(
+              //     l10n.challengesSubtitle,
+              //     style: Theme.of(context).textTheme.bodySmall,
+              //   ),
+              // ),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -83,13 +83,13 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                     ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                l10n.challengesSubtitle,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 20),
+            //   child: Text(
+            //     l10n.challengesSubtitle,
+            //     style: Theme.of(context).textTheme.bodySmall,
+            //   ),
+            // ),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),

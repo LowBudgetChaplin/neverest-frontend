@@ -52,13 +52,13 @@ class _LeaderboardTabScreenState extends State<LeaderboardTabScreen> {
                     ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                l10n.leaderboardSubtitle,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 20),
+            //   child: Text(
+            //     l10n.leaderboardSubtitle,
+            //     style: Theme.of(context).textTheme.bodySmall,
+            //   ),
+            // ),
             const SizedBox(height: 10),
             SizedBox(
               height: 34,
