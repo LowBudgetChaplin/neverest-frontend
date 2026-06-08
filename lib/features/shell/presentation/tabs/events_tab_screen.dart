@@ -265,7 +265,9 @@ class _EventLargeCard extends StatelessWidget {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                _tagFor(event),
+                                event.description?.isNotEmpty == true
+                                    ? event.description!
+                                    : event.activityType.toUpperCase(),
                                 style: Theme.of(context).textTheme.labelSmall,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -303,12 +305,6 @@ class _EventLargeCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _AttendeesStack(isDark: isDark),
-                  const SizedBox(width: 8),
-                  Text(
-                    '28/40 ${AppLocalizations.of(context)!.eventsGoingLabel}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
                   const Spacer(),
                   Text(
                     '+${event.pointsReward} PTS',
@@ -326,50 +322,6 @@ class _EventLargeCard extends StatelessWidget {
     );
   }
 
-  String _tagFor(EventSummary event) {
-    final type = event.activityType.toUpperCase();
-    if (type == 'PADEL') {
-      return 'MIXED LEVELS · ROUND-ROBIN';
-    }
-    if (type == 'MOUNTAIN') {
-      return '14 KM · 900M GAIN';
-    }
-    return 'GROUP RUN · 8 KM';
-  }
 }
 
-class _AttendeesStack extends StatelessWidget {
-  const _AttendeesStack({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 60,
-      height: 24,
-      child: Stack(
-        children: List.generate(3, (index) {
-          final hues = [42.0, 180.0, 285.0];
-          final bg = HSLColor.fromAHSL(1, hues[index], 0.55, 0.55).toColor();
-          return Positioned(
-            left: index * 16,
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: bg,
-                border: Border.all(
-                  color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paper,
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
 

@@ -11,6 +11,7 @@ import '../features/dashboard/data/dashboard_repository.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/events/data/event_action_repository.dart';
 import '../features/leaderboard/data/leaderboard_repository.dart';
+import '../features/leaderboard/presentation/cubit/activity_leaderboard_cubit.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
 import '../features/rewards/data/reward_action_repository.dart';
@@ -128,6 +129,11 @@ class _MainAppState extends State<MainApp> {
           ),
           BlocProvider(
             create: (context) => StravaCubit(_stravaRepository),
+          ),
+          BlocProvider(
+            create: (context) => ActivityLeaderboardCubit(
+              repository: _leaderboardRepository,
+            ),
           ),
           BlocProvider(create: (_) => ThemeModeCubit()),
           BlocProvider(create: (_) => AppLocaleCubit()),

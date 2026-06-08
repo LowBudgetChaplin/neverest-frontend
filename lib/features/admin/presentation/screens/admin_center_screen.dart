@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -52,8 +53,12 @@ class _AdminCenterView extends StatefulWidget {
 
 class _AdminCenterViewState extends State<_AdminCenterView> {
   final _eventTitleController = TextEditingController();
+  final _eventDescriptionController = TextEditingController();
   final _eventLocationController = TextEditingController();
-  final _eventPointsController = TextEditingController(text: '100');
+  final _eventPointsController = TextEditingController();
+  final _eventRouteMapUrlController = TextEditingController();
+  final _eventStravaClubUrlController = TextEditingController();
+  final _eventWhatsappGroupUrlController = TextEditingController();
   final _eventRetryIdController = TextEditingController();
 
   final _challengeTitleController = TextEditingController();
@@ -73,7 +78,17 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   final _auditActorController = TextEditingController();
 
   String _eventActivity = 'RUNNING';
+  String _eventRecurrence = 'NONE';
   DateTime _eventStartsAt = DateTime.now().add(const Duration(days: 1));
+
+  static const _eventRecurrences = [
+    'NONE',
+    'WEEKLY',
+    'BIWEEKLY',
+    'MONTHLY',
+    'QUARTERLY',
+    'YEARLY',
+  ];
 
   String _challengeActivity = 'RUNNING';
   String _challengeMode = 'ONLINE';
@@ -90,8 +105,12 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   @override
   void dispose() {
     _eventTitleController.dispose();
+    _eventDescriptionController.dispose();
     _eventLocationController.dispose();
     _eventPointsController.dispose();
+    _eventRouteMapUrlController.dispose();
+    _eventStravaClubUrlController.dispose();
+    _eventWhatsappGroupUrlController.dispose();
     _eventRetryIdController.dispose();
     _challengeTitleController.dispose();
     _challengeDescriptionController.dispose();
@@ -185,6 +204,14 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               decoration: const InputDecoration(labelText: 'Title'),
             ),
             const SizedBox(height: 8),
+            TextField(
+              controller: _eventDescriptionController,
+              enabled: !isBusy,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(labelText: 'Description (optional)'),
+            ),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -207,21 +234,77 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _eventRecurrence,
+                    items: _eventRecurrences
+                        .map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text(r),
+                            ))
+                        .toList(),
+                    onChanged: isBusy
+                        ? null
+                        : (value) => setState(
+                              () => _eventRecurrence = value ?? _eventRecurrence,
+                            ),
+                    decoration: const InputDecoration(labelText: 'Recurrence'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _eventLocationController,
+                    enabled: !isBusy,
+                    decoration: const InputDecoration(labelText: 'Location'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
                   child: TextField(
                     controller: _eventPointsController,
                     enabled: !isBusy,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        const InputDecoration(labelText: 'Points reward'),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: const InputDecoration(
+                      labelText: 'Points reward',
+                      hintText: 'ex: 100',
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             TextField(
-              controller: _eventLocationController,
+              controller: _eventRouteMapUrlController,
               enabled: !isBusy,
-              decoration: const InputDecoration(labelText: 'Location'),
+              decoration: const InputDecoration(
+                labelText: 'Google Maps URL (optional)',
+                hintText: 'https://maps.google.com/...',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _eventStravaClubUrlController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(
+                labelText: 'Strava Club URL (optional)',
+                hintText: 'https://www.strava.com/clubs/...',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _eventWhatsappGroupUrlController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(
+                labelText: 'WhatsApp Group URL (optional)',
+                hintText: 'https://chat.whatsapp.com/...',
+              ),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
@@ -779,6 +862,19 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
           location: location,
           startsAtIso: _toLocalDateTimeIso(_eventStartsAt),
           pointsReward: points,
+          description: _eventDescriptionController.text.trim().isEmpty
+              ? null
+              : _eventDescriptionController.text.trim(),
+          recurrence: _eventRecurrence,
+          routeMapUrl: _eventRouteMapUrlController.text.trim().isEmpty
+              ? null
+              : _eventRouteMapUrlController.text.trim(),
+          stravaClubUrl: _eventStravaClubUrlController.text.trim().isEmpty
+              ? null
+              : _eventStravaClubUrlController.text.trim(),
+          whatsappGroupUrl: _eventWhatsappGroupUrlController.text.trim().isEmpty
+              ? null
+              : _eventWhatsappGroupUrlController.text.trim(),
         );
   }
 

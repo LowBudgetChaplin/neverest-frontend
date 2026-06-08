@@ -91,6 +91,26 @@ class ApiClient {
     }
   }
 
+  Future<Response<dynamic>> patch(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    bool skipAuthFailureHandling = false,
+  }) async {
+    try {
+      return await _dio.patch<dynamic>(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: skipAuthFailureHandling
+            ? Options(extra: {_skipAuthFailureHandlingKey: true})
+            : null,
+      );
+    } on DioException catch (error) {
+      throw _toApiException(error);
+    }
+  }
+
   Future<Response<dynamic>> delete(
     String path, {
     Map<String, dynamic>? queryParameters,

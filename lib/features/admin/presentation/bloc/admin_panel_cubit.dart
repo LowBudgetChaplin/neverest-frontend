@@ -132,6 +132,11 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
     required String location,
     required String startsAtIso,
     required int pointsReward,
+    String? description,
+    String? recurrence,
+    String? routeMapUrl,
+    String? stravaClubUrl,
+    String? whatsappGroupUrl,
   }) async {
     emit(state.copyWith(isBusy: true, clearMessage: true));
     try {
@@ -141,6 +146,11 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
         location: location,
         startsAtIso: startsAtIso,
         pointsReward: pointsReward,
+        description: description,
+        recurrence: recurrence,
+        routeMapUrl: routeMapUrl,
+        stravaClubUrl: stravaClubUrl,
+        whatsappGroupUrl: whatsappGroupUrl,
       );
       emit(
         state.copyWith(

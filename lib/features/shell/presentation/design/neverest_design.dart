@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -241,13 +242,39 @@ class NeverestAvatar extends StatelessWidget {
     super.key,
     required this.name,
     this.size = 34,
+    this.imageB64,
   });
 
   final String name;
   final double size;
+  /// Optional base64-encoded image (JPEG/PNG). When set, shown instead of initials.
+  final String? imageB64;
 
   @override
   Widget build(BuildContext context) {
+    // If we have a photo, show it
+    if (imageB64 != null && imageB64!.isNotEmpty) {
+      try {
+        // Strip data URI prefix if present
+        final raw = imageB64!.contains(',') ? imageB64!.split(',').last : imageB64!;
+        final bytes = base64Decode(raw);
+        return ClipOval(
+          child: Image.memory(
+            bytes,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _initialsWidget(context),
+          ),
+        );
+      } catch (_) {
+        // Fall through to initials
+      }
+    }
+    return _initialsWidget(context);
+  }
+
+  Widget _initialsWidget(BuildContext context) {
     final initials = _initials(name);
     final seed = name.runes.fold<int>(13, (value, rune) => value + rune);
     final hue = (seed % 360).toDouble();
@@ -277,14 +304,9 @@ class NeverestAvatar extends StatelessWidget {
         .split(RegExp(r'\s+'))
         .where((part) => part.trim().isNotEmpty)
         .toList();
-    if (parts.isEmpty) {
-      return '?';
-    }
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
-        .toUpperCase();
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
   }
 }
 

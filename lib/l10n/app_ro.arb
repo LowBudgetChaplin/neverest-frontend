@@ -99,14 +99,19 @@
     }
   },
 
+  "profilePhone": "Numar de telefon",
+
   "eventWhen": "Cand",
   "eventWhere": "Unde",
-  "eventHost": "Gazda",
   "eventReward": "Recompensa",
+  "eventRecurrence": "Recurenta",
   "eventAbout": "Despre",
-  "eventAboutSample": "Alergare usoara 8K cu grupuri pe ritm si recuperare. Cafea la Origo dupa. Cu ploaie sau fara. Arata QR-ul la intrare pentru puncte.",
-  "eventWhatsappSync": "Postat automat in #announcements si Neverest Strava Club",
+  "eventStravaClub": "Alatura-te pe Strava →",
+  "eventWhatsappGroup": "Alatura-te pe WhatsApp →",
   "eventRoute": "Traseu",
+  "eventOpenRoute": "Deschide in Maps",
+  "eventParticipants": "Participanti",
+  "eventYouGoing": "Participi",
   "eventAdminCheckIn": "Check-in admin",
   "eventImGoing": "Particip",
   "eventGoing": "Esti inscris",
@@ -157,6 +162,7 @@
   "challengeAlwaysOn": "Permanent",
   "challengeProgress23": "2/3 completate",
   "challengeDeadlineDays": "{days} zile ramase",
+  "yourPointsHome" : "PUNCTELE TALE",
   "@challengeDeadlineDays": {
     "placeholders": {
       "days": {
@@ -330,6 +336,8 @@
   "authSwitchToRegister": "Nu ai cont? Inregistreaza-te",
   "authSwitchToLogin": "Ai deja cont? Autentifica-te",
   "authCredentialsRequired": "Email-ul si parola sunt obligatorii.",
+  "authPhoneRequired": "Numarul de telefon este obligatoriu.",
+  "authPhotoOptional": "Adauga o poza (optional)",
   "authPasswordMinLength": "Parola trebuie sa aiba cel putin 6 caractere.",
   "authPasswordsMismatch": "Parolele nu coincid.",
   "authSessionActive": "Sesiune activa",

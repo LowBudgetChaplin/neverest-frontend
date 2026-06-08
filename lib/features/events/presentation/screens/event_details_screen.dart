@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
-import '../../../profile/presentation/screens/my_qr_screen.dart';
+import '../../../profile/domain/app_profile.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
 import 'event_check_in_screen.dart';
 
@@ -23,6 +26,91 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
   bool _going = false;
+  WebViewController? _mapController;
+
+  /// Clean URL extracted from routeMapUrl. The admin may paste either a plain
+  /// URL OR the full embed snippet `<iframe src="https://..." ...></iframe>`.
+  /// We pull the value of src="..." (or src='...') so Uri.parse won't choke
+  /// on the leading '<'.
+  String? get _routeUrl {
+    final raw = widget.event.routeMapUrl?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    final m = RegExp('src\\s*=\\s*"([^"]+)"').firstMatch(raw) ??
+        RegExp("src\\s*=\\s*'([^']+)'").firstMatch(raw);
+    if (m != null) return m.group(1);
+    // Not an iframe snippet — if it already looks like a URL, use it as-is.
+    if (raw.startsWith('http')) return raw;
+    return null;
+  }
+
+  /// A clean, openable Google Maps link for the "Open in Maps" button.
+  /// Embed URLs (/maps/embed?pb=...) only work inside an iframe and won't open
+  /// in the Maps app/browser, so we extract the coordinates and build a normal
+  /// search link.
+  String? get _openableMapUrl {
+    final url = _routeUrl;
+    if (url == null) return null;
+    if (url.contains('/maps/embed')) {
+      final lng = RegExp(r'!2d(-?\d+(?:\.\d+)?)').firstMatch(url)?.group(1);
+      final lat = RegExp(r'!3d(-?\d+(?:\.\d+)?)').firstMatch(url)?.group(1);
+      if (lat != null && lng != null) {
+        return 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+      }
+    }
+    return url;
+  }
+
+  /// True only for proper Google Maps *embed* URLs that render inside a WebView.
+  /// Plain share links (maps.app.goo.gl, google.com/maps/place...) cannot be
+  /// embedded, so we show a tappable card that opens the external Maps app.
+  bool get _isEmbeddableMap {
+    final url = _routeUrl ?? '';
+    return url.contains('/maps/embed') || url.contains('output=embed');
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final mapUrl = _routeUrl;
+    if (mapUrl != null && mapUrl.isNotEmpty && _isEmbeddableMap) {
+      // The Google Maps embed URL MUST be loaded inside a real <iframe>, not as
+      // a top-level page (otherwise Google shows "must be used in an iframe").
+      _mapController = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..loadHtmlString(_buildMapHtml(mapUrl));
+    }
+  }
+
+  String _buildMapHtml(String src) {
+    final safe = src.replaceAll('"', '&quot;');
+    return '''
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#161618}
+  iframe{border:0;width:100%;height:100%}
+</style>
+</head>
+<body>
+<iframe src="$safe" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</body>
+</html>
+''';
+  }
+
+  Future<void> _openUrl(String? url) async {
+    if (url == null || url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      // Fallback: force external application mode regardless of canLaunch result.
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,13 +118,17 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     final canUseAdminFeatures = context.select<AccessCubit, bool>(
       (cubit) => cubit.state.canOpenAdminCenter,
     );
+    final myProfile = context.select<ProfileBloc, AppProfile?>(
+      (bloc) => bloc.state.profile,
+    );
     final event = widget.event;
     final parsedDate = DateTime.tryParse(event.startsAt);
     final whenLabel = parsedDate == null
         ? event.startsAt
         : '${_weekday(parsedDate)} ${parsedDate.day} ${_month(parsedDate.month)} · ${parsedDate.hour.toString().padLeft(2, '0')}:${parsedDate.minute.toString().padLeft(2, '0')}';
     final activityColor = neverestActivityColor(event.activityType);
-    final aboutText = l10n.eventAboutSample;
+    final routeUrl = _routeUrl;
+    final hasRoute = routeUrl != null && routeUrl.isNotEmpty;
 
     return Scaffold(
       body: Column(
@@ -45,6 +137,7 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
+                // ── Hero header ────────────────────────────────────────────
                 Container(
                   height: 250,
                   color: NeverestPalette.ink,
@@ -68,16 +161,12 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                   NeverestGlassIconButton(
                                     icon: Icons.arrow_back_rounded,
                                     foreground: Colors.white,
-                                    background: Colors.white.withOpacity(0.14),
-                                    onPressed: () => Navigator.of(context).pop(),
+                                    background:
+                                        Colors.white.withOpacity(0.14),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
                                   ),
                                   const Spacer(),
-                                  NeverestGlassIconButton(
-                                    icon: Icons.share_outlined,
-                                    foreground: Colors.white,
-                                    background: Colors.white.withOpacity(0.14),
-                                    onPressed: () {},
-                                  ),
                                 ],
                               ),
                               const Spacer(),
@@ -93,18 +182,39 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    _tagFor(event).toUpperCase(),
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    event.activityType.toUpperCase(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelSmall
+                                        ?.copyWith(
                                           color: Colors.white,
                                           letterSpacing: 1.3,
                                         ),
                                   ),
+                                  if (event.recurrence != null &&
+                                      event.recurrence!.isNotEmpty &&
+                                      event.recurrence != 'NONE') ...[
+                                    Text(
+                                      '  ·  ${event.recurrence}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall
+                                          ?.copyWith(
+                                            color: Colors.white
+                                                .withOpacity(0.65),
+                                            letterSpacing: 1.1,
+                                          ),
+                                    ),
+                                  ],
                                 ],
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 event.title.toUpperCase(),
-                                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .displaySmall
+                                    ?.copyWith(
                                       color: Colors.white,
                                       fontSize: 36,
                                     ),
@@ -116,12 +226,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                     ],
                   ),
                 ),
+
+                // ── Meta grid ──────────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                   child: GridView(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 10,
@@ -139,134 +252,143 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                         value: event.location,
                       ),
                       _MetaTile(
-                        icon: Icons.person_outline_rounded,
-                        label: l10n.eventHost,
-                        value: 'Cristina M.',
-                      ),
-                      _MetaTile(
                         icon: Icons.bolt_rounded,
                         label: l10n.eventReward,
                         value: '+${event.pointsReward} pts',
                         accent: true,
                       ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                  child: Text(
-                    l10n.eventAbout.toUpperCase(),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                        ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                  child: Text(
-                    aboutText,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          height: 1.45,
-                        ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: Row(
-                    children: [
-                      Text(
-                        l10n.eventAttendeesCount(28),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        l10n.eventSpotsLeft(12),
-                        style: Theme.of(context).textTheme.bodySmall,
+                      _MetaTile(
+                        icon: Icons.repeat_rounded,
+                        label: l10n.eventRecurrence,
+                        value: _recurrenceLabel(event.recurrence),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _participants
-                        .map(
-                          (name) => Container(
-                            padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).brightness == Brightness.dark
-                                  ? NeverestPalette.inkRaised
-                                  : NeverestPalette.paperRaised,
-                              borderRadius: BorderRadius.circular(99),
-                              border: Border.all(
-                                color:
-                                    Theme.of(context).brightness == Brightness.dark
-                                        ? NeverestPalette.inkLine
-                                        : NeverestPalette.paperLine,
+
+                // ── Route map ──────────────────────────────────────────────
+                if (hasRoute)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                    child: _mapController != null
+                        // Proper embed URL → render inline, tap to open externally
+                        ? Column(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: SizedBox(
+                                  height: 200,
+                                  child: WebViewWidget(
+                                      controller: _mapController!),
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                NeverestAvatar(name: name, size: 20),
-                                const SizedBox(width: 6),
-                                Text(name, style: Theme.of(context).textTheme.labelSmall),
-                              ],
-                            ),
+                              const SizedBox(height: 8),
+                              _OpenMapButton(
+                                onTap: () => _openUrl(_openableMapUrl),
+                              ),
+                            ],
+                          )
+                        // Share link → tappable map card opening Google Maps
+                        : _RouteMapCard(
+                            location: event.location,
+                            activityColor: activityColor,
+                            onTap: () => _openUrl(_openableMapUrl),
                           ),
-                        )
-                        .toList(),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? NeverestPalette.inkRaised
-                          : NeverestPalette.paperRaised,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? NeverestPalette.inkLine
-                            : NeverestPalette.paperLine,
-                      ),
+
+                // ── About ─────────────────────────────────────────────────
+                if (event.description != null &&
+                    event.description!.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Text(
+                      l10n.eventAbout.toUpperCase(),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    child: Text(
+                      event.description!,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(height: 1.45),
+                    ),
+                  ),
+                ],
+
+                // ── Participants (going) ───────────────────────────────────
+                if (_going) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                    child: Text(
+                      l10n.eventParticipants.toUpperCase(),
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.8,
+                          ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          color: NeverestPalette.success,
-                          size: 18,
+                        NeverestAvatar(
+                          name: myProfile?.displayName ?? 'Eu',
+                          size: 34,
+                          imageB64: myProfile?.avatarB64,
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            l10n.eventWhatsappSync,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
+                        Text(
+                          myProfile?.displayName ?? l10n.eventYouGoing,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                        const Icon(
-                          Icons.check_circle_rounded,
-                          color: NeverestPalette.success,
-                          size: 18,
-                        ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.check_circle_rounded,
+                            size: 16, color: NeverestPalette.success),
                       ],
                     ),
                   ),
-                ),
+                ],
+
+                // ── Social links ───────────────────────────────────────────
+                if (event.stravaClubUrl != null &&
+                    event.stravaClubUrl!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: _SocialBar(
+                      icon: Icons.directions_run_rounded,
+                      color: const Color(0xFFFC4C02),
+                      label: l10n.eventStravaClub,
+                      onTap: () => _openUrl(event.stravaClubUrl!),
+                    ),
+                  ),
+
+                if (event.whatsappGroupUrl != null &&
+                    event.whatsappGroupUrl!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                    child: _SocialBar(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      color: NeverestPalette.success,
+                      label: l10n.eventWhatsappGroup,
+                      onTap: () => _openUrl(event.whatsappGroupUrl!),
+                    ),
+                  ),
+
                 const SizedBox(height: 30),
               ],
             ),
           ),
+
+          // ── Bottom action bar ──────────────────────────────────────────
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -286,43 +408,24 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ? MediaQuery.paddingOf(context).bottom + 8
                   : 18,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        AppPageRoute.fadeSlide(const MyQrScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.route_rounded),
-                    label: Text(l10n.eventRoute),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      if (canUseAdminFeatures) {
-                        Navigator.of(context).push(
-                          AppPageRoute.fadeSlide(
-                            EventCheckInScreen(event: event),
-                          ),
-                        );
-                      } else {
-                        setState(() => _going = !_going);
-                      }
-                    },
-                    icon: Icon(_going ? Icons.check_rounded : Icons.add_rounded),
-                    label: Text(
-                      canUseAdminFeatures
-                          ? l10n.eventAdminCheckIn
-                          : (_going ? l10n.eventGoing : l10n.eventImGoing),
+            child: FilledButton.icon(
+              onPressed: () {
+                if (canUseAdminFeatures) {
+                  Navigator.of(context).push(
+                    AppPageRoute.fadeSlide(
+                      EventCheckInScreen(event: event),
                     ),
-                  ),
-                ),
-              ],
+                  );
+                } else {
+                  setState(() => _going = !_going);
+                }
+              },
+              icon: Icon(_going ? Icons.check_rounded : Icons.add_rounded),
+              label: Text(
+                canUseAdminFeatures
+                    ? l10n.eventAdminCheckIn
+                    : (_going ? l10n.eventGoing : l10n.eventImGoing),
+              ),
             ),
           ),
         ],
@@ -330,38 +433,200 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     );
   }
 
-  String _weekday(DateTime date) {
-    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
-  }
+  String _weekday(DateTime date) =>
+      ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
 
-  String _month(int month) {
-    return [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ][month - 1];
-  }
+  String _month(int month) => [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ][month - 1];
 
-  String _tagFor(EventSummary event) {
-    final type = event.activityType.toUpperCase();
-    if (type == 'PADEL') {
-      return 'Mixed levels · Round-robin';
-    }
-    if (type == 'MOUNTAIN') {
-      return '14 km · 900m gain';
-    }
-    return 'Group run · 8 km';
+  String _recurrenceLabel(String? recurrence) => switch (
+        recurrence?.toUpperCase()) {
+    'WEEKLY' => 'Weekly',
+    'BIWEEKLY' => 'Every 2 weeks',
+    'MONTHLY' => 'Monthly',
+    'QUARTERLY' => 'Every 3 months',
+    'YEARLY' => 'Yearly',
+    _ => 'One-time',
+  };
+}
+
+// ── Social bar ────────────────────────────────────────────────────────────────
+
+class _SocialBar extends StatelessWidget {
+  const _SocialBar({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: isDark
+              ? NeverestPalette.inkRaised
+              : NeverestPalette.paperRaised,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+                child:
+                    Text(label, style: Theme.of(context).textTheme.bodySmall)),
+            Icon(Icons.open_in_new_rounded,
+                size: 16,
+                color: isDark
+                    ? NeverestPalette.inkMuted
+                    : NeverestPalette.paperMuted),
+          ],
+        ),
+      ),
+    );
   }
 }
+
+// ── Route map card (for non-embeddable share links) ──────────────────────────
+
+class _RouteMapCard extends StatelessWidget {
+  const _RouteMapCard({
+    required this.location,
+    required this.activityColor,
+    required this.onTap,
+  });
+
+  final String location;
+  final Color activityColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Ink(
+        height: 140,
+        decoration: BoxDecoration(
+          color: NeverestPalette.ink,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: NeverestTopographicLines(
+                color: activityColor,
+                density: 12,
+                opacity: 0.7,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.map_outlined,
+                          color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: NeverestPalette.orange,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.directions_rounded,
+                                color: Colors.white, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.eventOpenRoute,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.6,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OpenMapButton extends StatelessWidget {
+  const _OpenMapButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        icon: const Icon(Icons.directions_rounded, size: 18),
+        label: Text(l10n.eventOpenRoute),
+      ),
+    );
+  }
+}
+
+// ── Meta tile ─────────────────────────────────────────────────────────────────
 
 class _MetaTile extends StatelessWidget {
   const _MetaTile({
@@ -383,12 +648,16 @@ class _MetaTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: accent
             ? NeverestPalette.orange
-            : (isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised),
+            : (isDark
+                ? NeverestPalette.inkRaised
+                : NeverestPalette.paperRaised),
         borderRadius: BorderRadius.circular(14),
         border: accent
             ? null
             : Border.all(
-                color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+                color: isDark
+                    ? NeverestPalette.inkLine
+                    : NeverestPalette.paperLine,
               ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -435,14 +704,3 @@ class _MetaTile extends StatelessWidget {
     );
   }
 }
-
-const _participants = [
-  'Maria',
-  'Tudor',
-  'Sara',
-  'Bogdan',
-  'Ioana',
-  'Vlad',
-  'Ana',
-  'Diana',
-];

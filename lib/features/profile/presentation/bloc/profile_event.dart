@@ -23,3 +23,18 @@ final class ProfileLoadRequested extends ProfileEvent {
 final class ProfileClearedRequested extends ProfileEvent {
   const ProfileClearedRequested();
 }
+
+final class ProfileUpdateRequested extends ProfileEvent {
+  const ProfileUpdateRequested({
+    this.displayName,
+    this.phoneNumber,
+    this.avatarB64,
+  });
+
+  final String? displayName;
+  final String? phoneNumber;
+  final String? avatarB64;
+
+  @override
+  List<Object?> get props => [displayName, phoneNumber, avatarB64];
+}

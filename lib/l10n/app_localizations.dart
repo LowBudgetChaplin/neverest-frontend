@@ -437,6 +437,12 @@ abstract class AppLocalizations {
   /// **'{count} this week · {attending} attending'**
   String eventsSubtitle(int count, int attending);
 
+  /// No description provided for @profilePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get profilePhone;
+
   /// No description provided for @eventWhen.
   ///
   /// In en, this message translates to:
@@ -449,17 +455,17 @@ abstract class AppLocalizations {
   /// **'Where'**
   String get eventWhere;
 
-  /// No description provided for @eventHost.
-  ///
-  /// In en, this message translates to:
-  /// **'Host'**
-  String get eventHost;
-
   /// No description provided for @eventReward.
   ///
   /// In en, this message translates to:
   /// **'Reward'**
   String get eventReward;
+
+  /// No description provided for @eventRecurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurrence'**
+  String get eventRecurrence;
 
   /// No description provided for @eventAbout.
   ///
@@ -467,23 +473,41 @@ abstract class AppLocalizations {
   /// **'About'**
   String get eventAbout;
 
-  /// No description provided for @eventAboutSample.
+  /// No description provided for @eventStravaClub.
   ///
   /// In en, this message translates to:
-  /// **'Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.'**
-  String get eventAboutSample;
+  /// **'Join Strava Club →'**
+  String get eventStravaClub;
 
-  /// No description provided for @eventWhatsappSync.
+  /// No description provided for @eventWhatsappGroup.
   ///
   /// In en, this message translates to:
-  /// **'Auto-posted to #announcements and Neverest Strava Club'**
-  String get eventWhatsappSync;
+  /// **'Join WhatsApp Group →'**
+  String get eventWhatsappGroup;
 
   /// No description provided for @eventRoute.
   ///
   /// In en, this message translates to:
   /// **'Route'**
   String get eventRoute;
+
+  /// No description provided for @eventOpenRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Maps'**
+  String get eventOpenRoute;
+
+  /// No description provided for @eventParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get eventParticipants;
+
+  /// No description provided for @eventYouGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re going'**
+  String get eventYouGoing;
 
   /// No description provided for @eventAdminCheckIn.
   ///
@@ -610,6 +634,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days left'**
   String challengeDeadlineDays(int days);
+
+  /// No description provided for @yourPointsHome.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR POINTS'**
+  String get yourPointsHome;
 
   /// No description provided for @challengePaused.
   ///
@@ -1216,6 +1246,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email and password are required.'**
   String get authCredentialsRequired;
+
+  /// No description provided for @authPhoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required.'**
+  String get authPhoneRequired;
+
+  /// No description provided for @authPhotoOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo (optional)'**
+  String get authPhotoOptional;
 
   /// No description provided for @authPasswordMinLength.
   ///

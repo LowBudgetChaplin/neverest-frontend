@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
@@ -76,43 +79,12 @@ class ProfileScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: _ProfileIdentityCard(
               displayName: displayName,
+              phoneNumber: profile?.phoneNumber,
+              avatarB64: profile?.avatarB64,
               points: points,
-              streak: 12,
               rank: rank,
-              onEditTap: () => _showEditProfileDialog(context, displayName),
-            ),
-          ),
-          const SizedBox(height: 20),
-          NeverestSectionHeader(title: l10n.profileByActivity),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                _ActivityRow(
-                  icon: Icons.directions_run_rounded,
-                  label: l10n.activityRunning,
-                  value: '186 km',
-                  progress: 0.7,
-                  color: NeverestPalette.running,
-                ),
-                const SizedBox(height: 10),
-                _ActivityRow(
-                  icon: Icons.sports_tennis_rounded,
-                  label: l10n.activityPadel,
-                  value: '42 ${l10n.profileGames}',
-                  progress: 0.45,
-                  color: NeverestPalette.padel,
-                ),
-                const SizedBox(height: 10),
-                _ActivityRow(
-                  icon: Icons.terrain_rounded,
-                  label: l10n.activityMountain,
-                  value: '68 km',
-                  progress: 0.58,
-                  color: NeverestPalette.mountain,
-                ),
-              ],
+              onEditTap: () => _showEditProfileSheet(context, profile?.displayName ?? displayName, profile?.phoneNumber),
+              onAvatarTap: () => _pickAndUploadAvatar(context),
             ),
           ),
           const SizedBox(height: 20),
@@ -186,9 +158,20 @@ class ProfileScreen extends StatelessWidget {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.error,
-                      side: BorderSide(color: Theme.of(context).colorScheme.error.withOpacity(0.4)),
+                      side: BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .error
+                              .withOpacity(0.4)),
                     ),
-                    onPressed: () => context.read<AuthBloc>().add(const AuthSignOutRequested()),
+                    onPressed: () {
+                      // Pop to root first so LaunchGateScreen can switch to AuthMenuScreen
+                      Navigator.of(context)
+                          .popUntil((route) => route.isFirst);
+                      context
+                          .read<AuthBloc>()
+                          .add(const AuthSignOutRequested());
+                    },
                     icon: const Icon(Icons.logout_rounded),
                     label: Text(l10n.authSignOut),
                   ),
@@ -216,33 +199,54 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
-  void _showEditProfileDialog(BuildContext context, String currentName) {
-    final controller = TextEditingController(text: currentName);
-    showDialog<void>(
+  void _showEditProfileSheet(
+      BuildContext context, String currentName, String? currentPhone) {
+    showModalBottomSheet<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.commonEdit),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: AppLocalizations.of(context)!.authDisplayNameLabel,
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(AppLocalizations.of(context)!.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-            },
-            child: Text(AppLocalizations.of(context)!.commonConfirm),
-          ),
-        ],
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) => _EditProfileSheet(
+        initialName: currentName,
+        initialPhone: currentPhone ?? '',
+        onSave: (name, phone) {
+          context.read<ProfileBloc>().add(
+                ProfileUpdateRequested(
+                  displayName: name.trim().isEmpty ? null : name.trim(),
+                  phoneNumber: phone.trim(),
+                ),
+              );
+        },
       ),
     );
+  }
+
+  Future<void> _pickAndUploadAvatar(BuildContext context) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 400,
+      maxHeight: 400,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+
+    final compressed = await FlutterImageCompress.compressWithList(
+      bytes,
+      minWidth: 200,
+      minHeight: 200,
+      quality: 70,
+      format: CompressFormat.jpeg,
+    );
+
+    final b64 = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+
+    if (context.mounted) {
+      context.read<ProfileBloc>().add(ProfileUpdateRequested(avatarB64: b64));
+    }
   }
 
   void _retryProfileSync(BuildContext context, AuthState authState) {
@@ -254,9 +258,11 @@ class ProfileScreen extends StatelessWidget {
         );
   }
 
-  int _computeRank(List<LeaderboardEntrySummary>? leaderboard, String? userId, String displayName) {
+  int _computeRank(List<LeaderboardEntrySummary>? leaderboard, String? userId,
+      String displayName) {
     if (leaderboard == null || leaderboard.isEmpty) return 0;
-    final sorted = [...leaderboard]..sort((a, b) => b.points.compareTo(a.points));
+    final sorted = [...leaderboard]
+      ..sort((a, b) => b.points.compareTo(a.points));
     for (int i = 0; i < sorted.length; i++) {
       final entry = sorted[i];
       if ((userId != null && entry.userId == userId) ||
@@ -269,9 +275,7 @@ class ProfileScreen extends StatelessWidget {
 
   String _suggestDisplayName(AuthState authState) {
     final session = authState.session;
-    if (session == null) {
-      return 'Neverest User';
-    }
+    if (session == null) return 'Neverest User';
     if (session.displayName != null && session.displayName!.trim().isNotEmpty) {
       return session.displayName!.trim();
     }
@@ -282,20 +286,126 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
+// ── Edit profile bottom sheet ─────────────────────────────────────────────────
+
+class _EditProfileSheet extends StatefulWidget {
+  const _EditProfileSheet({
+    required this.initialName,
+    required this.initialPhone,
+    required this.onSave,
+  });
+
+  final String initialName;
+  final String initialPhone;
+  final void Function(String name, String phone) onSave;
+
+  @override
+  State<_EditProfileSheet> createState() => _EditProfileSheetState();
+}
+
+class _EditProfileSheetState extends State<_EditProfileSheet> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+    _phoneController = TextEditingController(text: widget.initialPhone);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          20, 20, 20, MediaQuery.viewInsetsOf(context).bottom + 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.commonEdit.toUpperCase(),
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 1),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              labelText: l10n.authDisplayNameLabel,
+              prefixIcon: const Icon(Icons.person_outline_rounded),
+            ),
+            textCapitalization: TextCapitalization.words,
+            autofocus: true,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _phoneController,
+            decoration: InputDecoration(
+              labelText: l10n.profilePhone,
+              prefixIcon: const Icon(Icons.phone_outlined),
+              hintText: '+40 7xx xxx xxx',
+            ),
+            keyboardType: TextInputType.phone,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(l10n.commonCancel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    widget.onSave(
+                        _nameController.text, _phoneController.text);
+                  },
+                  child: Text(l10n.commonConfirm),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Profile identity card ─────────────────────────────────────────────────────
+
 class _ProfileIdentityCard extends StatelessWidget {
   const _ProfileIdentityCard({
     required this.displayName,
     required this.points,
-    required this.streak,
     required this.rank,
     required this.onEditTap,
+    required this.onAvatarTap,
+    this.phoneNumber,
+    this.avatarB64,
   });
 
   final String displayName;
   final int points;
-  final int streak;
   final int rank;
   final VoidCallback onEditTap;
+  final VoidCallback onAvatarTap;
+  final String? phoneNumber;
+  final String? avatarB64;
 
   @override
   Widget build(BuildContext context) {
@@ -330,7 +440,38 @@ class _ProfileIdentityCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    NeverestAvatar(name: displayName, size: 60),
+                    // Tappable avatar
+                    GestureDetector(
+                      onTap: onAvatarTap,
+                      child: Stack(
+                        children: [
+                          NeverestAvatar(
+                            name: displayName,
+                            size: 64,
+                            imageB64: avatarB64,
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: NeverestPalette.orange,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: isDark
+                                        ? NeverestPalette.inkRaised
+                                        : NeverestPalette.paperRaised,
+                                    width: 2),
+                              ),
+                              child: const Icon(Icons.camera_alt_rounded,
+                                  size: 12, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -338,10 +479,26 @@ class _ProfileIdentityCard extends StatelessWidget {
                         children: [
                           Text(
                             displayName,
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                    ),
                           ),
+                          if (phoneNumber != null && phoneNumber!.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                phoneNumber!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: isDark
+                                          ? NeverestPalette.inkMuted
+                                          : NeverestPalette.paperMuted,
+                                    ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
@@ -361,12 +518,6 @@ class _ProfileIdentityCard extends StatelessWidget {
                         label: l10n.profileTotalPoints,
                         value: points.toString(),
                         accent: true,
-                      ),
-                    ),
-                    Expanded(
-                      child: _ProfileMetric(
-                        label: l10n.profileDayStreak,
-                        value: streak.toString(),
                       ),
                     ),
                     Expanded(
@@ -420,88 +571,6 @@ class _ProfileMetric extends StatelessWidget {
   }
 }
 
-class _ActivityRow extends StatelessWidget {
-  const _ActivityRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.progress,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final double progress;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? NeverestPalette.ink.withOpacity(0.5)
-                  : NeverestPalette.paper,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, size: 18, color: color),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      label,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      value,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(99),
-                  child: LinearProgressIndicator(
-                    minHeight: 4,
-                    value: progress,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                    backgroundColor:
-                        isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _StravaConnectionRow extends StatefulWidget {
   const _StravaConnectionRow({required this.onConnect});
   final VoidCallback onConnect;
@@ -529,7 +598,6 @@ class _StravaConnectionRowState extends State<_StravaConnectionRow>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // When user returns to app after OAuth flow, refresh Strava status
     if (state == AppLifecycleState.resumed) {
       context.read<StravaCubit>().loadStatus();
     }
@@ -560,10 +628,8 @@ class _StravaConnectionRowState extends State<_StravaConnectionRow>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Strava',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+                const Text('Strava',
+                    style: TextStyle(fontWeight: FontWeight.w700)),
                 Text(
                   linked
                       ? (status!.athleteName ?? 'Conectat')
@@ -586,7 +652,8 @@ class _StravaConnectionRowState extends State<_StravaConnectionRow>
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () => context.read<StravaCubit>().disconnect(),
-                  child: Icon(Icons.link_off_rounded, size: 16,
+                  child: Icon(Icons.link_off_rounded,
+                      size: 16,
                       color: Theme.of(context).textTheme.bodySmall?.color),
                 ),
               ],
@@ -594,68 +661,6 @@ class _StravaConnectionRowState extends State<_StravaConnectionRow>
           else
             OutlinedButton(
               onPressed: widget.onConnect,
-              child: Text(l10n.profileConnect),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConnectionRow extends StatelessWidget {
-  const _ConnectionRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.linked,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool linked;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 19),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
-              ],
-            ),
-          ),
-          if (linked)
-            Text(
-              '● ${l10n.profileLinked}',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: NeverestPalette.success,
-                  ),
-            )
-          else
-            OutlinedButton(
-              onPressed: () {},
               child: Text(l10n.profileConnect),
             ),
         ],
@@ -726,17 +731,17 @@ class _SettingsCard extends StatelessWidget {
           Wrap(
             spacing: 8,
             children: [
-              _LocaleButton(
+              NeverestFilterChip(
                 label: l10n.profileSystemLanguage,
                 selected: localeCode == AppLocaleCubit.systemCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.systemCode),
               ),
-              _LocaleButton(
+              NeverestFilterChip(
                 label: 'Română',
                 selected: localeCode == AppLocaleCubit.roCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.roCode),
               ),
-              _LocaleButton(
+              NeverestFilterChip(
                 label: 'English',
                 selected: localeCode == AppLocaleCubit.enCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.enCode),
@@ -745,27 +750,6 @@ class _SettingsCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _LocaleButton extends StatelessWidget {
-  const _LocaleButton({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return NeverestFilterChip(
-      label: label,
-      selected: selected,
-      onTap: onTap,
     );
   }
 }

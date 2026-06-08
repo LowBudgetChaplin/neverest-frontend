@@ -45,6 +45,11 @@ class AdminRepository {
     required String location,
     required String startsAtIso,
     required int pointsReward,
+    String? description,
+    String? recurrence,
+    String? routeMapUrl,
+    String? stravaClubUrl,
+    String? whatsappGroupUrl,
   }) async {
     final response = await _apiClient.post(
       '/api/v1/events',
@@ -54,6 +59,11 @@ class AdminRepository {
         'location': location.trim(),
         'startsAt': startsAtIso,
         'pointsReward': pointsReward,
+        if (description != null) 'description': description,
+        if (recurrence != null) 'recurrence': recurrence,
+        if (routeMapUrl != null) 'routeMapUrl': routeMapUrl,
+        if (stravaClubUrl != null) 'stravaClubUrl': stravaClubUrl,
+        if (whatsappGroupUrl != null) 'whatsappGroupUrl': whatsappGroupUrl,
       },
     );
     final payload = response.data;

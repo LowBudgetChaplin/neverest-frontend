@@ -33,14 +33,19 @@ final class AuthEmailPasswordRegisterRequested extends AuthEvent {
     required this.email,
     required this.password,
     this.displayName,
+    this.phoneNumber,
+    this.avatarB64,
   });
 
   final String email;
   final String password;
   final String? displayName;
+  final String? phoneNumber;
+  final String? avatarB64;
 
   @override
-  List<Object?> get props => [email, password, displayName];
+  List<Object?> get props =>
+      [email, password, displayName, phoneNumber, avatarB64];
 }
 
 final class AuthManualTokenSubmitted extends AuthEvent {

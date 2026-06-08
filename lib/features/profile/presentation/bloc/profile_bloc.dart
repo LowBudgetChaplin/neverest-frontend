@@ -13,6 +13,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         super(const ProfileState.initial()) {
     on<ProfileLoadRequested>(_onLoadRequested);
     on<ProfileClearedRequested>(_onClearedRequested);
+    on<ProfileUpdateRequested>(_onUpdateRequested);
   }
 
   final ProfileRepository _repository;
@@ -50,5 +51,33 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     Emitter<ProfileState> emit,
   ) {
     emit(const ProfileState.initial());
+  }
+
+  Future<void> _onUpdateRequested(
+    ProfileUpdateRequested event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(state.copyWith(status: ProfileStatus.loading, clearError: true));
+    try {
+      final profile = await _repository.updateMyProfile(
+        displayName: event.displayName,
+        phoneNumber: event.phoneNumber,
+        avatarB64: event.avatarB64,
+      );
+      emit(
+        state.copyWith(
+          status: ProfileStatus.ready,
+          profile: profile,
+          clearError: true,
+        ),
+      );
+    } catch (error) {
+      emit(
+        state.copyWith(
+          status: ProfileStatus.failure,
+          errorMessage: error.toString(),
+        ),
+      );
+    }
   }
 }

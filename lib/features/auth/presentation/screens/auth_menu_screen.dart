@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
@@ -27,6 +31,7 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
   final TextEditingController _loginPasswordController = TextEditingController();
   final TextEditingController _registerNameController = TextEditingController();
   final TextEditingController _registerEmailController = TextEditingController();
+  final TextEditingController _registerPhoneController = TextEditingController();
   final TextEditingController _registerPasswordController =
       TextEditingController();
   final TextEditingController _registerConfirmController =
@@ -37,6 +42,7 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
   bool _hideRegisterPassword = true;
   bool _hideRegisterConfirm = true;
   bool _awaitingRegisterResult = false;
+  String? _registerAvatarB64;
 
   @override
   void initState() {
@@ -50,6 +56,7 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
     _loginPasswordController.dispose();
     _registerNameController.dispose();
     _registerEmailController.dispose();
+    _registerPhoneController.dispose();
     _registerPasswordController.dispose();
     _registerConfirmController.dispose();
     super.dispose();
@@ -317,10 +324,56 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Optional profile photo
+        Center(
+          child: GestureDetector(
+            onTap: isLoading ? null : _pickRegisterAvatar,
+            child: Stack(
+              children: [
+                NeverestAvatar(
+                  name: _registerNameController.text.isEmpty
+                      ? '?'
+                      : _registerNameController.text,
+                  size: 84,
+                  imageB64: _registerAvatarB64,
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: NeverestPalette.orange,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? NeverestPalette.inkRaised
+                            : NeverestPalette.paperRaised,
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(Icons.camera_alt_rounded,
+                        size: 15, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Center(
+          child: Text(
+            l10n.authPhotoOptional,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ),
+        const SizedBox(height: 14),
         TextField(
           controller: _registerNameController,
           enabled: !isLoading,
           textCapitalization: TextCapitalization.words,
+          onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
             labelText: l10n.authDisplayNameLabel,
             border: const OutlineInputBorder(),
@@ -333,6 +386,17 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
           enabled: !isLoading,
           decoration: InputDecoration(
             labelText: l10n.authEmailLabel,
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _registerPhoneController,
+          keyboardType: TextInputType.phone,
+          enabled: !isLoading,
+          decoration: InputDecoration(
+            labelText: l10n.profilePhone,
+            hintText: '+40 7xx xxx xxx',
             border: const OutlineInputBorder(),
           ),
         ),
@@ -423,14 +487,44 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
         );
   }
 
+  Future<void> _pickRegisterAvatar() async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 400,
+      maxHeight: 400,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+    final bytes = await file.readAsBytes();
+    final compressed = await FlutterImageCompress.compressWithList(
+      bytes,
+      minWidth: 200,
+      minHeight: 200,
+      quality: 70,
+      format: CompressFormat.jpeg,
+    );
+    if (!mounted) return;
+    setState(() {
+      _registerAvatarB64 = 'data:image/jpeg;base64,${base64Encode(compressed)}';
+    });
+  }
+
   void _submitRegister() {
     final l10n = AppLocalizations.of(context)!;
     final email = _registerEmailController.text.trim();
+    final phone = _registerPhoneController.text.trim();
     final password = _registerPasswordController.text;
     final confirm = _registerConfirmController.text;
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.authCredentialsRequired)),
+      );
+      return;
+    }
+    if (phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.authPhoneRequired)),
       );
       return;
     }
@@ -452,6 +546,8 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
             email: email,
             password: password,
             displayName: _registerNameController.text.trim(),
+            phoneNumber: phone,
+            avatarB64: _registerAvatarB64,
           ),
         );
   }

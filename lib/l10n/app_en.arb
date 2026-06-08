@@ -99,14 +99,19 @@
     }
   },
 
+  "profilePhone": "Phone number",
+
   "eventWhen": "When",
   "eventWhere": "Where",
-  "eventHost": "Host",
   "eventReward": "Reward",
+  "eventRecurrence": "Recurrence",
   "eventAbout": "About",
-  "eventAboutSample": "Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.",
-  "eventWhatsappSync": "Auto-posted to #announcements and Neverest Strava Club",
+  "eventStravaClub": "Join Strava Club →",
+  "eventWhatsappGroup": "Join WhatsApp Group →",
   "eventRoute": "Route",
+  "eventOpenRoute": "Open in Maps",
+  "eventParticipants": "Participants",
+  "eventYouGoing": "You're going",
   "eventAdminCheckIn": "Admin check-in",
   "eventImGoing": "I'm going",
   "eventGoing": "You're in",
@@ -157,6 +162,7 @@
   "challengeAlwaysOn": "Always on",
   "challengeProgress23": "2/3 done",
   "challengeDeadlineDays": "{days} days left",
+  "yourPointsHome" : "YOUR POINTS",
   "@challengeDeadlineDays": {
     "placeholders": {
       "days": {
@@ -330,6 +336,8 @@
   "authSwitchToRegister": "Need an account? Register",
   "authSwitchToLogin": "Already have an account? Log in",
   "authCredentialsRequired": "Email and password are required.",
+  "authPhoneRequired": "Phone number is required.",
+  "authPhotoOptional": "Add a photo (optional)",
   "authPasswordMinLength": "Password must have at least 6 characters.",
   "authPasswordsMismatch": "Passwords do not match.",
   "authSessionActive": "Active session",

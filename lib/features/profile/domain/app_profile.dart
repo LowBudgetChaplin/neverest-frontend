@@ -6,6 +6,8 @@ class AppProfile {
     required this.authSubject,
     required this.totalPoints,
     required this.availablePoints,
+    this.phoneNumber,
+    this.avatarB64,
   });
 
   factory AppProfile.fromJson(Map<String, dynamic> json) {
@@ -16,6 +18,8 @@ class AppProfile {
       authSubject: json['authSubject'] as String?,
       totalPoints: (json['totalPoints'] as num?)?.toInt() ?? 0,
       availablePoints: (json['availablePoints'] as num?)?.toInt() ?? 0,
+      phoneNumber: json['phoneNumber'] as String?,
+      avatarB64: json['avatarB64'] as String?,
     );
   }
 
@@ -25,4 +29,6 @@ class AppProfile {
   final String? authSubject;
   final int totalPoints;
   final int availablePoints;
+  final String? phoneNumber;
+  final String? avatarB64;
 }

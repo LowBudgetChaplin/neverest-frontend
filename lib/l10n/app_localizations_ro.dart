@@ -186,28 +186,40 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get profilePhone => 'Numar de telefon';
+
+  @override
   String get eventWhen => 'Cand';
 
   @override
   String get eventWhere => 'Unde';
 
   @override
-  String get eventHost => 'Gazda';
+  String get eventReward => 'Recompensa';
 
   @override
-  String get eventReward => 'Recompensa';
+  String get eventRecurrence => 'Recurenta';
 
   @override
   String get eventAbout => 'Despre';
 
   @override
-  String get eventAboutSample => 'Alergare usoara 8K cu grupuri pe ritm si recuperare. Cafea la Origo dupa. Cu ploaie sau fara. Arata QR-ul la intrare pentru puncte.';
+  String get eventStravaClub => 'Alatura-te pe Strava →';
 
   @override
-  String get eventWhatsappSync => 'Postat automat in #announcements si Neverest Strava Club';
+  String get eventWhatsappGroup => 'Alatura-te pe WhatsApp →';
 
   @override
   String get eventRoute => 'Traseu';
+
+  @override
+  String get eventOpenRoute => 'Deschide in Maps';
+
+  @override
+  String get eventParticipants => 'Participanti';
+
+  @override
+  String get eventYouGoing => 'Participi';
 
   @override
   String get eventAdminCheckIn => 'Check-in admin';
@@ -281,6 +293,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String challengeDeadlineDays(int days) {
     return '$days zile ramase';
   }
+
+  @override
+  String get yourPointsHome => 'PUNCTELE TALE';
 
   @override
   String get challengePaused => 'Pauza';
@@ -602,6 +617,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get authCredentialsRequired => 'Email-ul si parola sunt obligatorii.';
+
+  @override
+  String get authPhoneRequired => 'Numarul de telefon este obligatoriu.';
+
+  @override
+  String get authPhotoOptional => 'Adauga o poza (optional)';
 
   @override
   String get authPasswordMinLength => 'Parola trebuie sa aiba cel putin 6 caractere.';

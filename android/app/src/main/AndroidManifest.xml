@@ -1,10 +1,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.neverest">
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Required on Android 11+ so url_launcher can resolve/open external apps
+         (Google Maps, WhatsApp, Strava, browser). Without this, canLaunchUrl
+         returns false and the Route / Strava / WhatsApp buttons do nothing. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.DIAL" />
+            <data android:scheme="tel" />
+        </intent>
+    </queries>
 
     <application
         android:label="neverest"

@@ -186,28 +186,40 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get profilePhone => 'Phone number';
+
+  @override
   String get eventWhen => 'When';
 
   @override
   String get eventWhere => 'Where';
 
   @override
-  String get eventHost => 'Host';
+  String get eventReward => 'Reward';
 
   @override
-  String get eventReward => 'Reward';
+  String get eventRecurrence => 'Recurrence';
 
   @override
   String get eventAbout => 'About';
 
   @override
-  String get eventAboutSample => 'Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.';
+  String get eventStravaClub => 'Join Strava Club →';
 
   @override
-  String get eventWhatsappSync => 'Auto-posted to #announcements and Neverest Strava Club';
+  String get eventWhatsappGroup => 'Join WhatsApp Group →';
 
   @override
   String get eventRoute => 'Route';
+
+  @override
+  String get eventOpenRoute => 'Open in Maps';
+
+  @override
+  String get eventParticipants => 'Participants';
+
+  @override
+  String get eventYouGoing => 'You\'re going';
 
   @override
   String get eventAdminCheckIn => 'Admin check-in';
@@ -281,6 +293,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String challengeDeadlineDays(int days) {
     return '$days days left';
   }
+
+  @override
+  String get yourPointsHome => 'YOUR POINTS';
 
   @override
   String get challengePaused => 'Paused';
@@ -602,6 +617,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authCredentialsRequired => 'Email and password are required.';
+
+  @override
+  String get authPhoneRequired => 'Phone number is required.';
+
+  @override
+  String get authPhotoOptional => 'Add a photo (optional)';
 
   @override
   String get authPasswordMinLength => 'Password must have at least 6 characters.';

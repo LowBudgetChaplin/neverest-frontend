@@ -22,6 +22,11 @@ class EventSummary {
     required this.location,
     required this.startsAt,
     required this.pointsReward,
+    this.description,
+    this.recurrence,
+    this.routeMapUrl,
+    this.stravaClubUrl,
+    this.whatsappGroupUrl,
   });
 
   factory EventSummary.fromJson(Map<String, dynamic> json) {
@@ -32,6 +37,11 @@ class EventSummary {
       location: json['location'] as String? ?? '-',
       startsAt: json['startsAt'] as String? ?? '',
       pointsReward: (json['pointsReward'] as num?)?.toInt() ?? 0,
+      description: json['description'] as String?,
+      recurrence: json['recurrence'] as String?,
+      routeMapUrl: json['routeMapUrl'] as String?,
+      stravaClubUrl: json['stravaClubUrl'] as String?,
+      whatsappGroupUrl: json['whatsappGroupUrl'] as String?,
     );
   }
 
@@ -41,6 +51,11 @@ class EventSummary {
   final String location;
   final String startsAt;
   final int pointsReward;
+  final String? description;
+  final String? recurrence;
+  final String? routeMapUrl;
+  final String? stravaClubUrl;
+  final String? whatsappGroupUrl;
 }
 
 class ChallengeSummary {
@@ -51,6 +66,11 @@ class ChallengeSummary {
     required this.frequency,
     required this.mode,
     required this.pointsReward,
+    this.description,
+    this.startsAt,
+    this.endsAt,
+    this.targetValue,
+    this.targetUnit,
   });
 
   factory ChallengeSummary.fromJson(Map<String, dynamic> json) {
@@ -61,6 +81,11 @@ class ChallengeSummary {
       frequency: json['frequency'] as String? ?? 'UNKNOWN',
       mode: json['mode'] as String? ?? 'UNKNOWN',
       pointsReward: (json['pointsReward'] as num?)?.toInt() ?? 0,
+      description: json['description'] as String?,
+      startsAt: json['startsAt'] as String?,
+      endsAt: json['endsAt'] as String?,
+      targetValue: (json['targetValue'] as num?)?.toDouble(),
+      targetUnit: json['targetUnit'] as String?,
     );
   }
 
@@ -70,6 +95,11 @@ class ChallengeSummary {
   final String frequency;
   final String mode;
   final int pointsReward;
+  final String? description;
+  final String? startsAt;
+  final String? endsAt;
+  final double? targetValue;
+  final String? targetUnit;
 }
 
 class RewardSummary {
