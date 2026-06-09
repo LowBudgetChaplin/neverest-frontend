@@ -36,9 +36,12 @@ class HomeTabScreen extends StatelessWidget {
         final events = data?.events ?? const <EventSummary>[];
         final challenges = data?.challenges ?? const <ChallengeSummary>[];
         final rewards = data?.rewards ?? const <RewardSummary>[];
-        final liveChallenge = challenges.isEmpty ? null : challenges.first;
-        final mainReward = rewards.isEmpty ? null : rewards.first;
         final totalPoints = profile?.totalPoints ?? 0;
+        final availablePoints = profile?.availablePoints ?? 0;
+        // Beneficiile pe care userul si le permite cu punctele disponibile.
+        final affordableRewards = rewards
+            .where((reward) => reward.pointsCost <= availablePoints)
+            .toList();
 
         return ListView(
           padding: EdgeInsets.only(
@@ -70,7 +73,7 @@ class HomeTabScreen extends StatelessWidget {
                   if (onOpenAdmin != null) ...[
                     const SizedBox(width: 8),
                     NeverestGlassIconButton(
-                      icon: Icons.qr_code_scanner_rounded,
+                      icon: Icons.admin_panel_settings_rounded,
                       onPressed: onOpenAdmin,
                     ),
                   ],
@@ -177,28 +180,58 @@ class HomeTabScreen extends StatelessWidget {
               ),
             const SizedBox(height: 20),
             NeverestSectionHeader(title: l10n.homeSpendPoints),
+            const SizedBox(height: 6),
+            // Punctele disponibile pentru cheltuiala.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    availablePoints.toString(),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: NeverestPalette.orange,
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.homeAvailableToSpend.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          letterSpacing: 1.1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 10),
-            if (mainReward == null)
+            if (affordableRewards.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  l10n.eventsEmptyState,
+                  rewards.isEmpty
+                      ? l10n.eventsEmptyState
+                      : l10n.homeNothingAffordable,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
             else
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _RewardSpotlight(
-                  reward: mainReward,
-                  pointsLabel: l10n.commonPointsShort,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      AppPageRoute.fadeSlide(
-                        RewardDetailsScreen(reward: mainReward),
-                      ),
-                    );
-                  },
+              ...affordableRewards.map(
+                (reward) => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                  child: _RewardSpotlight(
+                    reward: reward,
+                    pointsLabel: l10n.commonPointsShort,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        AppPageRoute.fadeSlide(
+                          RewardDetailsScreen(reward: reward),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             if (state.status == DashboardStatus.failure) ...[

@@ -22,6 +22,8 @@ class EventSummary {
     required this.location,
     required this.startsAt,
     required this.pointsReward,
+    this.capacity,
+    this.attendeeCount = 0,
     this.description,
     this.recurrence,
     this.routeMapUrl,
@@ -37,6 +39,8 @@ class EventSummary {
       location: json['location'] as String? ?? '-',
       startsAt: json['startsAt'] as String? ?? '',
       pointsReward: (json['pointsReward'] as num?)?.toInt() ?? 0,
+      capacity: (json['capacity'] as num?)?.toInt(),
+      attendeeCount: (json['attendeeCount'] as num?)?.toInt() ?? 0,
       description: json['description'] as String?,
       recurrence: json['recurrence'] as String?,
       routeMapUrl: json['routeMapUrl'] as String?,
@@ -51,8 +55,18 @@ class EventSummary {
   final String location;
   final String startsAt;
   final int pointsReward;
+  final int? capacity;
+  final int attendeeCount;
   final String? description;
   final String? recurrence;
+
+  /// Locuri ramase, daca evenimentul are capacitate setata.
+  int? get spotsLeft {
+    final cap = capacity;
+    if (cap == null) return null;
+    final left = cap - attendeeCount;
+    return left < 0 ? 0 : left;
+  }
   final String? routeMapUrl;
   final String? stravaClubUrl;
   final String? whatsappGroupUrl;
@@ -71,6 +85,7 @@ class ChallengeSummary {
     this.endsAt,
     this.targetValue,
     this.targetUnit,
+    this.completed = false,
   });
 
   factory ChallengeSummary.fromJson(Map<String, dynamic> json) {
@@ -86,6 +101,7 @@ class ChallengeSummary {
       endsAt: json['endsAt'] as String?,
       targetValue: (json['targetValue'] as num?)?.toDouble(),
       targetUnit: json['targetUnit'] as String?,
+      completed: json['completed'] as bool? ?? false,
     );
   }
 
@@ -100,6 +116,7 @@ class ChallengeSummary {
   final String? endsAt;
   final double? targetValue;
   final String? targetUnit;
+  final bool completed;
 }
 
 class RewardSummary {
@@ -110,6 +127,8 @@ class RewardSummary {
     required this.pointsCost,
     required this.stock,
     this.address,
+    this.description,
+    this.imageB64,
   });
 
   factory RewardSummary.fromJson(Map<String, dynamic> json) {
@@ -120,6 +139,8 @@ class RewardSummary {
       pointsCost: (json['pointsCost'] as num?)?.toInt() ?? 0,
       stock: (json['stock'] as num?)?.toInt(),
       address: json['address'] as String?,
+      description: json['description'] as String?,
+      imageB64: json['imageB64'] as String?,
     );
   }
 
@@ -129,6 +150,10 @@ class RewardSummary {
   final int pointsCost;
   final int? stock;
   final String? address;
+  final String? description;
+
+  /// Imaginea recompensei ca data URI base64 (null = se folosesc cercurile default).
+  final String? imageB64;
 }
 
 class LeaderboardEntrySummary {

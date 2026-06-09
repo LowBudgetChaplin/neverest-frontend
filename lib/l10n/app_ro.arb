@@ -67,6 +67,8 @@
   "homeTrackingLive": "Tracking · live",
   "homeSeeAll": "Vezi tot",
   "homeSpendPoints": "Cheltuie punctele",
+  "homeAvailableToSpend": "de cheltuit",
+  "homeNothingAffordable": "Continua sa aduni puncte — inca niciun beneficiu accesibil.",
   "homeActiveCount": "{count} active",
   "@homeActiveCount": {
     "placeholders": {
@@ -131,10 +133,13 @@
       }
     }
   },
+  "eventFull": "Complet",
 
   "challengesTitle": "Provocari",
   "challengesSubtitle": "Castiga puncte in stilul tau",
   "challengesEarned": "Castigate",
+  "challengesNoCompleted": "Nu ai finalizat nicio provocare inca.",
+  "challengesCompletedTag": "Finalizat",
   "challengesActiveCount": "Active · {count}",
   "@challengesActiveCount": {
     "placeholders": {
@@ -238,7 +243,18 @@
   "rewardsTitle": "Recompense",
   "rewardsWallet": "Portofel",
   "rewardsHistory": "Istoric",
-  "rewardsRedeem": "Redeem",
+  "rewardsRedeem": "Revendica",
+  "rewardEditTitle": "Editeaza recompensa",
+  "rewardEditChangePhoto": "Schimba poza",
+  "rewardEditRemovePhoto": "Elimina poza",
+  "rewardEditFieldTitle": "Titlu",
+  "rewardEditFieldPartner": "Partener",
+  "rewardEditFieldDescription": "Descriere",
+  "rewardEditFieldPoints": "Cost puncte",
+  "rewardEditFieldStock": "Stoc",
+  "rewardEditStockHint": "gol = nelimitat",
+  "rewardEditFieldAddress": "Adresa",
+  "rewardEditValidation": "Titlul, partenerul si un cost pozitiv de puncte sunt obligatorii.",
   "rewardsCategoryBooks": "Carti",
   "rewardsCategoryCafe": "Cafea",
   "rewardsCategoryMusic": "Muzica",
@@ -272,7 +288,7 @@
       "stock": {}
     }
   },
-  "rewardRedeemButton": "Redeem · {points} pct",
+  "rewardRedeemButton": "Revendica · {points} pct",
   "@rewardRedeemButton": {
     "placeholders": {
       "points": {
@@ -288,7 +304,7 @@
       }
     }
   },
-  "rewardRedeemedLabel": "Redeemed",
+  "rewardRedeemedLabel": "Revendicat",
   "rewardValidUntil": "Valabil pana maine la 18:00",
 
   "profileTitle": "Profil",
@@ -360,12 +376,12 @@
   "qrMemberId": "ID membru",
   "qrShowAtGate": "ARATA ACESTA\nLA INTRARE",
   "qrScanHint": "Organizatorul scaneaza → punctele sunt creditate",
-  "qrRefreshCountdown": "Se reimprospateaza in 0:42",
+  "qrRefreshCountdown": "Se reimprospateaza in {time}",
 
   "adminScanHeader": "● Admin · Sunrise Run",
   "adminScanHint": "Aliniaza QR-ul membrului in interiorul ramei",
   "adminScanManualCheckin": "Simuleaza check-in",
-  "adminScanManualInput": "Introducere manuala QR",
+  "adminScanManualInput": "Introducere manuala cod participant",
   "adminScanSubmit": "Trimite check-in",
   "adminScanReset": "Scaneaza din nou",
   "adminScanFailed": "Check-in esuat.",
@@ -394,6 +410,18 @@
       }
     }
   },
+  "adminScanSpots": "{count} / {capacity} locuri",
+  "@adminScanSpots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "capacity": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCapacityExceeded": "Numarul de locuri a fost depasit",
   "adminScanNext": "Scanare urmatoare",
 
   "dashboardLoadFailed": "Datele dashboard nu au putut fi incarcate."

@@ -43,6 +43,16 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
   bool _detectionLocked = false;
   _ScanEntry? _lastSuccess;
 
+  // Capacitatea (optionala) si numarul curent de check-in-uri pentru eveniment.
+  int? _capacity;
+  int _checkedIn = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _capacity = widget.event.capacity;
+  }
+
   @override
   void dispose() {
     _manualQrController.dispose();
@@ -60,6 +70,8 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
           if (state.status == EventCheckInStatus.success && state.result != null) {
             final entry = _ScanEntry(
               userId: state.result!.userId,
+              name: state.result!.userName,
+              avatarB64: state.result!.userAvatarB64,
               points: state.result!.pointsAwarded,
               time: _timeNow(),
             );
@@ -69,6 +81,9 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
               if (_recentEntries.length > 6) {
                 _recentEntries.removeLast();
               }
+              // Sincronizam contorul si capacitatea cu raspunsul backend-ului.
+              _checkedIn = state.result!.checkInCount ?? (_checkedIn + 1);
+              _capacity = state.result!.capacity ?? _capacity;
             });
             _detectionLocked = true;
             _scannerController.stop();
@@ -77,12 +92,14 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
 
           if (state.status == EventCheckInStatus.failure) {
             _detectionLocked = false;
+            // Backend-ul semnaleaza capacitatea depasita printr-un marcaj stabil,
+            // pe care il traducem aici in mesajul localizat.
+            final raw = state.errorMessage ?? '';
+            final message = raw.contains('EVENT_CAPACITY_EXCEEDED')
+                ? l10n.adminScanCapacityExceeded
+                : (raw.isEmpty ? l10n.adminScanFailed : raw);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  state.errorMessage ?? l10n.adminScanFailed,
-                ),
-              ),
+              SnackBar(content: Text(message)),
             );
           }
         },
@@ -115,23 +132,23 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                                   onPressed: () => Navigator.of(context).pop(),
                                 ),
                                 const Spacer(),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.55),
-                                    borderRadius: BorderRadius.circular(99),
-                                  ),
-                                  child: Text(
-                                    l10n.adminScanHeader,
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                          color: NeverestPalette.orange,
-                                          letterSpacing: 1.2,
-                                        ),
-                                  ),
-                                ),
+                                // Container(
+                                //   padding: const EdgeInsets.symmetric(
+                                //     horizontal: 12,
+                                //     vertical: 8,
+                                //   ),
+                                //   decoration: BoxDecoration(
+                                //     color: Colors.black.withOpacity(0.55),
+                                //     borderRadius: BorderRadius.circular(99),
+                                //   ),
+                                //   child: Text(
+                                //     l10n.adminScanHeader,
+                                //     style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                //           color: NeverestPalette.orange,
+                                //           letterSpacing: 1.2,
+                                //         ),
+                                //   ),
+                                // ),
                                 const Spacer(),
                                 const SizedBox(width: 38),
                               ],
@@ -179,7 +196,7 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                               ),
                               const SizedBox(height: 10),
                               SizedBox(
-                                width: 190,
+                                width: 205,
                                 child: FilledButton.icon(
                                   onPressed: isSubmitting ? null : _submitManual,
                                   icon: const Icon(Icons.flash_on_rounded),
@@ -211,17 +228,15 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                         Row(
                           children: [
                             Text(
-                              l10n.adminScanCheckedInCount(_recentEntries.length + 28),
+                              _capacity != null
+                                  ? l10n.adminScanSpots(_checkedIn, _capacity!)
+                                  : l10n.adminScanCheckedInCount(_checkedIn),
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    color: Colors.white,
+                                    color: _capacity != null &&
+                                            _checkedIn >= _capacity!
+                                        ? NeverestPalette.orange
+                                        : Colors.white,
                                     fontWeight: FontWeight.w800,
-                                  ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              l10n.adminScanCapacity(40),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: Colors.white.withOpacity(0.64),
                                   ),
                             ),
                           ],
@@ -259,14 +274,20 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: Row(
                                   children: [
-                                    NeverestAvatar(name: entry.userId, size: 32),
+                                    NeverestAvatar(
+                                      name: entry.label,
+                                      imageB64: entry.avatarB64,
+                                      size: 32,
+                                    ),
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            entry.userId,
+                                            entry.label,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .titleSmall
@@ -319,32 +340,44 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              width: 66,
-                              height: 66,
-                              decoration: BoxDecoration(
-                                color: NeverestPalette.orange,
-                                borderRadius: BorderRadius.circular(99),
-                              ),
-                              child: const Icon(
-                                Icons.check_rounded,
-                                color: Colors.white,
-                                size: 34,
-                              ),
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                NeverestAvatar(
+                                  name: _lastSuccess!.label,
+                                  imageB64: _lastSuccess!.avatarB64,
+                                  size: 72,
+                                ),
+                                Container(
+                                  width: 26,
+                                  height: 26,
+                                  decoration: BoxDecoration(
+                                    color: NeverestPalette.success,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: NeverestPalette.ink, width: 2),
+                                  ),
+                                  child: const Icon(Icons.check_rounded,
+                                      color: Colors.white, size: 16),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 14),
                             Text(
                               l10n.adminScanCheckedIn.toUpperCase(),
-                              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 30,
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: NeverestPalette.orange,
+                                    letterSpacing: 1.4,
+                                    fontWeight: FontWeight.w800,
                                   ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
-                              _lastSuccess!.userId,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              _lastSuccess!.label,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                     color: Colors.white,
+                                    fontWeight: FontWeight.w800,
                                   ),
                             ),
                             const SizedBox(height: 10),
@@ -469,11 +502,18 @@ class _ScanEntry {
     required this.userId,
     required this.points,
     required this.time,
+    this.name,
+    this.avatarB64,
   });
 
   final String userId;
+  final String? name;
+  final String? avatarB64;
   final int points;
   final String time;
+
+  /// Numele daca exista, altfel ID-ul ca fallback.
+  String get label => (name != null && name!.isNotEmpty) ? name! : userId;
 }
 
 class _Corner extends StatelessWidget {

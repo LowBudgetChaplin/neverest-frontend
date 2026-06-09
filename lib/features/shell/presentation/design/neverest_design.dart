@@ -310,6 +310,49 @@ class NeverestAvatar extends StatelessWidget {
   }
 }
 
+/// Imaginea unei recompense: foloseste poza base64 daca exista, altfel afiseaza
+/// arta default (cercurile topografice) peste [fallbackColor].
+class NeverestRewardImage extends StatelessWidget {
+  const NeverestRewardImage({
+    super.key,
+    required this.imageB64,
+    required this.fallbackColor,
+    this.ringCount = 8,
+  });
+
+  final String? imageB64;
+  final Color fallbackColor;
+  final int ringCount;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageB64 != null && imageB64!.isNotEmpty) {
+      try {
+        final raw =
+            imageB64!.contains(',') ? imageB64!.split(',').last : imageB64!;
+        final bytes = base64Decode(raw);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (_, __, ___) => _fallback(),
+        );
+      } catch (_) {
+        // Fall through to default art.
+      }
+    }
+    return _fallback();
+  }
+
+  Widget _fallback() {
+    return Container(
+      color: fallbackColor,
+      child: NeverestTopographicRings(color: Colors.white, count: ringCount),
+    );
+  }
+}
+
 class NeverestTopographicLines extends StatelessWidget {
   const NeverestTopographicLines({
     super.key,

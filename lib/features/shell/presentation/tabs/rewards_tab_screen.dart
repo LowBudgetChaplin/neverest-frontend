@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../rewards/presentation/screens/reward_details_screen.dart';
+import '../../../rewards/presentation/screens/reward_edit_screen.dart';
 import '../../../rewards/presentation/screens/reward_history_screen.dart';
 import '../design/neverest_design.dart';
 
@@ -25,6 +27,9 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
     final l10n = AppLocalizations.of(context)!;
     final points = context.select<ProfileBloc, int>(
       (bloc) => bloc.state.profile?.availablePoints ?? 0,
+    );
+    final isAdmin = context.select<AccessCubit, bool>(
+      (cubit) => cubit.state.canOpenAdminCenter,
     );
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
@@ -118,6 +123,15 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                         ),
                       );
                     },
+                    onEdit: isAdmin
+                        ? () {
+                            Navigator.of(context).push(
+                              AppPageRoute.fadeSlide(
+                                RewardEditScreen(reward: reward),
+                              ),
+                            );
+                          }
+                        : null,
                   );
                 },
               ),
@@ -212,6 +226,7 @@ class _RewardGridCard extends StatelessWidget {
     required this.redeemLabel,
     required this.pointsLabel,
     required this.onTap,
+    this.onEdit,
   });
 
   final RewardSummary reward;
@@ -220,6 +235,7 @@ class _RewardGridCard extends StatelessWidget {
   final String redeemLabel;
   final String pointsLabel;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -249,10 +265,26 @@ class _RewardGridCard extends StatelessWidget {
               ),
               clipBehavior: Clip.antiAlias,
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  const Positioned.fill(
-                    child: NeverestTopographicRings(color: Colors.white, count: 6),
+                  NeverestRewardImage(
+                    imageB64: reward.imageB64,
+                    fallbackColor: accent,
+                    ringCount: 6,
                   ),
+                  // gradient pentru lizibilitatea numelui peste o poza
+                  if (reward.imageB64 != null && reward.imageB64!.isNotEmpty)
+                    const Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black54],
+                          ),
+                        ),
+                      ),
+                    ),
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -266,6 +298,24 @@ class _RewardGridCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (onEdit != null)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Material(
+                        color: Colors.black.withOpacity(0.45),
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: onEdit,
+                          child: const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(Icons.edit_rounded,
+                                size: 16, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -64,7 +64,6 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
         final active = items.where((item) => !item.done).toList();
         final done = items.where((item) => item.done).toList();
         final list = _showCompleted ? done : active;
-        final featured = active.isNotEmpty ? active.first : (done.isNotEmpty ? done.first : items.first);
 
         return ListView(
           padding: EdgeInsets.only(
@@ -110,71 +109,37 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _FeaturedChallengeCard(
-                challenge: featured,
-                onTap: () {
-                  Navigator.of(context).push(
-                    AppPageRoute.fadeSlide(
-                      ChallengeDetailsScreen(challenge: featured.summary),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 14),
-            ...list
-                .where((item) => item.id != featured.id || _showCompleted)
-                .map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: _ChallengeRow(
-                      item: item,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          AppPageRoute.fadeSlide(
-                            ChallengeDetailsScreen(challenge: item.summary),
-                          ),
-                        );
-                      },
-                    ),
+            if (list.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  _showCompleted
+                      ? l10n.challengesNoCompleted
+                      : l10n.eventsEmptyState,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )
+            else
+              ...list.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                  child: _ChallengeCard(
+                    item: item,
+                    featured: true,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        AppPageRoute.fadeSlide(
+                          ChallengeDetailsScreen(challenge: item.summary),
+                        ),
+                      );
+                    },
                   ),
                 ),
+              ),
           ],
         );
       },
     );
-  }
-}
-
-class _FeaturedChallengeCard extends StatelessWidget {
-  const _FeaturedChallengeCard({
-    required this.challenge,
-    required this.onTap,
-  });
-
-  final _ChallengeItem challenge;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ChallengeCard(item: challenge, featured: true, onTap: onTap);
-  }
-}
-
-class _ChallengeRow extends StatelessWidget {
-  const _ChallengeRow({
-    required this.item,
-    required this.onTap,
-  });
-
-  final _ChallengeItem item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return _ChallengeCard(item: item, featured: false, onTap: onTap);
   }
 }
 
@@ -202,22 +167,22 @@ class _ChallengeCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final icon = _activityIcon(item.summary.activityType);
 
+    // ── culoare per sport ─────────────────────────────────────────────────────
+    final sportColor = neverestActivityColor(item.summary.activityType);
+    final accent = item.done
+        ? (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted)
+        : sportColor;
+
     // ── badge tip activitate ──────────────────────────────────────────────────
     final activityBadge = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon,
-            size: 12,
-            color: item.done
-                ? (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted)
-                : NeverestPalette.orange),
+        Icon(icon, size: 12, color: accent),
         const SizedBox(width: 4),
         Text(
           item.summary.activityType.toUpperCase(),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: item.done
-                    ? (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted)
-                    : NeverestPalette.orange,
+                color: accent,
                 letterSpacing: 1.1,
                 fontWeight: FontWeight.w700,
               ),
@@ -244,9 +209,7 @@ class _ChallengeCard extends StatelessWidget {
         Text(
           '+${item.summary.pointsReward}',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: item.done
-                    ? (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted)
-                    : NeverestPalette.orange,
+                color: accent,
                 fontWeight: FontWeight.w900,
               ),
         ),
@@ -262,85 +225,162 @@ class _ChallengeCard extends StatelessWidget {
     );
 
     if (featured) {
-      // ── CARD MARE (featured) ── dark cu topografic ────────────────────────
+      // ── CARD MINIMALIST ── fundal plat cu tentă subtilă pe sport, fără
+      //    wave-uri, fără cutie de iconiță, fără divider. Doar tipografie
+      //    aerisită + un accent discret de culoare în spate.
+      final muted =
+          isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted;
+      final base =
+          isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised;
+      // tenta de fundal preia culoarea sportului (sau gri pentru cele done)
+      final lineColor =
+          isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine;
+      // fundal minimalist specific sportului: o iconita mare, foarte discreta
+      // (gri pentru provocarile finalizate)
+      final watermark =
+          (item.done ? muted : sportColor).withOpacity(isDark ? 0.08 : 0.06);
+
       return InkWell(
         borderRadius: BorderRadius.circular(22),
         onTap: onTap,
         child: Ink(
           decoration: BoxDecoration(
-            color: NeverestPalette.ink,
+            color: base,
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: lineColor),
           ),
-          child: Stack(
-            children: [
-              const Positioned.fill(
-                child: NeverestTopographicLines(
-                  color: NeverestPalette.orange,
-                  density: 16,
-                  opacity: 0.7,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -14,
+                  bottom: -20,
+                  child: Icon(icon, size: 140, color: watermark),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
+                  child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // header: punct + sport ····· deadline / finalizat
+                Row(
                   children: [
-                    // header: badge stânga · deadline dreapta
-                    Row(
-                      children: [
-                        activityBadge,
-                        const Spacer(),
-                        deadlineText,
-                      ],
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: accent,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                    const SizedBox(height: 20),
-                    // titlu
-                    Text(
-                      item.summary.title.toUpperCase(),
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                            color: Colors.white,
-                            fontSize: 30,
-                            height: 1.1,
-                          ),
+                    const SizedBox(width: 7),
+                    Icon(icon, size: 14, color: accent),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        item.summary.activityType.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: accent,
+                              letterSpacing: 1.4,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    // subtitlu / descriere
-                    Text(
-                      item.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.60),
-                          ),
-                    ),
-                    const SizedBox(height: 20),
-                    // footer: puncte
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '+${item.summary.pointsReward}',
-                          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                                color: NeverestPalette.orange,
-                                fontSize: 28,
-                              ),
-                        ),
-                        const SizedBox(width: 4),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            AppLocalizations.of(context)!.commonPoints.toUpperCase(),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: NeverestPalette.orange.withOpacity(0.70),
+                    if (item.done)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle_rounded,
+                              size: 14, color: NeverestPalette.success),
+                          const SizedBox(width: 4),
+                          Text(
+                            AppLocalizations.of(context)!
+                                .challengesCompletedTag
+                                .toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: NeverestPalette.success,
+                                  letterSpacing: 0.8,
                                   fontWeight: FontWeight.w800,
-                                  letterSpacing: 1.2,
                                 ),
                           ),
-                        ),
-                      ],
+                        ],
+                      )
+                    else
+                      Text(
+                        item.deadline.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: muted,
+                              letterSpacing: 0.8,
+                            ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                // titlu
+                Text(
+                  item.summary.title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        height: 1.12,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                // subtitlu / descriere
+                Text(
+                  item.subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: muted, height: 1.35),
+                ),
+                const SizedBox(height: 20),
+                // footer: puncte ····· buton săgeată rotund
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '+${item.summary.pointsReward}',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            color: accent,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(width: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        AppLocalizations.of(context)!.commonPoints.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: muted,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.2,
+                            ),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(isDark ? 0.18 : 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.arrow_forward_rounded,
+                          size: 18, color: accent),
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -477,7 +517,7 @@ class _ChallengeItem {
   final ChallengeSummary summary;
   final String subtitle;
   final String deadline;
-  bool get done => false;
+  bool get done => summary.completed;
   String get id => summary.id;
 }
 

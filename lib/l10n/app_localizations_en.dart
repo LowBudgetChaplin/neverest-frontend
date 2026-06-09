@@ -162,6 +162,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSpendPoints => 'Spend your points';
 
   @override
+  String get homeAvailableToSpend => 'to spend';
+
+  @override
+  String get homeNothingAffordable => 'Keep earning — no perks within reach yet.';
+
+  @override
   String homeActiveCount(int count) {
     return '$count active';
   }
@@ -241,6 +247,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get eventFull => 'Full';
+
+  @override
   String get challengesTitle => 'Challenges';
 
   @override
@@ -248,6 +257,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get challengesEarned => 'Earned';
+
+  @override
+  String get challengesNoCompleted => 'You haven\'t completed any challenge yet.';
+
+  @override
+  String get challengesCompletedTag => 'Completed';
 
   @override
   String challengesActiveCount(int count) {
@@ -424,6 +439,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardsRedeem => 'Redeem';
+
+  @override
+  String get rewardEditTitle => 'Edit reward';
+
+  @override
+  String get rewardEditChangePhoto => 'Change photo';
+
+  @override
+  String get rewardEditRemovePhoto => 'Remove photo';
+
+  @override
+  String get rewardEditFieldTitle => 'Title';
+
+  @override
+  String get rewardEditFieldPartner => 'Partner';
+
+  @override
+  String get rewardEditFieldDescription => 'Description';
+
+  @override
+  String get rewardEditFieldPoints => 'Points cost';
+
+  @override
+  String get rewardEditFieldStock => 'Stock';
+
+  @override
+  String get rewardEditStockHint => 'empty = unlimited';
+
+  @override
+  String get rewardEditFieldAddress => 'Address';
+
+  @override
+  String get rewardEditValidation => 'Title, partner and a positive points cost are required.';
 
   @override
   String get rewardsCategoryBooks => 'Books';
@@ -675,7 +723,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrScanHint => 'Organizer scans → points credited';
 
   @override
-  String get qrRefreshCountdown => 'Refreshes in 0:42';
+  String qrRefreshCountdown(String time) {
+    return 'Refreshes in $time';
+  }
 
   @override
   String get adminScanHeader => '● Admin · Sunrise Run';
@@ -687,7 +737,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminScanManualCheckin => 'Simulate check-in';
 
   @override
-  String get adminScanManualInput => 'Manual QR input';
+  String get adminScanManualInput => 'Manual code input';
 
   @override
   String get adminScanSubmit => 'Submit check-in';
@@ -715,6 +765,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminScanCapacity(int count) {
     return '$count cap';
   }
+
+  @override
+  String adminScanSpots(int count, int capacity) {
+    return '$count / $capacity spots';
+  }
+
+  @override
+  String get adminScanCapacityExceeded => 'Number of spots exceeded';
 
   @override
   String get adminScanNext => 'Next scan';

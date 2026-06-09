@@ -137,7 +137,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                // ── Hero header ────────────────────────────────────────────
                 Container(
                   height: 250,
                   color: NeverestPalette.ink,

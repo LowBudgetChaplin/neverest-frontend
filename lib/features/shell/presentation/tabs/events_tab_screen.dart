@@ -305,6 +305,38 @@ class _EventLargeCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
+                  if (event.spotsLeft != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          event.spotsLeft! > 0
+                              ? Icons.event_seat_outlined
+                              : Icons.block_rounded,
+                          size: 14,
+                          color: event.spotsLeft! > 0
+                              ? (isDark
+                                  ? NeverestPalette.inkMuted
+                                  : NeverestPalette.paperMuted)
+                              : NeverestPalette.danger,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          event.spotsLeft! > 0
+                              ? AppLocalizations.of(context)!
+                                  .eventSpotsLeft(event.spotsLeft!)
+                              : AppLocalizations.of(context)!.eventFull,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: event.spotsLeft! > 0
+                                    ? (isDark
+                                        ? NeverestPalette.inkMuted
+                                        : NeverestPalette.paperMuted)
+                                    : NeverestPalette.danger,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ],
+                    ),
                   const Spacer(),
                   Text(
                     '+${event.pointsReward} PTS',

@@ -56,6 +56,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   final _eventDescriptionController = TextEditingController();
   final _eventLocationController = TextEditingController();
   final _eventPointsController = TextEditingController();
+  final _eventCapacityController = TextEditingController();
   final _eventRouteMapUrlController = TextEditingController();
   final _eventStravaClubUrlController = TextEditingController();
   final _eventWhatsappGroupUrlController = TextEditingController();
@@ -108,6 +109,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     _eventDescriptionController.dispose();
     _eventLocationController.dispose();
     _eventPointsController.dispose();
+    _eventCapacityController.dispose();
     _eventRouteMapUrlController.dispose();
     _eventStravaClubUrlController.dispose();
     _eventWhatsappGroupUrlController.dispose();
@@ -281,11 +283,24 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
             ),
             const SizedBox(height: 8),
             TextField(
+              controller: _eventCapacityController,
+              enabled: !isBusy,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              decoration: const InputDecoration(
+                labelText: 'Max participants (optional)',
+                hintText: 'leave empty for unlimited',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
               controller: _eventRouteMapUrlController,
               enabled: !isBusy,
               decoration: const InputDecoration(
-                labelText: 'Google Maps URL (optional)',
-                hintText: 'https://maps.google.com/...',
+                labelText: 'Google Maps',
+                hintText: '<iframe src="...">',
               ),
             ),
             const SizedBox(height: 8),
@@ -294,7 +309,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               enabled: !isBusy,
               decoration: const InputDecoration(
                 labelText: 'Strava Club URL (optional)',
-                hintText: 'https://www.strava.com/clubs/...',
+                hintText: 'https://www.strava.com/...',
               ),
             ),
             const SizedBox(height: 8),
@@ -735,10 +750,24 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                   : (value) => setState(() => _auditSuccess = value),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: isBusy ? null : _refreshAuditLogs,
-              icon: const Icon(Icons.search),
-              label: const Text('Search logs'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: isBusy ? null : _refreshAuditLogs,
+                    icon: const Icon(Icons.search),
+                    label: const Text('Search logs'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : _exportAuditLogs,
+                    icon: const Icon(Icons.download_rounded),
+                    label: const Text('Export logs'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             if (state.auditLogs.isEmpty)
@@ -856,12 +885,20 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
       return;
     }
 
+    final capacityText = _eventCapacityController.text.trim();
+    final capacity = capacityText.isEmpty ? null : int.tryParse(capacityText);
+    if (capacityText.isNotEmpty && (capacity == null || capacity <= 0)) {
+      _showValidation('Max participants must be a positive number.');
+      return;
+    }
+
     await context.read<AdminPanelCubit>().createEvent(
           title: title,
           activityType: _eventActivity,
           location: location,
           startsAtIso: _toLocalDateTimeIso(_eventStartsAt),
           pointsReward: points,
+          capacity: capacity,
           description: _eventDescriptionController.text.trim().isEmpty
               ? null
               : _eventDescriptionController.text.trim(),
@@ -969,6 +1006,14 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
         );
   }
 
+  Future<void> _exportAuditLogs() async {
+    await context.read<AdminPanelCubit>().exportAuditLogs(
+          action: _auditActionController.text,
+          actor: _auditActorController.text,
+          success: _auditSuccess,
+        );
+  }
+
   Future<DateTime?> _pickDateTime(
       BuildContext context, DateTime initial) async {
     final pickedDate = await showDatePicker(
@@ -1037,7 +1082,7 @@ class _AuthMeCard extends StatelessWidget {
             Text('Auth /me', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
             Text('Subject: ${authMe!.subject}'),
-            Text('Authenticated: ${authMe!.authenticated}'),
+            // Text('Authenticated: ${authMe!.authenticated}'),
             const SizedBox(height: 8),
             Wrap(
               spacing: 6,

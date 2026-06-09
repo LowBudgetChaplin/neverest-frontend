@@ -162,6 +162,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get homeSpendPoints => 'Cheltuie punctele';
 
   @override
+  String get homeAvailableToSpend => 'de cheltuit';
+
+  @override
+  String get homeNothingAffordable => 'Continua sa aduni puncte — inca niciun beneficiu accesibil.';
+
+  @override
   String homeActiveCount(int count) {
     return '$count active';
   }
@@ -241,6 +247,9 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
+  String get eventFull => 'Complet';
+
+  @override
   String get challengesTitle => 'Provocari';
 
   @override
@@ -248,6 +257,12 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get challengesEarned => 'Castigate';
+
+  @override
+  String get challengesNoCompleted => 'Nu ai finalizat nicio provocare inca.';
+
+  @override
+  String get challengesCompletedTag => 'Finalizat';
 
   @override
   String challengesActiveCount(int count) {
@@ -423,7 +438,40 @@ class AppLocalizationsRo extends AppLocalizations {
   String get rewardsHistory => 'Istoric';
 
   @override
-  String get rewardsRedeem => 'Redeem';
+  String get rewardsRedeem => 'Revendica';
+
+  @override
+  String get rewardEditTitle => 'Editeaza recompensa';
+
+  @override
+  String get rewardEditChangePhoto => 'Schimba poza';
+
+  @override
+  String get rewardEditRemovePhoto => 'Elimina poza';
+
+  @override
+  String get rewardEditFieldTitle => 'Titlu';
+
+  @override
+  String get rewardEditFieldPartner => 'Partener';
+
+  @override
+  String get rewardEditFieldDescription => 'Descriere';
+
+  @override
+  String get rewardEditFieldPoints => 'Cost puncte';
+
+  @override
+  String get rewardEditFieldStock => 'Stoc';
+
+  @override
+  String get rewardEditStockHint => 'gol = nelimitat';
+
+  @override
+  String get rewardEditFieldAddress => 'Adresa';
+
+  @override
+  String get rewardEditValidation => 'Titlul, partenerul si un cost pozitiv de puncte sunt obligatorii.';
 
   @override
   String get rewardsCategoryBooks => 'Carti';
@@ -491,7 +539,7 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String rewardRedeemButton(int points) {
-    return 'Redeem · $points pct';
+    return 'Revendica · $points pct';
   }
 
   @override
@@ -500,7 +548,7 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get rewardRedeemedLabel => 'Redeemed';
+  String get rewardRedeemedLabel => 'Revendicat';
 
   @override
   String get rewardValidUntil => 'Valabil pana maine la 18:00';
@@ -675,7 +723,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get qrScanHint => 'Organizatorul scaneaza → punctele sunt creditate';
 
   @override
-  String get qrRefreshCountdown => 'Se reimprospateaza in 0:42';
+  String qrRefreshCountdown(String time) {
+    return 'Se reimprospateaza in $time';
+  }
 
   @override
   String get adminScanHeader => '● Admin · Sunrise Run';
@@ -687,7 +737,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminScanManualCheckin => 'Simuleaza check-in';
 
   @override
-  String get adminScanManualInput => 'Introducere manuala QR';
+  String get adminScanManualInput => 'Introducere manuala cod participant';
 
   @override
   String get adminScanSubmit => 'Trimite check-in';
@@ -715,6 +765,14 @@ class AppLocalizationsRo extends AppLocalizations {
   String adminScanCapacity(int count) {
     return '$count capacitate';
   }
+
+  @override
+  String adminScanSpots(int count, int capacity) {
+    return '$count / $capacity locuri';
+  }
+
+  @override
+  String get adminScanCapacityExceeded => 'Numarul de locuri a fost depasit';
 
   @override
   String get adminScanNext => 'Scanare urmatoare';

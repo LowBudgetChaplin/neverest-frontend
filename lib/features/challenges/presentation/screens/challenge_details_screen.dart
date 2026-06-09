@@ -429,14 +429,14 @@ class _SubmissionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  l10n.challengeSubmissionId(submission.id),
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-              ),
+              // Expanded(
+              //   child: Text(
+              //     l10n.challengeSubmissionId(submission.id),
+              //     style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              //           fontWeight: FontWeight.w800,
+              //         ),
+              //   ),
+              // ),
               NeverestFilterChip(
                 label: submission.status,
                 selected: isPending,

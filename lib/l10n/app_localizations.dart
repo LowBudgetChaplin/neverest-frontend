@@ -401,6 +401,18 @@ abstract class AppLocalizations {
   /// **'Spend your points'**
   String get homeSpendPoints;
 
+  /// No description provided for @homeAvailableToSpend.
+  ///
+  /// In en, this message translates to:
+  /// **'to spend'**
+  String get homeAvailableToSpend;
+
+  /// No description provided for @homeNothingAffordable.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep earning — no perks within reach yet.'**
+  String get homeNothingAffordable;
+
   /// No description provided for @homeActiveCount.
   ///
   /// In en, this message translates to:
@@ -539,6 +551,12 @@ abstract class AppLocalizations {
   /// **'{count} spots left'**
   String eventSpotsLeft(int count);
 
+  /// No description provided for @eventFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get eventFull;
+
   /// No description provided for @challengesTitle.
   ///
   /// In en, this message translates to:
@@ -556,6 +574,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Earned'**
   String get challengesEarned;
+
+  /// No description provided for @challengesNoCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t completed any challenge yet.'**
+  String get challengesNoCompleted;
+
+  /// No description provided for @challengesCompletedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get challengesCompletedTag;
 
   /// No description provided for @challengesActiveCount.
   ///
@@ -880,6 +910,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Redeem'**
   String get rewardsRedeem;
+
+  /// No description provided for @rewardEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit reward'**
+  String get rewardEditTitle;
+
+  /// No description provided for @rewardEditChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get rewardEditChangePhoto;
+
+  /// No description provided for @rewardEditRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get rewardEditRemovePhoto;
+
+  /// No description provided for @rewardEditFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get rewardEditFieldTitle;
+
+  /// No description provided for @rewardEditFieldPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner'**
+  String get rewardEditFieldPartner;
+
+  /// No description provided for @rewardEditFieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get rewardEditFieldDescription;
+
+  /// No description provided for @rewardEditFieldPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points cost'**
+  String get rewardEditFieldPoints;
+
+  /// No description provided for @rewardEditFieldStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock'**
+  String get rewardEditFieldStock;
+
+  /// No description provided for @rewardEditStockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'empty = unlimited'**
+  String get rewardEditStockHint;
+
+  /// No description provided for @rewardEditFieldAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get rewardEditFieldAddress;
+
+  /// No description provided for @rewardEditValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Title, partner and a positive points cost are required.'**
+  String get rewardEditValidation;
 
   /// No description provided for @rewardsCategoryBooks.
   ///
@@ -1358,8 +1454,8 @@ abstract class AppLocalizations {
   /// No description provided for @qrRefreshCountdown.
   ///
   /// In en, this message translates to:
-  /// **'Refreshes in 0:42'**
-  String get qrRefreshCountdown;
+  /// **'Refreshes in {time}'**
+  String qrRefreshCountdown(String time);
 
   /// No description provided for @adminScanHeader.
   ///
@@ -1382,7 +1478,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminScanManualInput.
   ///
   /// In en, this message translates to:
-  /// **'Manual QR input'**
+  /// **'Manual code input'**
   String get adminScanManualInput;
 
   /// No description provided for @adminScanSubmit.
@@ -1426,6 +1522,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} cap'**
   String adminScanCapacity(int count);
+
+  /// No description provided for @adminScanSpots.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} / {capacity} spots'**
+  String adminScanSpots(int count, int capacity);
+
+  /// No description provided for @adminScanCapacityExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of spots exceeded'**
+  String get adminScanCapacityExceeded;
 
   /// No description provided for @adminScanNext.
   ///

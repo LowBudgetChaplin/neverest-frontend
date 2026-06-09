@@ -45,6 +45,7 @@ class AdminRepository {
     required String location,
     required String startsAtIso,
     required int pointsReward,
+    int? capacity,
     String? description,
     String? recurrence,
     String? routeMapUrl,
@@ -59,6 +60,7 @@ class AdminRepository {
         'location': location.trim(),
         'startsAt': startsAtIso,
         'pointsReward': pointsReward,
+        if (capacity != null) 'capacity': capacity,
         if (description != null) 'description': description,
         if (recurrence != null) 'recurrence': recurrence,
         if (routeMapUrl != null) 'routeMapUrl': routeMapUrl,
@@ -131,6 +133,36 @@ class AdminRepository {
         'description': description.trim(),
         'pointsCost': pointsCost,
         'stock': stock,
+      },
+    );
+  }
+
+  /// Actualizeaza o recompensa. Campurile null nu sunt trimise (raman
+  /// neschimbate). Pentru a sterge stocul/imaginea foloseste clearStock/clearImage.
+  Future<void> updateReward({
+    required String rewardId,
+    String? title,
+    String? partnerName,
+    String? description,
+    int? pointsCost,
+    int? stock,
+    bool clearStock = false,
+    String? address,
+    String? imageB64,
+    bool clearImage = false,
+  }) async {
+    await _apiClient.patch(
+      '/api/v1/rewards/$rewardId',
+      data: {
+        if (title != null) 'title': title.trim(),
+        if (partnerName != null) 'partnerName': partnerName.trim(),
+        if (description != null) 'description': description.trim(),
+        if (pointsCost != null) 'pointsCost': pointsCost,
+        if (stock != null) 'stock': stock,
+        if (clearStock) 'clearStock': true,
+        if (address != null) 'address': address.trim(),
+        if (imageB64 != null) 'imageB64': imageB64,
+        if (clearImage) 'clearImage': true,
       },
     );
   }
