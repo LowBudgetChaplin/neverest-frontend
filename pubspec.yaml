@@ -64,9 +64,23 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_native_splash: ^2.4.1
   json_serializable: ^6.8.0
   retrofit_generator: 8.1.0
   build_runner: 2.4.13
+
+# Native splash (ecranul nativ la pornire) — negru cu logo Neverest.
+# După ce pui assets/images/nvr_logo.png, rulează:
+#   flutter pub get
+#   dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#0A0A0B"
+  image: assets/images/nvr_logo.png
+  android_12:
+    color: "#0A0A0B"
+    image: assets/images/nvr_logo.png
+  android: true
+  ios: true
 
 flutter_launcher_icons:
   android: "launcher_icon"
@@ -114,3 +128,4 @@ flutter:
     - assets/images/ic_social.svg
     - assets/images/ic_wallet.svg
     - assets/images/gift.png
+    - assets/images/nvr_logo.png

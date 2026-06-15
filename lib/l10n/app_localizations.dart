@@ -314,7 +314,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSubtitle2.
   ///
   /// In en, this message translates to:
-  /// **'Run, hike, play padel. Show up at events. Hit weekly challenges. Every move counts.'**
+  /// **'Run, hike. Show up at events. Hit weekly challenges. Every move counts.'**
   String get onboardingSubtitle2;
 
   /// No description provided for @onboardingCta2.
@@ -332,7 +332,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSubtitle3.
   ///
   /// In en, this message translates to:
-  /// **'Cărturești, Origo, MOCA, your favorite coach. Real perks from real Bucharest.'**
+  /// **'Cărturești, Tiny Cup, Eden House, your favorite coach, etc'**
   String get onboardingSubtitle3;
 
   /// No description provided for @onboardingCta3.
@@ -586,6 +586,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Completed'**
   String get challengesCompletedTag;
+
+  /// No description provided for @challengesPartnerFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Partners'**
+  String get challengesPartnerFilter;
 
   /// No description provided for @challengesActiveCount.
   ///
@@ -886,6 +892,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Updates every minute'**
   String get leaderboardSubtitle;
+
+  /// No description provided for @offersSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner offers'**
+  String get offersSectionTitle;
+
+  /// No description provided for @partnerCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner Center'**
+  String get partnerCenterTitle;
+
+  /// No description provided for @partnerAccessRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner account required.'**
+  String get partnerAccessRequired;
+
+  /// No description provided for @partnerPublishOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish an offer / ad'**
+  String get partnerPublishOffer;
+
+  /// No description provided for @partnerEditOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit offer'**
+  String get partnerEditOffer;
+
+  /// No description provided for @partnerBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get partnerBrand;
+
+  /// No description provided for @partnerOfferTitleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Product / offer title'**
+  String get partnerOfferTitleField;
+
+  /// No description provided for @partnerDescriptionField.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get partnerDescriptionField;
+
+  /// No description provided for @partnerDiscountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount (e.g. -20%)'**
+  String get partnerDiscountHint;
+
+  /// No description provided for @partnerLinkOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Link (optional)'**
+  String get partnerLinkOptional;
+
+  /// No description provided for @partnerChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get partnerChangePhoto;
+
+  /// No description provided for @partnerAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get partnerAddPhoto;
+
+  /// No description provided for @partnerFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get partnerFrom;
+
+  /// No description provided for @partnerUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get partnerUntil;
+
+  /// No description provided for @partnerPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get partnerPublish;
+
+  /// No description provided for @partnerSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get partnerSave;
+
+  /// No description provided for @partnerMyOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'My offers'**
+  String get partnerMyOffers;
+
+  /// No description provided for @partnerNoOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t published any offer yet.'**
+  String get partnerNoOffers;
+
+  /// No description provided for @partnerBrandTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand and title are required.'**
+  String get partnerBrandTitleRequired;
+
+  /// No description provided for @partnerOfferUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer updated.'**
+  String get partnerOfferUpdated;
+
+  /// No description provided for @partnerOfferPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer published.'**
+  String get partnerOfferPublished;
+
+  /// No description provided for @partnerCreateChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a challenge'**
+  String get partnerCreateChallenge;
+
+  /// No description provided for @partnerEditChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit challenge'**
+  String get partnerEditChallenge;
+
+  /// No description provided for @partnerActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get partnerActivity;
+
+  /// No description provided for @partnerBenefitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Benefit (no points)'**
+  String get partnerBenefitLabel;
+
+  /// No description provided for @partnerNoChallenges.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t created any challenge yet.'**
+  String get partnerNoChallenges;
+
+  /// No description provided for @partnerChallengeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title and benefit are required.'**
+  String get partnerChallengeRequired;
+
+  /// No description provided for @commonError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get commonError;
 
   /// No description provided for @rewardsTitle.
   ///

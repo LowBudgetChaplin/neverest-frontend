@@ -78,6 +78,11 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   final _auditActionController = TextEditingController();
   final _auditActorController = TextEditingController();
 
+  final _partnerEmailController = TextEditingController();
+  final _partnerPasswordController = TextEditingController();
+  final _partnerNameController = TextEditingController();
+  final _partnerBrandController = TextEditingController();
+
   String _eventActivity = 'RUNNING';
   String _eventRecurrence = 'NONE';
   DateTime _eventStartsAt = DateTime.now().add(const Duration(days: 1));
@@ -127,6 +132,10 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     _userDisplayNameController.dispose();
     _auditActionController.dispose();
     _auditActorController.dispose();
+    _partnerEmailController.dispose();
+    _partnerPasswordController.dispose();
+    _partnerNameController.dispose();
+    _partnerBrandController.dispose();
     super.dispose();
   }
 
@@ -175,6 +184,8 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               _buildRewardSection(context, isBusy),
               const SizedBox(height: 12),
               _buildUsersSection(context, state, isBusy),
+              const SizedBox(height: 12),
+              _buildPartnerSection(context, isBusy),
               const SizedBox(height: 12),
               _buildAuditSection(context, state, isBusy),
               const SizedBox(height: 12),
@@ -621,6 +632,68 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
         ),
       ),
     );
+  }
+
+  Widget _buildPartnerSection(BuildContext context, bool isBusy) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Create partner account',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerNameController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(labelText: 'Display name'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerBrandController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(labelText: 'Brand'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerEmailController,
+              enabled: !isBusy,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerPasswordController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(labelText: 'Password (min 6)'),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: isBusy ? null : _createPartner,
+              icon: const Icon(Icons.storefront_outlined),
+              label: const Text('Create partner'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _createPartner() async {
+    final email = _partnerEmailController.text.trim();
+    final password = _partnerPasswordController.text;
+    final brand = _partnerBrandController.text.trim();
+    if (email.isEmpty || password.length < 6 || brand.isEmpty) {
+      _showValidation('Email, brand și parolă (min 6) sunt obligatorii.');
+      return;
+    }
+    await context.read<AdminPanelCubit>().createPartner(
+          email: email,
+          password: password,
+          displayName: _partnerNameController.text,
+          brand: brand,
+        );
   }
 
   Widget _buildUsersSection(

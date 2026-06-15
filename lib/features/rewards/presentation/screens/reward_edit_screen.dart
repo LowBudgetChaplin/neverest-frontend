@@ -32,7 +32,6 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
   late final TextEditingController _stockController;
   late final TextEditingController _addressController;
 
-  // Imaginea curenta in editare: null = nemodificata fata de server.
   String? _imageB64;
   bool _imageChanged = false;
   bool _saving = false;
@@ -72,7 +71,7 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ── Preview imagine ───────────────────────────────────────────
+
           _ImagePreview(imageB64: _imageB64, accent: NeverestPalette.orange),
           const SizedBox(height: 10),
           Row(

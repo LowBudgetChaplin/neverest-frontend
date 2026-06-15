@@ -11,6 +11,7 @@ TextStyle _getTextStyle(
   return TextStyle(
       fontSize: fontSize,
       fontFamily: 'PlusJakarta', //TODO: to see if we keep this font
+      fontFamilyFallback: const ['Roboto', 'sans-serif'],
       color: color, fontWeight:
   fontWeight);
 }

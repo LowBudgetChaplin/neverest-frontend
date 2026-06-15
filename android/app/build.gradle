@@ -29,6 +29,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.neverest"
+        // geolocator_android cere minim API 23; ridicam de la 21 (flutter.minSdkVersion).
         minSdkVersion 23
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()

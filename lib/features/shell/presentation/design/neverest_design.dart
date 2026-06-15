@@ -47,11 +47,21 @@ class NeverestLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = foreground ?? Theme.of(context).colorScheme.onSurface;
     final fontSize = compact ? 16.0 : 20.0;
+    final markSize = compact ? 26.0 : 34.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.terrain_rounded, color: color, size: compact ? 20 : 24),
-        const SizedBox(width: 6),
+        Image.asset(
+          'assets/images/nvr_logo.png',
+          width: markSize,
+          height: markSize,
+          // logo-ul e alb → pe temă deschisă îl colorăm în culoarea textului
+          color: isDark ? null : color,
+          errorBuilder: (_, __, ___) =>
+              Icon(Icons.terrain_rounded, color: color, size: compact ? 20 : 24),
+        ),
+        const SizedBox(width: 8),
         Text(
           'NEVEREST',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(

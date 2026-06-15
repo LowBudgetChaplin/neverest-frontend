@@ -10,6 +10,7 @@ import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../admin/presentation/screens/admin_center_screen.dart';
+import '../../../partner/presentation/screens/partner_center_screen.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -138,6 +139,21 @@ class ProfileScreen extends StatelessWidget {
                       },
                       icon: const Icon(Icons.admin_panel_settings_outlined),
                       label: Text(l10n.profileAdminCenter),
+                    ),
+                  ),
+                ],
+                if (accessState.canOpenPartnerCenter) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          AppPageRoute.fadeSlide(const PartnerCenterScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.storefront_outlined),
+                      label: const Text('Partner Center'),
                     ),
                   ),
                 ],
@@ -731,17 +747,17 @@ class _SettingsCard extends StatelessWidget {
           Wrap(
             spacing: 8,
             children: [
-              NeverestFilterChip(
+              _LangChip(
                 label: l10n.profileSystemLanguage,
                 selected: localeCode == AppLocaleCubit.systemCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.systemCode),
               ),
-              NeverestFilterChip(
+              _LangChip(
                 label: 'Română',
                 selected: localeCode == AppLocaleCubit.roCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.roCode),
               ),
-              NeverestFilterChip(
+              _LangChip(
                 label: 'English',
                 selected: localeCode == AppLocaleCubit.enCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.enCode),
@@ -749,6 +765,51 @@ class _SettingsCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// High-contrast language selector chip: filled orange when selected,
+/// bordered + muted when not — clearly readable in both themes.
+class _LangChip extends StatelessWidget {
+  const _LangChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final muted = isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted;
+    return InkWell(
+      borderRadius: BorderRadius.circular(99),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: selected ? NeverestPalette.orange : Colors.transparent,
+          borderRadius: BorderRadius.circular(99),
+          border: Border.all(
+            color: selected
+                ? NeverestPalette.orange
+                : (isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine),
+            width: 1.4,
+          ),
+        ),
+        child: Text(
+          label,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: selected ? Colors.white : muted,
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              ),
+        ),
       ),
     );
   }

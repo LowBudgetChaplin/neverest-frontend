@@ -230,6 +230,29 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
     }
   }
 
+  Future<void> createPartner({
+    required String email,
+    required String password,
+    required String displayName,
+    required String brand,
+  }) async {
+    emit(state.copyWith(isBusy: true, clearMessage: true));
+    try {
+      await _repository.createPartner(
+        email: email,
+        password: password,
+        displayName: displayName,
+        brand: brand,
+      );
+      emit(state.copyWith(
+        isBusy: false,
+        successMessage: 'Partner account created.',
+      ));
+    } catch (error) {
+      emit(state.copyWith(isBusy: false, errorMessage: error.toString()));
+    }
+  }
+
   Future<void> retryAnnouncements(String eventId) async {
     emit(state.copyWith(isBusy: true, clearMessage: true));
     try {

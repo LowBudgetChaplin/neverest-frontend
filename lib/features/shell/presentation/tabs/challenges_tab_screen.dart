@@ -17,6 +17,7 @@ class ChallengesTabScreen extends StatefulWidget {
 
 class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
   bool _showCompleted = false;
+  bool _partnerOnly = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +64,14 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
         final items = _toChallengeItems(source, l10n);
         final active = items.where((item) => !item.done).toList();
         final done = items.where((item) => item.done).toList();
-        final list = _showCompleted ? done : active;
+        var list = _showCompleted ? done : active;
+        if (_partnerOnly) {
+          list = list
+              .where((item) => item.summary.isPartnerChallenge)
+              .toList();
+        }
+        final hasPartnerChallenges =
+            items.any((item) => item.summary.isPartnerChallenge);
 
         return ListView(
           padding: EdgeInsets.only(
@@ -105,6 +113,16 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                     selected: _showCompleted,
                     onTap: () => setState(() => _showCompleted = true),
                   ),
+                  if (hasPartnerChallenges) ...[
+                    const SizedBox(width: 8),
+                    NeverestFilterChip(
+                      label: l10n.challengesPartnerFilter,
+                      selected: _partnerOnly,
+                      icon: Icons.storefront_rounded,
+                      onTap: () =>
+                          setState(() => _partnerOnly = !_partnerOnly),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -339,30 +357,71 @@ class _ChallengeCard extends StatelessWidget {
                       .bodySmall
                       ?.copyWith(color: muted, height: 1.35),
                 ),
+                // badge "Powered by [partener]" pentru provocările de partener
+                if (item.summary.isPartnerChallenge) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.storefront_rounded, size: 13, color: accent),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'POWERED BY ${item.summary.brand!.toUpperCase()}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: accent,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 20),
-                // footer: puncte ····· buton săgeată rotund
+                // footer: recompensă ····· buton săgeată rotund
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      '+${item.summary.pointsReward}',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: accent,
-                            fontWeight: FontWeight.w900,
-                          ),
-                    ),
-                    const SizedBox(width: 6),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 2),
-                      child: Text(
-                        AppLocalizations.of(context)!.commonPoints.toUpperCase(),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: muted,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.2,
-                            ),
+                    if (item.summary.isPartnerChallenge) ...[
+                      Icon(Icons.card_giftcard_rounded, size: 18, color: accent),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          item.summary.rewardLabel ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: accent,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
                       ),
-                    ),
+                    ] else ...[
+                      Text(
+                        '+${item.summary.pointsReward}',
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: accent,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                      ),
+                      const SizedBox(width: 6),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Text(
+                          AppLocalizations.of(context)!.commonPoints.toUpperCase(),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: muted,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.2,
+                                  ),
+                        ),
+                      ),
+                    ],
                     const Spacer(),
                     Container(
                       width: 38,

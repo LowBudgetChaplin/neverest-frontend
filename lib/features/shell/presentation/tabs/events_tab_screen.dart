@@ -38,6 +38,13 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final sourceEvents = state.data?.events ?? const <EventSummary>[];
+        // Sporturile din filtre vin dinamic din tipurile prezente în evenimente.
+        final sportCodes = <String>[
+          'ALL',
+          ...{
+            for (final e in sourceEvents) e.activityType.toUpperCase(),
+          },
+        ];
         final filtered = _filter == 'ALL'
             ? sourceEvents
             : sourceEvents
@@ -71,37 +78,20 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
             const SizedBox(height: 12),
             SizedBox(
               height: 34,
-              child: ListView(
+              child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
-                children: [
-                  NeverestFilterChip(
-                    label: l10n.commonAll,
-                    selected: _filter == 'ALL',
-                    onTap: () => setState(() => _filter = 'ALL'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
-                    label: l10n.activityRunning,
-                    selected: _filter == 'RUNNING',
-                    icon: Icons.directions_run_rounded,
-                    onTap: () => setState(() => _filter = 'RUNNING'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
-                    label: l10n.activityPadel,
-                    selected: _filter == 'PADEL',
-                    icon: Icons.sports_tennis_rounded,
-                    onTap: () => setState(() => _filter = 'PADEL'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
-                    label: l10n.activityMountain,
-                    selected: _filter == 'MOUNTAIN',
-                    icon: Icons.terrain_rounded,
-                    onTap: () => setState(() => _filter = 'MOUNTAIN'),
-                  ),
-                ],
+                itemCount: sportCodes.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final code = sportCodes[index];
+                  return NeverestFilterChip(
+                    label: _sportLabel(l10n, code),
+                    selected: _filter == code,
+                    icon: _sportIcon(code),
+                    onTap: () => setState(() => _filter = code),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
@@ -176,6 +166,25 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
       },
     );
   }
+}
+
+String _sportLabel(AppLocalizations l10n, String code) {
+  return switch (code) {
+    'ALL' => l10n.commonAll,
+    'RUNNING' => l10n.activityRunning,
+    'PADEL' => l10n.activityPadel,
+    'MOUNTAIN' => l10n.activityMountain,
+    _ => code[0] + code.substring(1).toLowerCase(),
+  };
+}
+
+IconData? _sportIcon(String code) {
+  return switch (code) {
+    'RUNNING' => Icons.directions_run_rounded,
+    'PADEL' => Icons.sports_tennis_rounded,
+    'MOUNTAIN' => Icons.terrain_rounded,
+    _ => null,
+  };
 }
 
 class _EventLargeCard extends StatelessWidget {

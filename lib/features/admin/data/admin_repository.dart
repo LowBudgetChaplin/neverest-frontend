@@ -75,6 +75,23 @@ class AdminRepository {
     return EventCreationResult.fromJson(payload);
   }
 
+  Future<void> createPartner({
+    required String email,
+    required String password,
+    required String displayName,
+    required String brand,
+  }) async {
+    await _apiClient.post(
+      '/api/v1/partners',
+      data: {
+        'email': email.trim(),
+        'password': password,
+        'displayName': displayName.trim(),
+        'brand': brand.trim(),
+      },
+    );
+  }
+
   Future<List<AnnouncementDispatchItem>> retryAnnouncements({
     required String eventId,
   }) async {

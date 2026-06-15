@@ -27,11 +27,13 @@ ThemeData makeTheme({
   final baseTextTheme = ThemeData(
     brightness: brightness,
     fontFamily: 'PlusJakarta',
+    fontFamilyFallback: const ['Roboto', 'sans-serif'],
   ).textTheme;
 
   return ThemeData(
     useMaterial3: true,
     fontFamily: 'PlusJakarta',
+    fontFamilyFallback: const ['Roboto', 'sans-serif'],
     colorScheme: colorScheme,
     scaffoldBackgroundColor: colors.bgDefault,
     primaryColor: colors.primary,

@@ -15,6 +15,8 @@ class AccessState extends Equatable {
 
   bool get canOpenAdminCenter => profile?.canOpenAdminCenter ?? false;
 
+  bool get canOpenPartnerCenter => profile?.isPartner ?? false;
+
   AccessState copyWith({
     bool? isLoading,
     AccessProfile? profile,

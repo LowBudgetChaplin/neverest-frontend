@@ -115,7 +115,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingHeadline2 => 'MOVE.\nEARN POINTS.';
 
   @override
-  String get onboardingSubtitle2 => 'Run, hike, play padel. Show up at events. Hit weekly challenges. Every move counts.';
+  String get onboardingSubtitle2 => 'Run, hike. Show up at events. Hit weekly challenges. Every move counts.';
 
   @override
   String get onboardingCta2 => 'Sounds good';
@@ -124,7 +124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingHeadline3 => 'SPEND THEM\nLOCALLY.';
 
   @override
-  String get onboardingSubtitle3 => 'Cărturești, Origo, MOCA, your favorite coach. Real perks from real Bucharest.';
+  String get onboardingSubtitle3 => 'Cărturești, Tiny Cup, Eden House, your favorite coach, etc';
 
   @override
   String get onboardingCta3 => 'Let\'s go';
@@ -263,6 +263,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get challengesCompletedTag => 'Completed';
+
+  @override
+  String get challengesPartnerFilter => 'Partners';
 
   @override
   String challengesActiveCount(int count) {
@@ -427,6 +430,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaderboardSubtitle => 'Updates every minute';
+
+  @override
+  String get offersSectionTitle => 'Partner offers';
+
+  @override
+  String get partnerCenterTitle => 'Partner Center';
+
+  @override
+  String get partnerAccessRequired => 'Partner account required.';
+
+  @override
+  String get partnerPublishOffer => 'Publish an offer / ad';
+
+  @override
+  String get partnerEditOffer => 'Edit offer';
+
+  @override
+  String get partnerBrand => 'Brand';
+
+  @override
+  String get partnerOfferTitleField => 'Product / offer title';
+
+  @override
+  String get partnerDescriptionField => 'Description';
+
+  @override
+  String get partnerDiscountHint => 'Discount (e.g. -20%)';
+
+  @override
+  String get partnerLinkOptional => 'Link (optional)';
+
+  @override
+  String get partnerChangePhoto => 'Change photo';
+
+  @override
+  String get partnerAddPhoto => 'Add photo';
+
+  @override
+  String get partnerFrom => 'From';
+
+  @override
+  String get partnerUntil => 'Until';
+
+  @override
+  String get partnerPublish => 'Publish';
+
+  @override
+  String get partnerSave => 'Save';
+
+  @override
+  String get partnerMyOffers => 'My offers';
+
+  @override
+  String get partnerNoOffers => 'You haven\'t published any offer yet.';
+
+  @override
+  String get partnerBrandTitleRequired => 'Brand and title are required.';
+
+  @override
+  String get partnerOfferUpdated => 'Offer updated.';
+
+  @override
+  String get partnerOfferPublished => 'Offer published.';
+
+  @override
+  String get partnerCreateChallenge => 'Create a challenge';
+
+  @override
+  String get partnerEditChallenge => 'Edit challenge';
+
+  @override
+  String get partnerActivity => 'Activity';
+
+  @override
+  String get partnerBenefitLabel => 'Benefit (no points)';
+
+  @override
+  String get partnerNoChallenges => 'You haven\'t created any challenge yet.';
+
+  @override
+  String get partnerChallengeRequired => 'Title and benefit are required.';
+
+  @override
+  String get commonError => 'Error';
 
   @override
   String get rewardsTitle => 'Rewards';

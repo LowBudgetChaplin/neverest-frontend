@@ -78,7 +78,7 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
             context
                 .read<DashboardBloc>()
                 .add(const DashboardRefreshRequested());
-            // Reimprospatam profilul ca soldul de puncte sa se actualizeze live.
+
             final currentName =
                 context.read<ProfileBloc>().state.profile?.displayName ??
                     'Neverest User';
@@ -118,7 +118,7 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                               ringCount: 10,
                             ),
                           ),
-                          // intunecam usor pentru lizibilitatea textului peste poza
+
                           if (widget.reward.imageB64 != null &&
                               widget.reward.imageB64!.isNotEmpty)
                             const Positioned.fill(

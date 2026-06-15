@@ -265,6 +265,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get challengesCompletedTag => 'Finalizat';
 
   @override
+  String get challengesPartnerFilter => 'Parteneri';
+
+  @override
   String challengesActiveCount(int count) {
     return 'Active · $count';
   }
@@ -427,6 +430,90 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get leaderboardSubtitle => 'Actualizare in fiecare minut';
+
+  @override
+  String get offersSectionTitle => 'Oferte parteneri';
+
+  @override
+  String get partnerCenterTitle => 'Panou Partener';
+
+  @override
+  String get partnerAccessRequired => 'Cont de partener necesar.';
+
+  @override
+  String get partnerPublishOffer => 'Publică o ofertă / reclamă';
+
+  @override
+  String get partnerEditOffer => 'Editează oferta';
+
+  @override
+  String get partnerBrand => 'Brand';
+
+  @override
+  String get partnerOfferTitleField => 'Titlu produs/ofertă';
+
+  @override
+  String get partnerDescriptionField => 'Descriere';
+
+  @override
+  String get partnerDiscountHint => 'Reducere (ex: -20%)';
+
+  @override
+  String get partnerLinkOptional => 'Link (opțional)';
+
+  @override
+  String get partnerChangePhoto => 'Schimbă poza';
+
+  @override
+  String get partnerAddPhoto => 'Adaugă poză';
+
+  @override
+  String get partnerFrom => 'De la';
+
+  @override
+  String get partnerUntil => 'Până la';
+
+  @override
+  String get partnerPublish => 'Publică';
+
+  @override
+  String get partnerSave => 'Salvează';
+
+  @override
+  String get partnerMyOffers => 'Ofertele mele';
+
+  @override
+  String get partnerNoOffers => 'Nu ai publicat încă nicio ofertă.';
+
+  @override
+  String get partnerBrandTitleRequired => 'Brand și titlu sunt obligatorii.';
+
+  @override
+  String get partnerOfferUpdated => 'Ofertă actualizată.';
+
+  @override
+  String get partnerOfferPublished => 'Ofertă publicată.';
+
+  @override
+  String get partnerCreateChallenge => 'Creează o provocare';
+
+  @override
+  String get partnerEditChallenge => 'Editează provocarea';
+
+  @override
+  String get partnerActivity => 'Activitate';
+
+  @override
+  String get partnerBenefitLabel => 'Beneficiu (fără puncte)';
+
+  @override
+  String get partnerNoChallenges => 'Nu ai creat încă nicio provocare.';
+
+  @override
+  String get partnerChallengeRequired => 'Titlul și beneficiul sunt obligatorii.';
+
+  @override
+  String get commonError => 'Eroare';
 
   @override
   String get rewardsTitle => 'Recompense';

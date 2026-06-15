@@ -16,6 +16,9 @@ class AccessProfile extends Equatable {
   bool get isAdmin =>
       authorities.any((value) => value.toUpperCase().contains('ROLE_ADMIN'));
 
+  bool get isPartner =>
+      authorities.any((value) => value.toUpperCase().contains('PARTNER'));
+
   @override
   List<Object?> get props => [
         subject,

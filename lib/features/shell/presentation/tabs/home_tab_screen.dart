@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../access/presentation/cubit/access_cubit.dart';
+import '../../../partner/presentation/screens/partner_center_screen.dart';
+import '../../../notifications/presentation/screens/notifications_screen.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../events/presentation/screens/event_details_screen.dart';
@@ -12,6 +15,7 @@ import '../../../profile/presentation/screens/my_qr_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../rewards/presentation/screens/reward_details_screen.dart';
 import '../design/neverest_design.dart';
+import 'rewards_tab_screen.dart' show OfferCard;
 
 class HomeTabScreen extends StatelessWidget {
   const HomeTabScreen({
@@ -59,7 +63,9 @@ class HomeTabScreen extends StatelessWidget {
                   const Spacer(),
                   NeverestGlassIconButton(
                     icon: Icons.notifications_none_rounded,
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      AppPageRoute.fadeSlide(const NotificationsScreen()),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   NeverestGlassIconButton(
@@ -75,6 +81,16 @@ class HomeTabScreen extends StatelessWidget {
                     NeverestGlassIconButton(
                       icon: Icons.admin_panel_settings_rounded,
                       onPressed: onOpenAdmin,
+                    ),
+                  ],
+                  if (context.select<AccessCubit, bool>(
+                      (c) => c.state.canOpenPartnerCenter)) ...[
+                    const SizedBox(width: 8),
+                    NeverestGlassIconButton(
+                      icon: Icons.storefront_rounded,
+                      onPressed: () => Navigator.of(context).push(
+                        AppPageRoute.fadeSlide(const PartnerCenterScreen()),
+                      ),
                     ),
                   ],
                 ],
@@ -116,6 +132,31 @@ class HomeTabScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
+            if ((data?.offers ?? const <OfferSummary>[]).isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.offersSectionTitle.toUpperCase(),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 132,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: data!.offers.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) =>
+                      OfferCard(offer: data.offers[index]),
+                ),
+              ),
+              const SizedBox(height: 18),
+            ],
             // if (liveChallenge != null) ...[
             //   NeverestSectionHeader(
             //     title: l10n.homeLiveNow,

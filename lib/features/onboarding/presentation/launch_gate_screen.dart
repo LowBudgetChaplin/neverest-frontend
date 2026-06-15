@@ -95,7 +95,54 @@ class _LaunchGateScreenState extends State<LaunchGateScreen> {
   Widget _launchLoading({Key? key}) {
     return Scaffold(
       key: key,
-      body: const Center(child: CircularProgressIndicator()),
+      backgroundColor: const Color(0xFF0A0A0B),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            Container(
+              width: 168,
+              height: 168,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black,
+                border: Border.all(
+                  color: const Color(0xFFFF5A1F),
+                  width: 3,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF5A1F).withOpacity(0.35),
+                    blurRadius: 40,
+                    spreadRadius: 4,
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              padding: const EdgeInsets.all(26),
+              child: Image.asset(
+                'assets/images/nvr_logo.png',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.terrain_rounded,
+                  color: Color(0xFFFF5A1F),
+                  size: 72,
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+            const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF5A1F)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

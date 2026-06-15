@@ -12,6 +12,7 @@ import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/events/data/event_action_repository.dart';
 import '../features/leaderboard/data/leaderboard_repository.dart';
 import '../features/leaderboard/presentation/cubit/activity_leaderboard_cubit.dart';
+import '../features/partner/data/partner_repository.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
 import '../features/rewards/data/reward_action_repository.dart';
@@ -47,6 +48,7 @@ class _MainAppState extends State<MainApp> {
   late final AuthRepository _authRepository;
   late final ProfileRepository _profileRepository;
   late final StravaRepository _stravaRepository;
+  late final PartnerRepository _partnerRepository;
 
   @override
   void initState() {
@@ -66,6 +68,7 @@ class _MainAppState extends State<MainApp> {
     );
     _profileRepository = ProfileRepository(_apiClient);
     _stravaRepository = StravaRepository(_apiClient);
+    _partnerRepository = PartnerRepository(_apiClient);
   }
 
   @override
@@ -103,6 +106,7 @@ class _MainAppState extends State<MainApp> {
         RepositoryProvider.value(value: _authRepository),
         RepositoryProvider.value(value: _profileRepository),
         RepositoryProvider.value(value: _stravaRepository),
+        RepositoryProvider.value(value: _partnerRepository),
       ],
       child: MultiBlocProvider(
         providers: [
