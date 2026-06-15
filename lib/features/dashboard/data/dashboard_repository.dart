@@ -16,12 +16,16 @@ class DashboardRepository {
         '/api/v1/leaderboard/general',
         queryParameters: {'limit': 20},
       ),
+      _apiClient.get('/api/v1/offers'),
+      _apiClient.get('/api/v1/reward-categories'),
     ]);
 
     final eventsResponse = responses[0].data as List<dynamic>? ?? const [];
     final challengesResponse = responses[1].data as List<dynamic>? ?? const [];
     final rewardsResponse = responses[2].data as List<dynamic>? ?? const [];
     final leaderboardResponse = responses[3].data as List<dynamic>? ?? const [];
+    final offersResponse = responses[4].data as List<dynamic>? ?? const [];
+    final categoriesResponse = responses[5].data as List<dynamic>? ?? const [];
 
     return DashboardData(
       backendMessage: backendMessage,
@@ -40,6 +44,14 @@ class DashboardRepository {
       leaderboard: leaderboardResponse
           .whereType<Map<String, dynamic>>()
           .map(LeaderboardEntrySummary.fromJson)
+          .toList(),
+      offers: offersResponse
+          .whereType<Map<String, dynamic>>()
+          .map(OfferSummary.fromJson)
+          .toList(),
+      rewardCategories: categoriesResponse
+          .whereType<Map<String, dynamic>>()
+          .map(RewardCategory.fromJson)
           .toList(),
     );
   }

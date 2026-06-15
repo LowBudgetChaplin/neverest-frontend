@@ -17,6 +17,7 @@ class ChallengesTabScreen extends StatefulWidget {
 
 class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
   bool _showCompleted = false;
+  bool _partnerOnly = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +64,14 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
         final items = _toChallengeItems(source, l10n);
         final active = items.where((item) => !item.done).toList();
         final done = items.where((item) => item.done).toList();
-        final list = _showCompleted ? done : active;
-        final featured = active.isNotEmpty ? active.first : items.first;
+        var list = _showCompleted ? done : active;
+        if (_partnerOnly) {
+          list = list
+              .where((item) => item.summary.isPartnerChallenge)
+              .toList();
+        }
+        final hasPartnerChallenges =
+            items.any((item) => item.summary.isPartnerChallenge);
 
         return ListView(
           padding: EdgeInsets.only(
@@ -106,42 +113,47 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                     selected: _showCompleted,
                     onTap: () => setState(() => _showCompleted = true),
                   ),
+                  if (hasPartnerChallenges) ...[
+                    const SizedBox(width: 8),
+                    NeverestFilterChip(
+                      label: l10n.challengesPartnerFilter,
+                      selected: _partnerOnly,
+                      icon: Icons.storefront_rounded,
+                      onTap: () =>
+                          setState(() => _partnerOnly = !_partnerOnly),
+                    ),
+                  ],
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _FeaturedChallengeCard(
-                challenge: featured,
-                liveLabel: l10n.challengeLiveTracking,
-                onTap: () {
-                  Navigator.of(context).push(
-                    AppPageRoute.fadeSlide(
-                      ChallengeDetailsScreen(challenge: featured.summary),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 14),
-            ...list
-                .where((item) => item.id != featured.id || _showCompleted)
-                .map(
-                  (item) => Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                    child: _ChallengeRow(
-                      item: item,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          AppPageRoute.fadeSlide(
-                            ChallengeDetailsScreen(challenge: item.summary),
-                          ),
-                        );
-                      },
-                    ),
+            if (list.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  _showCompleted
+                      ? l10n.challengesNoCompleted
+                      : l10n.eventsEmptyState,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              )
+            else
+              ...list.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                  child: _ChallengeCard(
+                    item: item,
+                    featured: true,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        AppPageRoute.fadeSlide(
+                          ChallengeDetailsScreen(challenge: item.summary),
+                        ),
+                      );
+                    },
                   ),
                 ),
+              ),
           ],
         );
       },
@@ -149,141 +161,291 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
   }
 }
 
-class _FeaturedChallengeCard extends StatelessWidget {
-  const _FeaturedChallengeCard({
-    required this.challenge,
-    required this.liveLabel,
-    required this.onTap,
-  });
-
-  final _ChallengeItem challenge;
-  final String liveLabel;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(22),
-      onTap: onTap,
-      child: Ink(
-        height: 232,
-        decoration: BoxDecoration(
-          color: NeverestPalette.ink,
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Stack(
-          children: [
-            const Positioned.fill(
-              child: NeverestTopographicLines(
-                color: NeverestPalette.orange,
-                density: 16,
-                opacity: 0.7,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: NeverestPalette.orange,
-                          borderRadius: BorderRadius.circular(99),
-                          boxShadow: [
-                            BoxShadow(
-                              color: NeverestPalette.orange.withOpacity(0.3),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        liveLabel.toUpperCase(),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: NeverestPalette.orange,
-                              letterSpacing: 1.4,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        challenge.deadline.toUpperCase(),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: Colors.white.withOpacity(0.62),
-                            ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Text(
-                    challenge.summary.title.toUpperCase(),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          color: Colors.white,
-                          fontSize: 34,
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    challenge.subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withOpacity(0.72),
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  NeverestProgressBar(value: challenge.progress),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        '3.1 / 7.4 km',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.74),
-                            ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '+${challenge.summary.pointsReward} PTS',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: NeverestPalette.orange,
-                              fontWeight: FontWeight.w900,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ChallengeRow extends StatelessWidget {
-  const _ChallengeRow({
+class _ChallengeCard extends StatelessWidget {
+  const _ChallengeCard({
     required this.item,
+    required this.featured,
     required this.onTap,
   });
 
   final _ChallengeItem item;
+  final bool featured;
   final VoidCallback onTap;
+
+  static IconData _activityIcon(String type) => switch (type.toUpperCase()) {
+        'RUNNING' => Icons.directions_run_rounded,
+        'CYCLING' => Icons.directions_bike_rounded,
+        'SWIMMING' => Icons.pool_rounded,
+        'MOUNTAIN' => Icons.terrain_rounded,
+        _ => Icons.bolt_rounded,
+      };
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final icon = item.done
-        ? Icons.check_rounded
-        : switch (item.summary.mode.toUpperCase()) {
-            'ONLINE' => Icons.route_rounded,
-            'OFFLINE' => Icons.flag_rounded,
-            _ => Icons.bolt_rounded,
-          };
+    final icon = _activityIcon(item.summary.activityType);
+
+    // ── culoare per sport ─────────────────────────────────────────────────────
+    final sportColor = neverestActivityColor(item.summary.activityType);
+    final accent = item.done
+        ? (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted)
+        : sportColor;
+
+    // ── badge tip activitate ──────────────────────────────────────────────────
+    final activityBadge = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 12, color: accent),
+        const SizedBox(width: 4),
+        Text(
+          item.summary.activityType.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: accent,
+                letterSpacing: 1.1,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+      ],
+    );
+
+    // ── deadline ─────────────────────────────────────────────────────────────
+    final deadlineText = Text(
+      item.deadline.toUpperCase(),
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: featured
+                ? Colors.white.withOpacity(0.55)
+                : (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted),
+            letterSpacing: 0.8,
+          ),
+    );
+
+    // ── punkte ───────────────────────────────────────────────────────────────
+    final pointsWidget = Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          '+${item.summary.pointsReward}',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: accent,
+                fontWeight: FontWeight.w900,
+              ),
+        ),
+        Text(
+          item.done
+              ? AppLocalizations.of(context)!.challengesEarned
+              : AppLocalizations.of(context)!.commonPoints,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted,
+              ),
+        ),
+      ],
+    );
+
+    if (featured) {
+      // ── CARD MINIMALIST ── fundal plat cu tentă subtilă pe sport, fără
+      //    wave-uri, fără cutie de iconiță, fără divider. Doar tipografie
+      //    aerisită + un accent discret de culoare în spate.
+      final muted =
+          isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted;
+      final base =
+          isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised;
+      // tenta de fundal preia culoarea sportului (sau gri pentru cele done)
+      final lineColor =
+          isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine;
+      // fundal minimalist specific sportului: o iconita mare, foarte discreta
+      // (gri pentru provocarile finalizate)
+      final watermark =
+          (item.done ? muted : sportColor).withOpacity(isDark ? 0.08 : 0.06);
+
+      return InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: base,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: lineColor),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -14,
+                  bottom: -20,
+                  child: Icon(icon, size: 140, color: watermark),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 18, 18),
+                  child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // header: punct + sport ····· deadline / finalizat
+                Row(
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: accent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Icon(icon, size: 14, color: accent),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        item.summary.activityType.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: accent,
+                              letterSpacing: 1.4,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ),
+                    if (item.done)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.check_circle_rounded,
+                              size: 14, color: NeverestPalette.success),
+                          const SizedBox(width: 4),
+                          Text(
+                            AppLocalizations.of(context)!
+                                .challengesCompletedTag
+                                .toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelSmall
+                                ?.copyWith(
+                                  color: NeverestPalette.success,
+                                  letterSpacing: 0.8,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
+                      )
+                    else
+                      Text(
+                        item.deadline.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: muted,
+                              letterSpacing: 0.8,
+                            ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                // titlu
+                Text(
+                  item.summary.title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        height: 1.12,
+                      ),
+                ),
+                const SizedBox(height: 6),
+                // subtitlu / descriere
+                Text(
+                  item.subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: muted, height: 1.35),
+                ),
+                // badge "Powered by [partener]" pentru provocările de partener
+                if (item.summary.isPartnerChallenge) ...[
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.storefront_rounded, size: 13, color: accent),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'POWERED BY ${item.summary.brand!.toUpperCase()}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: accent,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 20),
+                // footer: recompensă ····· buton săgeată rotund
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (item.summary.isPartnerChallenge) ...[
+                      Icon(Icons.card_giftcard_rounded, size: 18, color: accent),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          item.summary.rewardLabel ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                color: accent,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
+                      ),
+                    ] else ...[
+                      Text(
+                        '+${item.summary.pointsReward}',
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  color: accent,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                      ),
+                      const SizedBox(width: 6),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Text(
+                          AppLocalizations.of(context)!.commonPoints.toUpperCase(),
+                          style:
+                              Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: muted,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.2,
+                                  ),
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(isDark ? 0.18 : 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.arrow_forward_rounded,
+                          size: 18, color: accent),
+                    ),
+                  ],
+                ),
+              ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ── CARD COMPACT (row) ── aceeași structură, layout orizontal ─────────
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
@@ -298,6 +460,7 @@ class _ChallengeRow extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // icoana activitate
             Container(
               width: 44,
               height: 44,
@@ -308,11 +471,13 @@ class _ChallengeRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                icon,
+                item.done ? Icons.check_rounded : icon,
                 color: item.done ? NeverestPalette.inkMuted : NeverestPalette.orange,
+                size: 20,
               ),
             ),
             const SizedBox(width: 12),
+            // titlu + badge + deadline
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,39 +488,38 @@ class _ChallengeRow extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${item.subtitle} · ${item.deadline}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  const SizedBox(height: 3),
+                  Row(
+                    children: [
+                      activityBadge,
+                      Text(
+                        '  ·  ',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: isDark
+                                  ? NeverestPalette.inkMuted
+                                  : NeverestPalette.paperMuted,
+                            ),
+                      ),
+                      deadlineText,
+                    ],
                   ),
-                  if (!item.done) ...[
-                    const SizedBox(height: 8),
-                    NeverestProgressBar(value: item.progress),
-                  ],
+                  const SizedBox(height: 3),
+                  Text(
+                    item.subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: isDark
+                              ? NeverestPalette.inkMuted
+                              : NeverestPalette.paperMuted,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ],
               ),
             ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '+${item.summary.pointsReward}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: item.done
-                            ? Theme.of(context).textTheme.bodySmall?.color
-                            : NeverestPalette.orange,
-                        fontWeight: FontWeight.w900,
-                      ),
-                ),
-                Text(
-                  item.done
-                      ? AppLocalizations.of(context)!.challengesEarned
-                      : AppLocalizations.of(context)!.commonPoints,
-                  style: Theme.of(context).textTheme.labelSmall,
-                ),
-              ],
-            ),
+            // puncte
+            pointsWidget,
           ],
         ),
       ),
@@ -367,56 +531,52 @@ List<_ChallengeItem> _toChallengeItems(
   List<ChallengeSummary> source,
   AppLocalizations l10n,
 ) {
-  final defaults = [
-    (0.46, false, true, l10n.challengeRouteSubtitle, l10n.challengeDeadlineSun),
-    (
-      0.49,
-      false,
-      false,
-      l10n.challengeDistanceSubtitle,
-      l10n.challengeDeadlineDays(6)
-    ),
-    (0.66, false, false, l10n.challengeMorningSubtitle, l10n.challengeProgress23),
-    (
-      0.60,
-      false,
-      false,
-      l10n.challengePadelSubtitle,
-      l10n.challengeDeadlineJune
-    ),
-    (1.0, true, false, l10n.challengeForestSubtitle, l10n.challengeAlwaysOn),
-  ];
-
-  return List.generate(source.length, (index) {
-    final template = defaults[index % defaults.length];
+  return source.map((summary) {
+    final subtitle = _subtitleFor(summary);
+    final deadline = _deadlineLabelFor(summary, l10n);
     return _ChallengeItem(
-      summary: source[index],
-      progress: template.$1,
-      done: template.$2,
-      live: template.$3,
-      subtitle: template.$4,
-      deadline: template.$5,
+      summary: summary,
+      subtitle: subtitle,
+      deadline: deadline,
     );
-  });
+  }).toList();
+}
+
+String _subtitleFor(ChallengeSummary summary) {
+  if (summary.description != null && summary.description!.isNotEmpty) {
+    return summary.description!;
+  }
+  if (summary.targetValue != null && summary.targetUnit != null) {
+    return '${summary.targetValue!.toStringAsFixed(1)} ${summary.targetUnit}';
+  }
+  return '${summary.activityType} · ${summary.frequency}';
+}
+
+String _deadlineLabelFor(ChallengeSummary summary, AppLocalizations l10n) {
+  final endsAt = summary.endsAt;
+  if (endsAt == null || endsAt.isEmpty) {
+    return summary.frequency.toUpperCase();
+  }
+  final date = DateTime.tryParse(endsAt);
+  if (date == null) return endsAt;
+  final diff = date.difference(DateTime.now()).inDays;
+  if (diff < 0) return l10n.challengeAlwaysOn;
+  if (diff == 0) return 'TODAY';
+  if (diff <= 7) return l10n.challengeDeadlineDays(diff);
+  return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
 }
 
 class _ChallengeItem {
   const _ChallengeItem({
     required this.summary,
-    required this.progress,
-    required this.done,
-    required this.live,
     required this.subtitle,
     required this.deadline,
   });
 
   final ChallengeSummary summary;
-  final double progress;
-  final bool done;
-  final bool live;
   final String subtitle;
   final String deadline;
-
+  bool get done => summary.completed;
   String get id => summary.id;
 }
 

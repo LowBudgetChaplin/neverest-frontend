@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../challenges/presentation/screens/challenge_details_screen.dart';
+import '../../../access/presentation/cubit/access_cubit.dart';
+import '../../../partner/presentation/screens/partner_center_screen.dart';
+import '../../../notifications/presentation/screens/notifications_screen.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../events/presentation/screens/event_details_screen.dart';
@@ -13,6 +15,7 @@ import '../../../profile/presentation/screens/my_qr_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 import '../../../rewards/presentation/screens/reward_details_screen.dart';
 import '../design/neverest_design.dart';
+import 'rewards_tab_screen.dart' show OfferCard;
 
 class HomeTabScreen extends StatelessWidget {
   const HomeTabScreen({
@@ -37,12 +40,12 @@ class HomeTabScreen extends StatelessWidget {
         final events = data?.events ?? const <EventSummary>[];
         final challenges = data?.challenges ?? const <ChallengeSummary>[];
         final rewards = data?.rewards ?? const <RewardSummary>[];
-        final liveChallenge = challenges.isEmpty ? null : challenges.first;
-        final mainReward = rewards.isEmpty ? null : rewards.first;
         final totalPoints = profile?.totalPoints ?? 0;
-        final weekPoints = 0;
-        final weekKm = 0.0;
-        final streak = 0;
+        final availablePoints = profile?.availablePoints ?? 0;
+        // Beneficiile pe care userul si le permite cu punctele disponibile.
+        final affordableRewards = rewards
+            .where((reward) => reward.pointsCost <= availablePoints)
+            .toList();
 
         return ListView(
           padding: EdgeInsets.only(
@@ -60,7 +63,9 @@ class HomeTabScreen extends StatelessWidget {
                   const Spacer(),
                   NeverestGlassIconButton(
                     icon: Icons.notifications_none_rounded,
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).push(
+                      AppPageRoute.fadeSlide(const NotificationsScreen()),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   NeverestGlassIconButton(
@@ -74,8 +79,18 @@ class HomeTabScreen extends StatelessWidget {
                   if (onOpenAdmin != null) ...[
                     const SizedBox(width: 8),
                     NeverestGlassIconButton(
-                      icon: Icons.qr_code_scanner_rounded,
+                      icon: Icons.admin_panel_settings_rounded,
                       onPressed: onOpenAdmin,
+                    ),
+                  ],
+                  if (context.select<AccessCubit, bool>(
+                      (c) => c.state.canOpenPartnerCenter)) ...[
+                    const SizedBox(width: 8),
+                    NeverestGlassIconButton(
+                      icon: Icons.storefront_rounded,
+                      onPressed: () => Navigator.of(context).push(
+                        AppPageRoute.fadeSlide(const PartnerCenterScreen()),
+                      ),
                     ),
                   ],
                 ],
@@ -84,19 +99,11 @@ class HomeTabScreen extends StatelessWidget {
             const SizedBox(height: 14),
             _HomeHeroCard(
               points: totalPoints,
-              weekPoints: weekPoints,
-              weekKm: weekKm,
-              streak: streak,
               onShowQr: () {
                 Navigator.of(context).push(
                   AppPageRoute.fadeSlide(const MyQrScreen()),
                 );
               },
-              levelLabel: l10n.profileLevelLabel,
-              rankText: l10n.profileRankValue(14),
-              weekLabel: l10n.homeThisWeek,
-              activitiesLabel: l10n.homeActivities,
-              streakLabel: l10n.homeStreak,
             ),
             const SizedBox(height: 12),
             Padding(
@@ -125,32 +132,55 @@ class HomeTabScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            if (liveChallenge != null) ...[
-              NeverestSectionHeader(
-                title: l10n.homeLiveNow,
-                trailing: TextButton(
-                  onPressed: () => onSelectTab(2),
-                  child: Text(l10n.commonAll),
+            if ((data?.offers ?? const <OfferSummary>[]).isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.offersSectionTitle.toUpperCase(),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
                 ),
               ),
               const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _LiveCard(
-                  challenge: liveChallenge,
-                  progress: 0.0,
-                  subtitle: l10n.challengeRouteSubtitle,
-                  trackingLabel: l10n.homeTrackingLive,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      AppPageRoute.fadeSlide(
-                        ChallengeDetailsScreen(challenge: liveChallenge),
-                      ),
-                    );
-                  },
+              SizedBox(
+                height: 132,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: data!.offers.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) =>
+                      OfferCard(offer: data.offers[index]),
                 ),
               ),
+              const SizedBox(height: 18),
             ],
+            // if (liveChallenge != null) ...[
+            //   NeverestSectionHeader(
+            //     title: l10n.homeLiveNow,
+            //     trailing: TextButton(
+            //       onPressed: () => onSelectTab(2),
+            //       child: Text(l10n.commonAll),
+            //     ),
+            //   ),
+            //   const SizedBox(height: 10),
+            //   Padding(
+            //     padding: const EdgeInsets.symmetric(horizontal: 16),
+            //     child: _LiveCard(
+            //       challenge: liveChallenge,
+            //       trackingLabel: l10n.homeTrackingLive,
+            //       onTap: () {
+            //         Navigator.of(context).push(
+            //           AppPageRoute.fadeSlide(
+            //             ChallengeDetailsScreen(challenge: liveChallenge),
+            //           ),
+            //         );
+            //       },
+            //     ),
+            //   ),
+            // ],
             const SizedBox(height: 22),
             NeverestSectionHeader(
               title: l10n.homeThisWeek,
@@ -191,28 +221,58 @@ class HomeTabScreen extends StatelessWidget {
               ),
             const SizedBox(height: 20),
             NeverestSectionHeader(title: l10n.homeSpendPoints),
+            const SizedBox(height: 6),
+            // Punctele disponibile pentru cheltuiala.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
+                    availablePoints.toString(),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: NeverestPalette.orange,
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.homeAvailableToSpend.toUpperCase(),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          letterSpacing: 1.1,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 10),
-            if (mainReward == null)
+            if (affordableRewards.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  l10n.eventsEmptyState,
+                  rewards.isEmpty
+                      ? l10n.eventsEmptyState
+                      : l10n.homeNothingAffordable,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
             else
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _RewardSpotlight(
-                  reward: mainReward,
-                  pointsLabel: l10n.commonPointsShort,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      AppPageRoute.fadeSlide(
-                        RewardDetailsScreen(reward: mainReward),
-                      ),
-                    );
-                  },
+              ...affordableRewards.map(
+                (reward) => Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                  child: _RewardSpotlight(
+                    reward: reward,
+                    pointsLabel: l10n.commonPointsShort,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        AppPageRoute.fadeSlide(
+                          RewardDetailsScreen(reward: reward),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             if (state.status == DashboardStatus.failure) ...[
@@ -249,30 +309,15 @@ class HomeTabScreen extends StatelessWidget {
 class _HomeHeroCard extends StatelessWidget {
   const _HomeHeroCard({
     required this.points,
-    required this.weekPoints,
-    required this.weekKm,
-    required this.streak,
     required this.onShowQr,
-    required this.levelLabel,
-    required this.rankText,
-    required this.weekLabel,
-    required this.activitiesLabel,
-    required this.streakLabel,
   });
 
   final int points;
-  final int weekPoints;
-  final double weekKm;
-  final int streak;
   final VoidCallback onShowQr;
-  final String levelLabel;
-  final String rankText;
-  final String weekLabel;
-  final String activitiesLabel;
-  final String streakLabel;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -291,118 +336,67 @@ class _HomeHeroCard extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
-            child: Column(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'YOUR POINTS',
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                  color: Colors.white.withOpacity(0.66),
-                                  letterSpacing: 1.8,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                points.toString(),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .displayLarge
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontSize: 62,
-                                    ),
-                              ),
-                              const SizedBox(width: 8),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 11),
-                                child: Text(
-                                  '+$weekPoints ${weekLabel.toLowerCase()}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelSmall
-                                      ?.copyWith(
-                                        color: NeverestPalette.orange,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$levelLabel · $rankText',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.white.withOpacity(0.72),
-                                ),
-                          ),
-                        ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.yourPointsHome,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: Colors.white.withOpacity(0.66),
+                              letterSpacing: 1.8,
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: onShowQr,
-                      child: Ink(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: NeverestPalette.orange,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Column(
-                          children: [
-                            const Icon(
-                              Icons.qr_code_2_rounded,
+                      const SizedBox(height: 4),
+                      Text(
+                        points.toString(),
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
                               color: Colors.white,
-                              size: 22,
+                              fontSize: 62,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'MY\nQR',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1,
-                                  ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.commonPoints.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: NeverestPalette.orange,
+                              letterSpacing: 1.4,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
-                const Divider(color: Color(0x26FFFFFF), height: 1),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    _HeroStat(label: weekLabel, value: weekKm.toStringAsFixed(1), unit: 'KM'),
-                    const SizedBox(width: 20),
-                    _HeroStat(label: activitiesLabel, value: '0'),
-                    const SizedBox(width: 20),
-                    _HeroStat(
-                      label: streakLabel,
-                      value: streak.toString(),
-                      unit: 'DAYS',
-                      highlight: true,
+                const SizedBox(width: 14),
+                InkWell(
+                  borderRadius: BorderRadius.circular(14),
+                  onTap: onShowQr,
+                  child: Ink(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: NeverestPalette.orange,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ],
+                    child: Column(
+                      children: [
+                        const Icon(Icons.qr_code_2_rounded, color: Colors.white, size: 22),
+                        const SizedBox(height: 2),
+                        Text(
+                          'MY\nQR',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -413,56 +407,6 @@ class _HomeHeroCard extends StatelessWidget {
   }
 }
 
-class _HeroStat extends StatelessWidget {
-  const _HeroStat({
-    required this.label,
-    required this.value,
-    this.unit,
-    this.highlight = false,
-  });
-
-  final String label;
-  final String value;
-  final String? unit;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: Colors.white.withOpacity(0.66),
-                letterSpacing: 1.5,
-              ),
-        ),
-        const SizedBox(height: 2),
-        RichText(
-          text: TextSpan(
-            text: value,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: highlight ? NeverestPalette.orange : Colors.white,
-                  fontSize: 28,
-                ),
-            children: [
-              if (unit != null)
-                TextSpan(
-                  text: ' $unit',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.white.withOpacity(0.62),
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.9,
-                      ),
-                ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
@@ -537,18 +481,15 @@ class _QuickActionCard extends StatelessWidget {
   }
 }
 
+//todo: temp daca mai sync cu platforma web
 class _LiveCard extends StatelessWidget {
   const _LiveCard({
     required this.challenge,
-    required this.progress,
-    required this.subtitle,
     required this.trackingLabel,
     required this.onTap,
   });
 
   final ChallengeSummary challenge;
-  final double progress;
-  final String subtitle;
   final String trackingLabel;
   final VoidCallback onTap;
 
@@ -615,30 +556,16 @@ class _LiveCard extends StatelessWidget {
                     ),
               ),
             ),
-            const SizedBox(height: 2),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodySmall,
+            if (challenge.description != null && challenge.description!.isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  challenge.description!,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            NeverestProgressBar(value: progress),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Text(
-                  '3.1 / 7.4 km',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const Spacer(),
-                Text(
-                  '${(progress * 100).round()}%',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-            ),
+            ],
           ],
         ),
       ),
@@ -770,26 +697,15 @@ class _EventSmallCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Text(
-                        '28/40',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        AppLocalizations.of(context)!.eventsGoingLabel,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const Spacer(),
-                      Text(
-                        '+${event.pointsReward}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: NeverestPalette.orange,
-                              fontWeight: FontWeight.w900,
-                            ),
-                      ),
-                    ],
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '+${event.pointsReward}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: NeverestPalette.orange,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
                   ),
                 ],
               ),

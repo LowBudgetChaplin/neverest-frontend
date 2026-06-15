@@ -74,6 +74,26 @@ class ProfileRepository {
     return AppProfile.fromJson(created);
   }
 
+  Future<AppProfile> updateMyProfile({
+    String? displayName,
+    String? phoneNumber,
+    String? avatarB64,
+  }) async {
+    final response = await _apiClient.patch(
+      '/api/v1/users/me',
+      data: {
+        if (displayName != null) 'displayName': displayName,
+        if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        if (avatarB64 != null) 'avatarB64': avatarB64,
+      },
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw ApiException('Invalid /users/me update payload.');
+    }
+    return AppProfile.fromJson(data);
+  }
+
   String _normalizeDisplayName(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) {

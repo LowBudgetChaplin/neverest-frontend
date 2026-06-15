@@ -314,7 +314,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSubtitle2.
   ///
   /// In en, this message translates to:
-  /// **'Run, hike, play padel. Show up at events. Hit weekly challenges. Every move counts.'**
+  /// **'Run, hike. Show up at events. Hit weekly challenges. Every move counts.'**
   String get onboardingSubtitle2;
 
   /// No description provided for @onboardingCta2.
@@ -332,7 +332,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSubtitle3.
   ///
   /// In en, this message translates to:
-  /// **'Cărturești, Origo, MOCA, your favorite coach. Real perks from real Bucharest.'**
+  /// **'Cărturești, Tiny Cup, Eden House, your favorite coach, etc'**
   String get onboardingSubtitle3;
 
   /// No description provided for @onboardingCta3.
@@ -401,6 +401,18 @@ abstract class AppLocalizations {
   /// **'Spend your points'**
   String get homeSpendPoints;
 
+  /// No description provided for @homeAvailableToSpend.
+  ///
+  /// In en, this message translates to:
+  /// **'to spend'**
+  String get homeAvailableToSpend;
+
+  /// No description provided for @homeNothingAffordable.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep earning — no perks within reach yet.'**
+  String get homeNothingAffordable;
+
   /// No description provided for @homeActiveCount.
   ///
   /// In en, this message translates to:
@@ -437,6 +449,12 @@ abstract class AppLocalizations {
   /// **'{count} this week · {attending} attending'**
   String eventsSubtitle(int count, int attending);
 
+  /// No description provided for @profilePhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get profilePhone;
+
   /// No description provided for @eventWhen.
   ///
   /// In en, this message translates to:
@@ -449,17 +467,17 @@ abstract class AppLocalizations {
   /// **'Where'**
   String get eventWhere;
 
-  /// No description provided for @eventHost.
-  ///
-  /// In en, this message translates to:
-  /// **'Host'**
-  String get eventHost;
-
   /// No description provided for @eventReward.
   ///
   /// In en, this message translates to:
   /// **'Reward'**
   String get eventReward;
+
+  /// No description provided for @eventRecurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurrence'**
+  String get eventRecurrence;
 
   /// No description provided for @eventAbout.
   ///
@@ -467,23 +485,41 @@ abstract class AppLocalizations {
   /// **'About'**
   String get eventAbout;
 
-  /// No description provided for @eventAboutSample.
+  /// No description provided for @eventStravaClub.
   ///
   /// In en, this message translates to:
-  /// **'Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.'**
-  String get eventAboutSample;
+  /// **'Join Strava Club →'**
+  String get eventStravaClub;
 
-  /// No description provided for @eventWhatsappSync.
+  /// No description provided for @eventWhatsappGroup.
   ///
   /// In en, this message translates to:
-  /// **'Auto-posted to #announcements and Neverest Strava Club'**
-  String get eventWhatsappSync;
+  /// **'Join WhatsApp Group →'**
+  String get eventWhatsappGroup;
 
   /// No description provided for @eventRoute.
   ///
   /// In en, this message translates to:
   /// **'Route'**
   String get eventRoute;
+
+  /// No description provided for @eventOpenRoute.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Maps'**
+  String get eventOpenRoute;
+
+  /// No description provided for @eventParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Participants'**
+  String get eventParticipants;
+
+  /// No description provided for @eventYouGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re going'**
+  String get eventYouGoing;
 
   /// No description provided for @eventAdminCheckIn.
   ///
@@ -515,6 +551,12 @@ abstract class AppLocalizations {
   /// **'{count} spots left'**
   String eventSpotsLeft(int count);
 
+  /// No description provided for @eventFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
+  String get eventFull;
+
   /// No description provided for @challengesTitle.
   ///
   /// In en, this message translates to:
@@ -532,6 +574,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Earned'**
   String get challengesEarned;
+
+  /// No description provided for @challengesNoCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t completed any challenge yet.'**
+  String get challengesNoCompleted;
+
+  /// No description provided for @challengesCompletedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get challengesCompletedTag;
+
+  /// No description provided for @challengesPartnerFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Partners'**
+  String get challengesPartnerFilter;
 
   /// No description provided for @challengesActiveCount.
   ///
@@ -610,6 +670,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days} days left'**
   String challengeDeadlineDays(int days);
+
+  /// No description provided for @yourPointsHome.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR POINTS'**
+  String get yourPointsHome;
 
   /// No description provided for @challengePaused.
   ///
@@ -827,6 +893,174 @@ abstract class AppLocalizations {
   /// **'Updates every minute'**
   String get leaderboardSubtitle;
 
+  /// No description provided for @offersSectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner offers'**
+  String get offersSectionTitle;
+
+  /// No description provided for @partnerCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner Center'**
+  String get partnerCenterTitle;
+
+  /// No description provided for @partnerAccessRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner account required.'**
+  String get partnerAccessRequired;
+
+  /// No description provided for @partnerPublishOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish an offer / ad'**
+  String get partnerPublishOffer;
+
+  /// No description provided for @partnerEditOffer.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit offer'**
+  String get partnerEditOffer;
+
+  /// No description provided for @partnerBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get partnerBrand;
+
+  /// No description provided for @partnerOfferTitleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Product / offer title'**
+  String get partnerOfferTitleField;
+
+  /// No description provided for @partnerDescriptionField.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get partnerDescriptionField;
+
+  /// No description provided for @partnerDiscountHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount (e.g. -20%)'**
+  String get partnerDiscountHint;
+
+  /// No description provided for @partnerLinkOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Link (optional)'**
+  String get partnerLinkOptional;
+
+  /// No description provided for @partnerChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get partnerChangePhoto;
+
+  /// No description provided for @partnerAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add photo'**
+  String get partnerAddPhoto;
+
+  /// No description provided for @partnerFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get partnerFrom;
+
+  /// No description provided for @partnerUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until'**
+  String get partnerUntil;
+
+  /// No description provided for @partnerPublish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get partnerPublish;
+
+  /// No description provided for @partnerSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get partnerSave;
+
+  /// No description provided for @partnerMyOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'My offers'**
+  String get partnerMyOffers;
+
+  /// No description provided for @partnerNoOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t published any offer yet.'**
+  String get partnerNoOffers;
+
+  /// No description provided for @partnerBrandTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand and title are required.'**
+  String get partnerBrandTitleRequired;
+
+  /// No description provided for @partnerOfferUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer updated.'**
+  String get partnerOfferUpdated;
+
+  /// No description provided for @partnerOfferPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer published.'**
+  String get partnerOfferPublished;
+
+  /// No description provided for @partnerCreateChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a challenge'**
+  String get partnerCreateChallenge;
+
+  /// No description provided for @partnerEditChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit challenge'**
+  String get partnerEditChallenge;
+
+  /// No description provided for @partnerActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get partnerActivity;
+
+  /// No description provided for @partnerBenefitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Benefit (no points)'**
+  String get partnerBenefitLabel;
+
+  /// No description provided for @partnerNoChallenges.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t created any challenge yet.'**
+  String get partnerNoChallenges;
+
+  /// No description provided for @partnerChallengeRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Title and benefit are required.'**
+  String get partnerChallengeRequired;
+
+  /// No description provided for @commonError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get commonError;
+
   /// No description provided for @rewardsTitle.
   ///
   /// In en, this message translates to:
@@ -850,6 +1084,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Redeem'**
   String get rewardsRedeem;
+
+  /// No description provided for @rewardEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit reward'**
+  String get rewardEditTitle;
+
+  /// No description provided for @rewardEditChangePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get rewardEditChangePhoto;
+
+  /// No description provided for @rewardEditRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get rewardEditRemovePhoto;
+
+  /// No description provided for @rewardEditFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get rewardEditFieldTitle;
+
+  /// No description provided for @rewardEditFieldPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner'**
+  String get rewardEditFieldPartner;
+
+  /// No description provided for @rewardEditFieldDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get rewardEditFieldDescription;
+
+  /// No description provided for @rewardEditFieldPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Points cost'**
+  String get rewardEditFieldPoints;
+
+  /// No description provided for @rewardEditFieldStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock'**
+  String get rewardEditFieldStock;
+
+  /// No description provided for @rewardEditStockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'empty = unlimited'**
+  String get rewardEditStockHint;
+
+  /// No description provided for @rewardEditFieldAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get rewardEditFieldAddress;
+
+  /// No description provided for @rewardEditValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Title, partner and a positive points cost are required.'**
+  String get rewardEditValidation;
 
   /// No description provided for @rewardsCategoryBooks.
   ///
@@ -1217,6 +1517,18 @@ abstract class AppLocalizations {
   /// **'Email and password are required.'**
   String get authCredentialsRequired;
 
+  /// No description provided for @authPhoneRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required.'**
+  String get authPhoneRequired;
+
+  /// No description provided for @authPhotoOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo (optional)'**
+  String get authPhotoOptional;
+
   /// No description provided for @authPasswordMinLength.
   ///
   /// In en, this message translates to:
@@ -1316,8 +1628,8 @@ abstract class AppLocalizations {
   /// No description provided for @qrRefreshCountdown.
   ///
   /// In en, this message translates to:
-  /// **'Refreshes in 0:42'**
-  String get qrRefreshCountdown;
+  /// **'Refreshes in {time}'**
+  String qrRefreshCountdown(String time);
 
   /// No description provided for @adminScanHeader.
   ///
@@ -1340,7 +1652,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminScanManualInput.
   ///
   /// In en, this message translates to:
-  /// **'Manual QR input'**
+  /// **'Manual code input'**
   String get adminScanManualInput;
 
   /// No description provided for @adminScanSubmit.
@@ -1384,6 +1696,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} cap'**
   String adminScanCapacity(int count);
+
+  /// No description provided for @adminScanSpots.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} / {capacity} spots'**
+  String adminScanSpots(int count, int capacity);
+
+  /// No description provided for @adminScanCapacityExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of spots exceeded'**
+  String get adminScanCapacityExceeded;
 
   /// No description provided for @adminScanNext.
   ///

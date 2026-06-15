@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
@@ -77,6 +78,16 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
             context
                 .read<DashboardBloc>()
                 .add(const DashboardRefreshRequested());
+
+            final currentName =
+                context.read<ProfileBloc>().state.profile?.displayName ??
+                    'Neverest User';
+            context.read<ProfileBloc>().add(
+                  ProfileLoadRequested(
+                    suggestedDisplayName: currentName,
+                    preferMeEndpoints: true,
+                  ),
+                );
             context.read<RewardActionBloc>().add(const RewardMessagesCleared());
             _showRedeemDialog(context, state.lastRedemption!, widget.reward, accent);
           }
@@ -100,9 +111,27 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                       ),
                       child: Stack(
                         children: [
-                          const Positioned.fill(
-                            child: NeverestTopographicRings(color: Colors.white, count: 10),
+                          Positioned.fill(
+                            child: NeverestRewardImage(
+                              imageB64: widget.reward.imageB64,
+                              fallbackColor: accent,
+                              ringCount: 10,
+                            ),
                           ),
+
+                          if (widget.reward.imageB64 != null &&
+                              widget.reward.imageB64!.isNotEmpty)
+                            const Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [Colors.black26, Colors.black87],
+                                  ),
+                                ),
+                              ),
+                            ),
                           SafeArea(
                             bottom: false,
                             child: Padding(
@@ -533,29 +562,24 @@ void _showRedeemDialog(
               ),
               const SizedBox(height: 14),
               Container(
-                width: 170,
-                height: 170,
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    const NeverestTopographicRings(color: Colors.black, count: 8),
-                    Center(
-                      child: Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: accent,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.qr_code_2_rounded, color: Colors.white),
-                      ),
-                    ),
-                  ],
+                child: QrImageView(
+                  data: redemption.redemptionCode,
+                  version: QrVersions.auto,
+                  size: 208,
+                  backgroundColor: Colors.white,
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: accent,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: NeverestPalette.ink,
+                  ),
                 ),
               ),
               const SizedBox(height: 14),

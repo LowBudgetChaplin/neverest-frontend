@@ -38,6 +38,13 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final sourceEvents = state.data?.events ?? const <EventSummary>[];
+        // Sporturile din filtre vin dinamic din tipurile prezente în evenimente.
+        final sportCodes = <String>[
+          'ALL',
+          ...{
+            for (final e in sourceEvents) e.activityType.toUpperCase(),
+          },
+        ];
         final filtered = _filter == 'ALL'
             ? sourceEvents
             : sourceEvents
@@ -71,37 +78,20 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
             const SizedBox(height: 12),
             SizedBox(
               height: 34,
-              child: ListView(
+              child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
-                children: [
-                  NeverestFilterChip(
-                    label: l10n.commonAll,
-                    selected: _filter == 'ALL',
-                    onTap: () => setState(() => _filter = 'ALL'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
-                    label: l10n.activityRunning,
-                    selected: _filter == 'RUNNING',
-                    icon: Icons.directions_run_rounded,
-                    onTap: () => setState(() => _filter = 'RUNNING'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
-                    label: l10n.activityPadel,
-                    selected: _filter == 'PADEL',
-                    icon: Icons.sports_tennis_rounded,
-                    onTap: () => setState(() => _filter = 'PADEL'),
-                  ),
-                  const SizedBox(width: 8),
-                  NeverestFilterChip(
-                    label: l10n.activityMountain,
-                    selected: _filter == 'MOUNTAIN',
-                    icon: Icons.terrain_rounded,
-                    onTap: () => setState(() => _filter = 'MOUNTAIN'),
-                  ),
-                ],
+                itemCount: sportCodes.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final code = sportCodes[index];
+                  return NeverestFilterChip(
+                    label: _sportLabel(l10n, code),
+                    selected: _filter == code,
+                    icon: _sportIcon(code),
+                    onTap: () => setState(() => _filter = code),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
@@ -176,6 +166,25 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
       },
     );
   }
+}
+
+String _sportLabel(AppLocalizations l10n, String code) {
+  return switch (code) {
+    'ALL' => l10n.commonAll,
+    'RUNNING' => l10n.activityRunning,
+    'PADEL' => l10n.activityPadel,
+    'MOUNTAIN' => l10n.activityMountain,
+    _ => code[0] + code.substring(1).toLowerCase(),
+  };
+}
+
+IconData? _sportIcon(String code) {
+  return switch (code) {
+    'RUNNING' => Icons.directions_run_rounded,
+    'PADEL' => Icons.sports_tennis_rounded,
+    'MOUNTAIN' => Icons.terrain_rounded,
+    _ => null,
+  };
 }
 
 class _EventLargeCard extends StatelessWidget {
@@ -265,7 +274,9 @@ class _EventLargeCard extends StatelessWidget {
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                _tagFor(event),
+                                event.description?.isNotEmpty == true
+                                    ? event.description!
+                                    : event.activityType.toUpperCase(),
                                 style: Theme.of(context).textTheme.labelSmall,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -303,12 +314,38 @@ class _EventLargeCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  _AttendeesStack(isDark: isDark),
-                  const SizedBox(width: 8),
-                  Text(
-                    '28/40 ${AppLocalizations.of(context)!.eventsGoingLabel}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  if (event.spotsLeft != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          event.spotsLeft! > 0
+                              ? Icons.event_seat_outlined
+                              : Icons.block_rounded,
+                          size: 14,
+                          color: event.spotsLeft! > 0
+                              ? (isDark
+                                  ? NeverestPalette.inkMuted
+                                  : NeverestPalette.paperMuted)
+                              : NeverestPalette.danger,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          event.spotsLeft! > 0
+                              ? AppLocalizations.of(context)!
+                                  .eventSpotsLeft(event.spotsLeft!)
+                              : AppLocalizations.of(context)!.eventFull,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: event.spotsLeft! > 0
+                                    ? (isDark
+                                        ? NeverestPalette.inkMuted
+                                        : NeverestPalette.paperMuted)
+                                    : NeverestPalette.danger,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                      ],
+                    ),
                   const Spacer(),
                   Text(
                     '+${event.pointsReward} PTS',
@@ -326,50 +363,6 @@ class _EventLargeCard extends StatelessWidget {
     );
   }
 
-  String _tagFor(EventSummary event) {
-    final type = event.activityType.toUpperCase();
-    if (type == 'PADEL') {
-      return 'MIXED LEVELS · ROUND-ROBIN';
-    }
-    if (type == 'MOUNTAIN') {
-      return '14 KM · 900M GAIN';
-    }
-    return 'GROUP RUN · 8 KM';
-  }
 }
 
-class _AttendeesStack extends StatelessWidget {
-  const _AttendeesStack({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 60,
-      height: 24,
-      child: Stack(
-        children: List.generate(3, (index) {
-          final hues = [42.0, 180.0, 285.0];
-          final bg = HSLColor.fromAHSL(1, hues[index], 0.55, 0.55).toColor();
-          return Positioned(
-            left: index * 16,
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: bg,
-                border: Border.all(
-                  color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paper,
-                  width: 2,
-                ),
-                borderRadius: BorderRadius.circular(99),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
 

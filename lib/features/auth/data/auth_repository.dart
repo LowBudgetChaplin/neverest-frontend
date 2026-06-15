@@ -82,6 +82,8 @@ class AuthRepository {
     required String email,
     required String password,
     String? displayName,
+    String? phoneNumber,
+    String? avatarB64,
   }) async {
     try {
       await _apiClient.post(
@@ -90,6 +92,8 @@ class AuthRepository {
           'email': email.trim(),
           'password': password,
           'displayName': displayName?.trim(),
+          'phoneNumber': phoneNumber?.trim(),
+          if (avatarB64 != null) 'avatarB64': avatarB64,
         },
         skipAuthFailureHandling: true,
       );

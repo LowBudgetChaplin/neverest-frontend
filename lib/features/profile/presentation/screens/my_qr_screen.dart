@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -36,7 +38,10 @@ class MyQrScreen extends StatelessWidget {
 
                 return BlocBuilder<ProfileBloc, ProfileState>(
                   builder: (context, profileState) {
-                    if (profileState.status == ProfileStatus.loading) {
+                    // Doar la prima incarcare aratam spinner-ul; pe refresh-ul
+                    // periodic pastram QR-ul vizibil ca sa nu clipeasca ecranul.
+                    if (profileState.status == ProfileStatus.loading &&
+                        profileState.profile == null) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
@@ -73,13 +78,13 @@ class MyQrScreen extends StatelessWidget {
                                 onPressed: () => Navigator.of(context).pop(),
                               ),
                               const Spacer(),
-                              Text(
-                                l10n.qrMemberId.toUpperCase(),
-                                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: Colors.white.withOpacity(0.65),
-                                      letterSpacing: 1.4,
-                                    ),
-                              ),
+                              // Text(
+                              //   l10n.qrMemberId.toUpperCase(),
+                              //   style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              //         color: Colors.white.withOpacity(0.65),
+                              //         letterSpacing: 1.4,
+                              //       ),
+                              // ),
                               const Spacer(),
                               const SizedBox(width: 38),
                             ],
@@ -104,14 +109,14 @@ class MyQrScreen extends StatelessWidget {
                                           fontSize: 34,
                                         ),
                                   ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    l10n.qrScanHint,
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: Colors.white.withOpacity(0.74),
-                                        ),
-                                  ),
+                                  // const SizedBox(height: 8),
+                                  // Text(
+                                  //   l10n.qrScanHint,
+                                  //   textAlign: TextAlign.center,
+                                  //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  //         color: Colors.white.withOpacity(0.74),
+                                  //       ),
+                                  // ),
                                   const SizedBox(height: 24),
                                   Container(
                                     padding: const EdgeInsets.all(20),
@@ -165,36 +170,9 @@ class MyQrScreen extends StatelessWidget {
                                         ),
                                   ),
                                   const SizedBox(height: 18),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 9,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(99),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.schedule_rounded,
-                                          size: 14,
-                                          color: Colors.white70,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          l10n.qrRefreshCountdown,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelSmall
-                                              ?.copyWith(
-                                                color: Colors.white.withOpacity(0.75),
-                                                letterSpacing: 0.9,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
+                                  _RefreshCountdown(
+                                    onRefresh: () =>
+                                        _retryProfileSync(context, authState),
                                   ),
                                 ],
                               ),
@@ -234,6 +212,83 @@ class MyQrScreen extends StatelessWidget {
       return session.email!.trim().split('@').first;
     }
     return 'Neverest User';
+  }
+}
+
+class _RefreshCountdown extends StatefulWidget {
+  const _RefreshCountdown({required this.onRefresh});
+
+  /// Durata unui ciclu de reimprospatare, in secunde.
+  static const int cycleSeconds = 42;
+
+  final VoidCallback onRefresh;
+
+  @override
+  State<_RefreshCountdown> createState() => _RefreshCountdownState();
+}
+
+class _RefreshCountdownState extends State<_RefreshCountdown> {
+  late int _remaining;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _remaining = _RefreshCountdown.cycleSeconds;
+    _timer = Timer.periodic(const Duration(seconds: 1), _tick);
+  }
+
+  void _tick(Timer timer) {
+    if (!mounted) return;
+    if (_remaining <= 1) {
+      // Am ajuns la 0: reimprospatam QR-ul si reluam numaratoarea.
+      widget.onRefresh();
+      setState(() => _remaining = _RefreshCountdown.cycleSeconds);
+    } else {
+      setState(() => _remaining -= 1);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  String _format(int seconds) {
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    return '$minutes:${secs.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.schedule_rounded,
+            size: 14,
+            color: Colors.white70,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            l10n.qrRefreshCountdown(_format(_remaining)),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.white.withOpacity(0.75),
+                  letterSpacing: 0.9,
+                ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -156,6 +156,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
         displayName: event.displayName,
+        phoneNumber: event.phoneNumber,
+        avatarB64: event.avatarB64,
       );
       await _repository.signOut();
       emit(

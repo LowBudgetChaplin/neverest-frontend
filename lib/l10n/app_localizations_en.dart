@@ -115,7 +115,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingHeadline2 => 'MOVE.\nEARN POINTS.';
 
   @override
-  String get onboardingSubtitle2 => 'Run, hike, play padel. Show up at events. Hit weekly challenges. Every move counts.';
+  String get onboardingSubtitle2 => 'Run, hike. Show up at events. Hit weekly challenges. Every move counts.';
 
   @override
   String get onboardingCta2 => 'Sounds good';
@@ -124,7 +124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingHeadline3 => 'SPEND THEM\nLOCALLY.';
 
   @override
-  String get onboardingSubtitle3 => 'Cărturești, Origo, MOCA, your favorite coach. Real perks from real Bucharest.';
+  String get onboardingSubtitle3 => 'Cărturești, Tiny Cup, Eden House, your favorite coach, etc';
 
   @override
   String get onboardingCta3 => 'Let\'s go';
@@ -162,6 +162,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSpendPoints => 'Spend your points';
 
   @override
+  String get homeAvailableToSpend => 'to spend';
+
+  @override
+  String get homeNothingAffordable => 'Keep earning — no perks within reach yet.';
+
+  @override
   String homeActiveCount(int count) {
     return '$count active';
   }
@@ -186,28 +192,40 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get profilePhone => 'Phone number';
+
+  @override
   String get eventWhen => 'When';
 
   @override
   String get eventWhere => 'Where';
 
   @override
-  String get eventHost => 'Host';
+  String get eventReward => 'Reward';
 
   @override
-  String get eventReward => 'Reward';
+  String get eventRecurrence => 'Recurrence';
 
   @override
   String get eventAbout => 'About';
 
   @override
-  String get eventAboutSample => 'Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.';
+  String get eventStravaClub => 'Join Strava Club →';
 
   @override
-  String get eventWhatsappSync => 'Auto-posted to #announcements and Neverest Strava Club';
+  String get eventWhatsappGroup => 'Join WhatsApp Group →';
 
   @override
   String get eventRoute => 'Route';
+
+  @override
+  String get eventOpenRoute => 'Open in Maps';
+
+  @override
+  String get eventParticipants => 'Participants';
+
+  @override
+  String get eventYouGoing => 'You\'re going';
 
   @override
   String get eventAdminCheckIn => 'Admin check-in';
@@ -229,6 +247,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get eventFull => 'Full';
+
+  @override
   String get challengesTitle => 'Challenges';
 
   @override
@@ -236,6 +257,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get challengesEarned => 'Earned';
+
+  @override
+  String get challengesNoCompleted => 'You haven\'t completed any challenge yet.';
+
+  @override
+  String get challengesCompletedTag => 'Completed';
+
+  @override
+  String get challengesPartnerFilter => 'Partners';
 
   @override
   String challengesActiveCount(int count) {
@@ -281,6 +311,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String challengeDeadlineDays(int days) {
     return '$days days left';
   }
+
+  @override
+  String get yourPointsHome => 'YOUR POINTS';
 
   @override
   String get challengePaused => 'Paused';
@@ -399,6 +432,90 @@ class AppLocalizationsEn extends AppLocalizations {
   String get leaderboardSubtitle => 'Updates every minute';
 
   @override
+  String get offersSectionTitle => 'Partner offers';
+
+  @override
+  String get partnerCenterTitle => 'Partner Center';
+
+  @override
+  String get partnerAccessRequired => 'Partner account required.';
+
+  @override
+  String get partnerPublishOffer => 'Publish an offer / ad';
+
+  @override
+  String get partnerEditOffer => 'Edit offer';
+
+  @override
+  String get partnerBrand => 'Brand';
+
+  @override
+  String get partnerOfferTitleField => 'Product / offer title';
+
+  @override
+  String get partnerDescriptionField => 'Description';
+
+  @override
+  String get partnerDiscountHint => 'Discount (e.g. -20%)';
+
+  @override
+  String get partnerLinkOptional => 'Link (optional)';
+
+  @override
+  String get partnerChangePhoto => 'Change photo';
+
+  @override
+  String get partnerAddPhoto => 'Add photo';
+
+  @override
+  String get partnerFrom => 'From';
+
+  @override
+  String get partnerUntil => 'Until';
+
+  @override
+  String get partnerPublish => 'Publish';
+
+  @override
+  String get partnerSave => 'Save';
+
+  @override
+  String get partnerMyOffers => 'My offers';
+
+  @override
+  String get partnerNoOffers => 'You haven\'t published any offer yet.';
+
+  @override
+  String get partnerBrandTitleRequired => 'Brand and title are required.';
+
+  @override
+  String get partnerOfferUpdated => 'Offer updated.';
+
+  @override
+  String get partnerOfferPublished => 'Offer published.';
+
+  @override
+  String get partnerCreateChallenge => 'Create a challenge';
+
+  @override
+  String get partnerEditChallenge => 'Edit challenge';
+
+  @override
+  String get partnerActivity => 'Activity';
+
+  @override
+  String get partnerBenefitLabel => 'Benefit (no points)';
+
+  @override
+  String get partnerNoChallenges => 'You haven\'t created any challenge yet.';
+
+  @override
+  String get partnerChallengeRequired => 'Title and benefit are required.';
+
+  @override
+  String get commonError => 'Error';
+
+  @override
   String get rewardsTitle => 'Rewards';
 
   @override
@@ -409,6 +526,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rewardsRedeem => 'Redeem';
+
+  @override
+  String get rewardEditTitle => 'Edit reward';
+
+  @override
+  String get rewardEditChangePhoto => 'Change photo';
+
+  @override
+  String get rewardEditRemovePhoto => 'Remove photo';
+
+  @override
+  String get rewardEditFieldTitle => 'Title';
+
+  @override
+  String get rewardEditFieldPartner => 'Partner';
+
+  @override
+  String get rewardEditFieldDescription => 'Description';
+
+  @override
+  String get rewardEditFieldPoints => 'Points cost';
+
+  @override
+  String get rewardEditFieldStock => 'Stock';
+
+  @override
+  String get rewardEditStockHint => 'empty = unlimited';
+
+  @override
+  String get rewardEditFieldAddress => 'Address';
+
+  @override
+  String get rewardEditValidation => 'Title, partner and a positive points cost are required.';
 
   @override
   String get rewardsCategoryBooks => 'Books';
@@ -604,6 +754,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authCredentialsRequired => 'Email and password are required.';
 
   @override
+  String get authPhoneRequired => 'Phone number is required.';
+
+  @override
+  String get authPhotoOptional => 'Add a photo (optional)';
+
+  @override
   String get authPasswordMinLength => 'Password must have at least 6 characters.';
 
   @override
@@ -654,7 +810,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qrScanHint => 'Organizer scans → points credited';
 
   @override
-  String get qrRefreshCountdown => 'Refreshes in 0:42';
+  String qrRefreshCountdown(String time) {
+    return 'Refreshes in $time';
+  }
 
   @override
   String get adminScanHeader => '● Admin · Sunrise Run';
@@ -666,7 +824,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminScanManualCheckin => 'Simulate check-in';
 
   @override
-  String get adminScanManualInput => 'Manual QR input';
+  String get adminScanManualInput => 'Manual code input';
 
   @override
   String get adminScanSubmit => 'Submit check-in';
@@ -694,6 +852,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminScanCapacity(int count) {
     return '$count cap';
   }
+
+  @override
+  String adminScanSpots(int count, int capacity) {
+    return '$count / $capacity spots';
+  }
+
+  @override
+  String get adminScanCapacityExceeded => 'Number of spots exceeded';
 
   @override
   String get adminScanNext => 'Next scan';

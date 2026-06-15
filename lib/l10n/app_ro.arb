@@ -67,6 +67,8 @@
   "homeTrackingLive": "Tracking · live",
   "homeSeeAll": "Vezi tot",
   "homeSpendPoints": "Cheltuie punctele",
+  "homeAvailableToSpend": "de cheltuit",
+  "homeNothingAffordable": "Continua sa aduni puncte — inca niciun beneficiu accesibil.",
   "homeActiveCount": "{count} active",
   "@homeActiveCount": {
     "placeholders": {
@@ -99,14 +101,19 @@
     }
   },
 
+  "profilePhone": "Numar de telefon",
+
   "eventWhen": "Cand",
   "eventWhere": "Unde",
-  "eventHost": "Gazda",
   "eventReward": "Recompensa",
+  "eventRecurrence": "Recurenta",
   "eventAbout": "Despre",
-  "eventAboutSample": "Alergare usoara 8K cu grupuri pe ritm si recuperare. Cafea la Origo dupa. Cu ploaie sau fara. Arata QR-ul la intrare pentru puncte.",
-  "eventWhatsappSync": "Postat automat in #announcements si Neverest Strava Club",
+  "eventStravaClub": "Alatura-te pe Strava →",
+  "eventWhatsappGroup": "Alatura-te pe WhatsApp →",
   "eventRoute": "Traseu",
+  "eventOpenRoute": "Deschide in Maps",
+  "eventParticipants": "Participanti",
+  "eventYouGoing": "Participi",
   "eventAdminCheckIn": "Check-in admin",
   "eventImGoing": "Particip",
   "eventGoing": "Esti inscris",
@@ -126,10 +133,14 @@
       }
     }
   },
+  "eventFull": "Complet",
 
   "challengesTitle": "Provocari",
   "challengesSubtitle": "Castiga puncte in stilul tau",
   "challengesEarned": "Castigate",
+  "challengesNoCompleted": "Nu ai finalizat nicio provocare inca.",
+  "challengesCompletedTag": "Finalizat",
+  "challengesPartnerFilter": "Parteneri",
   "challengesActiveCount": "Active · {count}",
   "@challengesActiveCount": {
     "placeholders": {
@@ -157,6 +168,7 @@
   "challengeAlwaysOn": "Permanent",
   "challengeProgress23": "2/3 completate",
   "challengeDeadlineDays": "{days} zile ramase",
+  "yourPointsHome" : "PUNCTELE TALE",
   "@challengeDeadlineDays": {
     "placeholders": {
       "days": {
@@ -229,10 +241,49 @@
   "leaderboardTitle": "Clasament",
   "leaderboardSubtitle": "Actualizare in fiecare minut",
 
+  "offersSectionTitle": "Oferte parteneri",
+  "partnerCenterTitle": "Panou Partener",
+  "partnerAccessRequired": "Cont de partener necesar.",
+  "partnerPublishOffer": "Publică o ofertă / reclamă",
+  "partnerEditOffer": "Editează oferta",
+  "partnerBrand": "Brand",
+  "partnerOfferTitleField": "Titlu produs/ofertă",
+  "partnerDescriptionField": "Descriere",
+  "partnerDiscountHint": "Reducere (ex: -20%)",
+  "partnerLinkOptional": "Link (opțional)",
+  "partnerChangePhoto": "Schimbă poza",
+  "partnerAddPhoto": "Adaugă poză",
+  "partnerFrom": "De la",
+  "partnerUntil": "Până la",
+  "partnerPublish": "Publică",
+  "partnerSave": "Salvează",
+  "partnerMyOffers": "Ofertele mele",
+  "partnerNoOffers": "Nu ai publicat încă nicio ofertă.",
+  "partnerBrandTitleRequired": "Brand și titlu sunt obligatorii.",
+  "partnerOfferUpdated": "Ofertă actualizată.",
+  "partnerOfferPublished": "Ofertă publicată.",
+  "partnerCreateChallenge": "Creează o provocare",
+  "partnerEditChallenge": "Editează provocarea",
+  "partnerActivity": "Activitate",
+  "partnerBenefitLabel": "Beneficiu (fără puncte)",
+  "partnerNoChallenges": "Nu ai creat încă nicio provocare.",
+  "partnerChallengeRequired": "Titlul și beneficiul sunt obligatorii.",
+  "commonError": "Eroare",
   "rewardsTitle": "Recompense",
   "rewardsWallet": "Portofel",
   "rewardsHistory": "Istoric",
-  "rewardsRedeem": "Redeem",
+  "rewardsRedeem": "Revendica",
+  "rewardEditTitle": "Editeaza recompensa",
+  "rewardEditChangePhoto": "Schimba poza",
+  "rewardEditRemovePhoto": "Elimina poza",
+  "rewardEditFieldTitle": "Titlu",
+  "rewardEditFieldPartner": "Partener",
+  "rewardEditFieldDescription": "Descriere",
+  "rewardEditFieldPoints": "Cost puncte",
+  "rewardEditFieldStock": "Stoc",
+  "rewardEditStockHint": "gol = nelimitat",
+  "rewardEditFieldAddress": "Adresa",
+  "rewardEditValidation": "Titlul, partenerul si un cost pozitiv de puncte sunt obligatorii.",
   "rewardsCategoryBooks": "Carti",
   "rewardsCategoryCafe": "Cafea",
   "rewardsCategoryMusic": "Muzica",
@@ -266,7 +317,7 @@
       "stock": {}
     }
   },
-  "rewardRedeemButton": "Redeem · {points} pct",
+  "rewardRedeemButton": "Revendica · {points} pct",
   "@rewardRedeemButton": {
     "placeholders": {
       "points": {
@@ -282,7 +333,7 @@
       }
     }
   },
-  "rewardRedeemedLabel": "Redeemed",
+  "rewardRedeemedLabel": "Revendicat",
   "rewardValidUntil": "Valabil pana maine la 18:00",
 
   "profileTitle": "Profil",
@@ -330,6 +381,8 @@
   "authSwitchToRegister": "Nu ai cont? Inregistreaza-te",
   "authSwitchToLogin": "Ai deja cont? Autentifica-te",
   "authCredentialsRequired": "Email-ul si parola sunt obligatorii.",
+  "authPhoneRequired": "Numarul de telefon este obligatoriu.",
+  "authPhotoOptional": "Adauga o poza (optional)",
   "authPasswordMinLength": "Parola trebuie sa aiba cel putin 6 caractere.",
   "authPasswordsMismatch": "Parolele nu coincid.",
   "authSessionActive": "Sesiune activa",
@@ -352,12 +405,12 @@
   "qrMemberId": "ID membru",
   "qrShowAtGate": "ARATA ACESTA\nLA INTRARE",
   "qrScanHint": "Organizatorul scaneaza → punctele sunt creditate",
-  "qrRefreshCountdown": "Se reimprospateaza in 0:42",
+  "qrRefreshCountdown": "Se reimprospateaza in {time}",
 
   "adminScanHeader": "● Admin · Sunrise Run",
   "adminScanHint": "Aliniaza QR-ul membrului in interiorul ramei",
   "adminScanManualCheckin": "Simuleaza check-in",
-  "adminScanManualInput": "Introducere manuala QR",
+  "adminScanManualInput": "Introducere manuala cod participant",
   "adminScanSubmit": "Trimite check-in",
   "adminScanReset": "Scaneaza din nou",
   "adminScanFailed": "Check-in esuat.",
@@ -386,6 +439,18 @@
       }
     }
   },
+  "adminScanSpots": "{count} / {capacity} locuri",
+  "@adminScanSpots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "capacity": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCapacityExceeded": "Numarul de locuri a fost depasit",
   "adminScanNext": "Scanare urmatoare",
 
   "dashboardLoadFailed": "Datele dashboard nu au putut fi incarcate."

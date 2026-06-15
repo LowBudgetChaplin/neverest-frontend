@@ -1,12 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../rewards/presentation/screens/reward_details_screen.dart';
+import '../../../rewards/presentation/screens/reward_edit_screen.dart';
 import '../../../rewards/presentation/screens/reward_history_screen.dart';
 import '../design/neverest_design.dart';
 
@@ -26,16 +31,27 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
     final points = context.select<ProfileBloc, int>(
       (bloc) => bloc.state.profile?.availablePoints ?? 0,
     );
+    final isAdmin = context.select<AccessCubit, bool>(
+      (cubit) => cubit.state.canOpenAdminCenter,
+    );
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final source = state.data?.rewards ?? const <RewardSummary>[];
-        final categories = <String>{
-          'ALL',
-          ...source.map(_rewardCategory),
-        }.toList();
+        final dbCategories =
+            state.data?.rewardCategories ?? const <RewardCategory>[];
+        final localeCode = Localizations.localeOf(context).languageCode;
+        // Filter chips come straight from the DB categories table.
+        final categories = <String>['ALL', ...dbCategories.map((c) => c.code)];
         final filtered = _category == 'ALL'
             ? source
             : source.where((reward) => _rewardCategory(reward) == _category).toList();
+        String labelFor(String code) {
+          if (code == 'ALL') return l10n.commonAll;
+          for (final c in dbCategories) {
+            if (c.code == code) return c.label(localeCode);
+          }
+          return code;
+        }
 
         return ListView(
           padding: EdgeInsets.only(
@@ -67,6 +83,31 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
               ),
             ),
             const SizedBox(height: 14),
+            if ((state.data?.offers ?? const <OfferSummary>[]).isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.offersSectionTitle.toUpperCase(),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 132,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: state.data!.offers.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) =>
+                      OfferCard(offer: state.data!.offers[index]),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             SizedBox(
               height: 34,
               child: ListView.separated(
@@ -74,11 +115,8 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemBuilder: (context, index) {
                   final category = categories[index];
-                  final label = category == 'ALL'
-                      ? l10n.commonAll
-                      : _localizedCategoryLabel(l10n, category);
                   return NeverestFilterChip(
-                    label: label,
+                    label: labelFor(category),
                     selected: _category == category,
                     onTap: () => setState(() => _category = category),
                   );
@@ -105,10 +143,7 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                   return _RewardGridCard(
                     reward: reward,
                     myPoints: points,
-                    categoryLabel: _localizedCategoryLabel(
-                      l10n,
-                      _rewardCategory(reward),
-                    ),
+                    categoryLabel: labelFor(_rewardCategory(reward)),
                     redeemLabel: l10n.rewardsRedeem,
                     pointsLabel: l10n.commonPointsShort,
                     onTap: () {
@@ -118,6 +153,15 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                         ),
                       );
                     },
+                    onEdit: isAdmin
+                        ? () {
+                            Navigator.of(context).push(
+                              AppPageRoute.fadeSlide(
+                                RewardEditScreen(reward: reward),
+                              ),
+                            );
+                          }
+                        : null,
                   );
                 },
               ),
@@ -212,6 +256,7 @@ class _RewardGridCard extends StatelessWidget {
     required this.redeemLabel,
     required this.pointsLabel,
     required this.onTap,
+    this.onEdit,
   });
 
   final RewardSummary reward;
@@ -220,6 +265,7 @@ class _RewardGridCard extends StatelessWidget {
   final String redeemLabel;
   final String pointsLabel;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -249,10 +295,26 @@ class _RewardGridCard extends StatelessWidget {
               ),
               clipBehavior: Clip.antiAlias,
               child: Stack(
+                fit: StackFit.expand,
                 children: [
-                  const Positioned.fill(
-                    child: NeverestTopographicRings(color: Colors.white, count: 6),
+                  NeverestRewardImage(
+                    imageB64: reward.imageB64,
+                    fallbackColor: accent,
+                    ringCount: 6,
                   ),
+                  // gradient pentru lizibilitatea numelui peste o poza
+                  if (reward.imageB64 != null && reward.imageB64!.isNotEmpty)
+                    const Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black54],
+                          ),
+                        ),
+                      ),
+                    ),
                   Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -266,6 +328,24 @@ class _RewardGridCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (onEdit != null)
+                    Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Material(
+                        color: Colors.black.withOpacity(0.45),
+                        shape: const CircleBorder(),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: onEdit,
+                          child: const Padding(
+                            padding: EdgeInsets.all(6),
+                            child: Icon(Icons.edit_rounded,
+                                size: 16, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -285,21 +365,71 @@ class _RewardGridCard extends StatelessWidget {
                         ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text(
-                        reward.pointsCost.toString(),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: canRedeem
-                                  ? NeverestPalette.orange
-                                  : Theme.of(context).textTheme.bodySmall?.color,
-                              fontWeight: FontWeight.w900,
-                            ),
-                      ),
-                      const SizedBox(width: 2),
-                      Text(pointsLabel, style: Theme.of(context).textTheme.labelSmall),
-                    ],
-                  ),
+                  if (reward.couponUsed)
+                    // Cupon folosit (one-time) — disabled, cu codul userului.
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: NeverestPalette.success.withOpacity(0.14),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle_rounded,
+                                  size: 13, color: NeverestPalette.success),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  reward.couponCode ?? '—',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelSmall
+                                      ?.copyWith(
+                                        color: NeverestPalette.success,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (reward.availableAgainAt != null) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            '↻ ${_shortDate(reward.availableAgainAt!)}',
+                            style: Theme.of(context).textTheme.labelSmall,
+                          ),
+                        ],
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Text(
+                          reward.pointsCost.toString(),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: canRedeem
+                                        ? NeverestPalette.orange
+                                        : Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.color,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                        ),
+                        const SizedBox(width: 2),
+                        Text(pointsLabel,
+                            style: Theme.of(context).textTheme.labelSmall),
+                      ],
+                    ),
                 ],
               ),
             ),
@@ -310,36 +440,122 @@ class _RewardGridCard extends StatelessWidget {
   }
 }
 
-String _rewardCategory(RewardSummary reward) {
-  final partner = reward.partnerName.toLowerCase();
-  final title = reward.title.toLowerCase();
-  if (partner.contains('cartur') || title.contains('book') || title.contains('carte')) {
-    return 'BOOKS';
-  }
-  if (partner.contains('tiny cup') || partner.contains('origo') || title.contains('coffee') || title.contains('cafea')) {
-    return 'CAFE';
-  }
-  if (partner.contains('bazar') || partner.contains('muzic') || title.contains('vinyl') || title.contains('music')) {
-    return 'MUSIC';
-  }
-  if (partner.contains('print') || title.contains('print')) {
-    return 'PRINT';
-  }
-  if (partner.contains('moca') || title.contains('order')) {
-    return 'GOODS';
-  }
-  return 'ALL';
+String _shortDate(String iso) {
+  final d = DateTime.tryParse(iso);
+  if (d == null) return iso;
+  return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }
 
-String _localizedCategoryLabel(AppLocalizations l10n, String category) {
-  return switch (category) {
-    'BOOKS' => l10n.rewardsCategoryBooks,
-    'CAFE' => l10n.rewardsCategoryCafe,
-    'MUSIC' => l10n.rewardsCategoryMusic,
-    'GOODS' => l10n.rewardsCategoryGoods,
-    'PRINT' => l10n.rewardsCategoryPrint,
-    _ => l10n.commonAll,
-  };
+// Categoria vine din baza de date (coloana `category` din nev_rewards).
+String _rewardCategory(RewardSummary reward) {
+  final c = reward.category;
+  if (c == null || c.trim().isEmpty) return 'PARTNER';
+  return c.toUpperCase();
+}
+
+class OfferCard extends StatelessWidget {
+  const OfferCard({required this.offer});
+
+  final OfferSummary offer;
+
+  Future<void> _open() async {
+    final url = offer.linkUrl;
+    if (url == null || url.isEmpty) return;
+    final uri = Uri.tryParse(url);
+    if (uri != null) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    Widget? image;
+    if (offer.imageB64 != null && offer.imageB64!.isNotEmpty) {
+      try {
+        final raw = offer.imageB64!.contains(',')
+            ? offer.imageB64!.split(',').last
+            : offer.imageB64!;
+        image = Image.memory(base64Decode(raw), fit: BoxFit.cover);
+      } catch (_) {}
+    }
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: offer.linkUrl != null && offer.linkUrl!.isNotEmpty ? _open : null,
+      child: Container(
+        width: 230,
+        decoration: BoxDecoration(
+          color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          children: [
+            Container(
+              width: 84,
+              color: NeverestPalette.orangeSoft,
+              child: image ??
+                  const Icon(Icons.local_offer_rounded,
+                      color: NeverestPalette.orange, size: 30),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      offer.brand.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: NeverestPalette.orange,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
+                          ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      offer.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    if (offer.discountLabel != null &&
+                        offer.discountLabel!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: NeverestPalette.orange,
+                          borderRadius: BorderRadius.circular(99),
+                        ),
+                        child: Text(
+                          offer.discountLabel!,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 Color _rewardAccent(RewardSummary reward) {

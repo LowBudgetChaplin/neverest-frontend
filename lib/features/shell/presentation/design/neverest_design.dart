@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -46,11 +47,21 @@ class NeverestLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = foreground ?? Theme.of(context).colorScheme.onSurface;
     final fontSize = compact ? 16.0 : 20.0;
+    final markSize = compact ? 26.0 : 34.0;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.terrain_rounded, color: color, size: compact ? 20 : 24),
-        const SizedBox(width: 6),
+        Image.asset(
+          'assets/images/nvr_logo.png',
+          width: markSize,
+          height: markSize,
+          // logo-ul e alb → pe temă deschisă îl colorăm în culoarea textului
+          color: isDark ? null : color,
+          errorBuilder: (_, __, ___) =>
+              Icon(Icons.terrain_rounded, color: color, size: compact ? 20 : 24),
+        ),
+        const SizedBox(width: 8),
         Text(
           'NEVEREST',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -241,13 +252,39 @@ class NeverestAvatar extends StatelessWidget {
     super.key,
     required this.name,
     this.size = 34,
+    this.imageB64,
   });
 
   final String name;
   final double size;
+  /// Optional base64-encoded image (JPEG/PNG). When set, shown instead of initials.
+  final String? imageB64;
 
   @override
   Widget build(BuildContext context) {
+    // If we have a photo, show it
+    if (imageB64 != null && imageB64!.isNotEmpty) {
+      try {
+        // Strip data URI prefix if present
+        final raw = imageB64!.contains(',') ? imageB64!.split(',').last : imageB64!;
+        final bytes = base64Decode(raw);
+        return ClipOval(
+          child: Image.memory(
+            bytes,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _initialsWidget(context),
+          ),
+        );
+      } catch (_) {
+        // Fall through to initials
+      }
+    }
+    return _initialsWidget(context);
+  }
+
+  Widget _initialsWidget(BuildContext context) {
     final initials = _initials(name);
     final seed = name.runes.fold<int>(13, (value, rune) => value + rune);
     final hue = (seed % 360).toDouble();
@@ -277,14 +314,52 @@ class NeverestAvatar extends StatelessWidget {
         .split(RegExp(r'\s+'))
         .where((part) => part.trim().isNotEmpty)
         .toList();
-    if (parts.isEmpty) {
-      return '?';
+    if (parts.isEmpty) return '?';
+    if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
+    return (parts.first.substring(0, 1) + parts.last.substring(0, 1)).toUpperCase();
+  }
+}
+
+/// Imaginea unei recompense: foloseste poza base64 daca exista, altfel afiseaza
+/// arta default (cercurile topografice) peste [fallbackColor].
+class NeverestRewardImage extends StatelessWidget {
+  const NeverestRewardImage({
+    super.key,
+    required this.imageB64,
+    required this.fallbackColor,
+    this.ringCount = 8,
+  });
+
+  final String? imageB64;
+  final Color fallbackColor;
+  final int ringCount;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageB64 != null && imageB64!.isNotEmpty) {
+      try {
+        final raw =
+            imageB64!.contains(',') ? imageB64!.split(',').last : imageB64!;
+        final bytes = base64Decode(raw);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          errorBuilder: (_, __, ___) => _fallback(),
+        );
+      } catch (_) {
+        // Fall through to default art.
+      }
     }
-    if (parts.length == 1) {
-      return parts.first.substring(0, 1).toUpperCase();
-    }
-    return (parts.first.substring(0, 1) + parts.last.substring(0, 1))
-        .toUpperCase();
+    return _fallback();
+  }
+
+  Widget _fallback() {
+    return Container(
+      color: fallbackColor,
+      child: NeverestTopographicRings(color: Colors.white, count: ringCount),
+    );
   }
 }
 

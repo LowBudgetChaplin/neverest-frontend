@@ -155,6 +155,20 @@ class _MainShellScreenState extends State<MainShellScreen> {
     setState(() {
       _selectedIndex = value;
     });
+    if (value == 0) {
+      _refreshProfilePoints();
+    }
+  }
+
+  void _refreshProfilePoints() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState.status != AuthStatus.authenticated) return;
+    context.read<ProfileBloc>().add(
+          ProfileLoadRequested(
+            suggestedDisplayName: _suggestDisplayName(authState),
+            preferMeEndpoints: true,
+          ),
+        );
   }
 
   void _openAdminCenter() {

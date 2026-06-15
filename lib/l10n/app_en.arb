@@ -41,10 +41,10 @@
   "onboardingSubtitle1": "A club for movement, mountains, and mornings worth showing up to.",
   "onboardingCta1": "Get started",
   "onboardingHeadline2": "MOVE.\nEARN POINTS.",
-  "onboardingSubtitle2": "Run, hike, play padel. Show up at events. Hit weekly challenges. Every move counts.",
+  "onboardingSubtitle2": "Run, hike. Show up at events. Hit weekly challenges. Every move counts.",
   "onboardingCta2": "Sounds good",
   "onboardingHeadline3": "SPEND THEM\nLOCALLY.",
-  "onboardingSubtitle3": "Cărturești, Origo, MOCA, your favorite coach. Real perks from real Bucharest.",
+  "onboardingSubtitle3": "Cărturești, Tiny Cup, Eden House, your favorite coach, etc",
   "onboardingCta3": "Let's go",
   "onboardingStep": "{current} / {total}",
   "@onboardingStep": {
@@ -67,6 +67,8 @@
   "homeTrackingLive": "Tracking · live",
   "homeSeeAll": "See all",
   "homeSpendPoints": "Spend your points",
+  "homeAvailableToSpend": "to spend",
+  "homeNothingAffordable": "Keep earning — no perks within reach yet.",
   "homeActiveCount": "{count} active",
   "@homeActiveCount": {
     "placeholders": {
@@ -99,14 +101,19 @@
     }
   },
 
+  "profilePhone": "Phone number",
+
   "eventWhen": "When",
   "eventWhere": "Where",
-  "eventHost": "Host",
   "eventReward": "Reward",
+  "eventRecurrence": "Recurrence",
   "eventAbout": "About",
-  "eventAboutSample": "Easy 8K with mid-pace and recovery groups. Coffee at Origo after. Rain or shine. Show your QR at the gate to claim points.",
-  "eventWhatsappSync": "Auto-posted to #announcements and Neverest Strava Club",
+  "eventStravaClub": "Join Strava Club →",
+  "eventWhatsappGroup": "Join WhatsApp Group →",
   "eventRoute": "Route",
+  "eventOpenRoute": "Open in Maps",
+  "eventParticipants": "Participants",
+  "eventYouGoing": "You're going",
   "eventAdminCheckIn": "Admin check-in",
   "eventImGoing": "I'm going",
   "eventGoing": "You're in",
@@ -126,10 +133,14 @@
       }
     }
   },
+  "eventFull": "Full",
 
   "challengesTitle": "Challenges",
   "challengesSubtitle": "Earn points your way",
   "challengesEarned": "Earned",
+  "challengesNoCompleted": "You haven't completed any challenge yet.",
+  "challengesCompletedTag": "Completed",
+  "challengesPartnerFilter": "Partners",
   "challengesActiveCount": "Active · {count}",
   "@challengesActiveCount": {
     "placeholders": {
@@ -157,6 +168,7 @@
   "challengeAlwaysOn": "Always on",
   "challengeProgress23": "2/3 done",
   "challengeDeadlineDays": "{days} days left",
+  "yourPointsHome" : "YOUR POINTS",
   "@challengeDeadlineDays": {
     "placeholders": {
       "days": {
@@ -229,10 +241,49 @@
   "leaderboardTitle": "Leaderboard",
   "leaderboardSubtitle": "Updates every minute",
 
+  "offersSectionTitle": "Partner offers",
+  "partnerCenterTitle": "Partner Center",
+  "partnerAccessRequired": "Partner account required.",
+  "partnerPublishOffer": "Publish an offer / ad",
+  "partnerEditOffer": "Edit offer",
+  "partnerBrand": "Brand",
+  "partnerOfferTitleField": "Product / offer title",
+  "partnerDescriptionField": "Description",
+  "partnerDiscountHint": "Discount (e.g. -20%)",
+  "partnerLinkOptional": "Link (optional)",
+  "partnerChangePhoto": "Change photo",
+  "partnerAddPhoto": "Add photo",
+  "partnerFrom": "From",
+  "partnerUntil": "Until",
+  "partnerPublish": "Publish",
+  "partnerSave": "Save",
+  "partnerMyOffers": "My offers",
+  "partnerNoOffers": "You haven't published any offer yet.",
+  "partnerBrandTitleRequired": "Brand and title are required.",
+  "partnerOfferUpdated": "Offer updated.",
+  "partnerOfferPublished": "Offer published.",
+  "partnerCreateChallenge": "Create a challenge",
+  "partnerEditChallenge": "Edit challenge",
+  "partnerActivity": "Activity",
+  "partnerBenefitLabel": "Benefit (no points)",
+  "partnerNoChallenges": "You haven't created any challenge yet.",
+  "partnerChallengeRequired": "Title and benefit are required.",
+  "commonError": "Error",
   "rewardsTitle": "Rewards",
   "rewardsWallet": "Wallet",
   "rewardsHistory": "History",
   "rewardsRedeem": "Redeem",
+  "rewardEditTitle": "Edit reward",
+  "rewardEditChangePhoto": "Change photo",
+  "rewardEditRemovePhoto": "Remove photo",
+  "rewardEditFieldTitle": "Title",
+  "rewardEditFieldPartner": "Partner",
+  "rewardEditFieldDescription": "Description",
+  "rewardEditFieldPoints": "Points cost",
+  "rewardEditFieldStock": "Stock",
+  "rewardEditStockHint": "empty = unlimited",
+  "rewardEditFieldAddress": "Address",
+  "rewardEditValidation": "Title, partner and a positive points cost are required.",
   "rewardsCategoryBooks": "Books",
   "rewardsCategoryCafe": "Café",
   "rewardsCategoryMusic": "Music",
@@ -330,6 +381,8 @@
   "authSwitchToRegister": "Need an account? Register",
   "authSwitchToLogin": "Already have an account? Log in",
   "authCredentialsRequired": "Email and password are required.",
+  "authPhoneRequired": "Phone number is required.",
+  "authPhotoOptional": "Add a photo (optional)",
   "authPasswordMinLength": "Password must have at least 6 characters.",
   "authPasswordsMismatch": "Passwords do not match.",
   "authSessionActive": "Active session",
@@ -352,12 +405,19 @@
   "qrMemberId": "Member ID",
   "qrShowAtGate": "SHOW THIS\nAT THE GATE",
   "qrScanHint": "Organizer scans → points credited",
-  "qrRefreshCountdown": "Refreshes in 0:42",
+  "qrRefreshCountdown": "Refreshes in {time}",
+  "@qrRefreshCountdown": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
 
   "adminScanHeader": "● Admin · Sunrise Run",
   "adminScanHint": "Align member QR inside the frame",
   "adminScanManualCheckin": "Simulate check-in",
-  "adminScanManualInput": "Manual QR input",
+  "adminScanManualInput": "Manual code input",
   "adminScanSubmit": "Submit check-in",
   "adminScanReset": "Scan again",
   "adminScanFailed": "Check-in failed.",
@@ -386,6 +446,18 @@
       }
     }
   },
+  "adminScanSpots": "{count} / {capacity} spots",
+  "@adminScanSpots": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "capacity": {
+        "type": "int"
+      }
+    }
+  },
+  "adminScanCapacityExceeded": "Number of spots exceeded",
   "adminScanNext": "Next scan",
 
   "dashboardLoadFailed": "Could not load dashboard data."

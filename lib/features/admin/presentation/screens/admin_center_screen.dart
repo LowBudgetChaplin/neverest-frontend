@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -52,8 +53,13 @@ class _AdminCenterView extends StatefulWidget {
 
 class _AdminCenterViewState extends State<_AdminCenterView> {
   final _eventTitleController = TextEditingController();
+  final _eventDescriptionController = TextEditingController();
   final _eventLocationController = TextEditingController();
-  final _eventPointsController = TextEditingController(text: '100');
+  final _eventPointsController = TextEditingController();
+  final _eventCapacityController = TextEditingController();
+  final _eventRouteMapUrlController = TextEditingController();
+  final _eventStravaClubUrlController = TextEditingController();
+  final _eventWhatsappGroupUrlController = TextEditingController();
   final _eventRetryIdController = TextEditingController();
 
   final _challengeTitleController = TextEditingController();
@@ -72,8 +78,23 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   final _auditActionController = TextEditingController();
   final _auditActorController = TextEditingController();
 
+  final _partnerEmailController = TextEditingController();
+  final _partnerPasswordController = TextEditingController();
+  final _partnerNameController = TextEditingController();
+  final _partnerBrandController = TextEditingController();
+
   String _eventActivity = 'RUNNING';
+  String _eventRecurrence = 'NONE';
   DateTime _eventStartsAt = DateTime.now().add(const Duration(days: 1));
+
+  static const _eventRecurrences = [
+    'NONE',
+    'WEEKLY',
+    'BIWEEKLY',
+    'MONTHLY',
+    'QUARTERLY',
+    'YEARLY',
+  ];
 
   String _challengeActivity = 'RUNNING';
   String _challengeMode = 'ONLINE';
@@ -90,8 +111,13 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   @override
   void dispose() {
     _eventTitleController.dispose();
+    _eventDescriptionController.dispose();
     _eventLocationController.dispose();
     _eventPointsController.dispose();
+    _eventCapacityController.dispose();
+    _eventRouteMapUrlController.dispose();
+    _eventStravaClubUrlController.dispose();
+    _eventWhatsappGroupUrlController.dispose();
     _eventRetryIdController.dispose();
     _challengeTitleController.dispose();
     _challengeDescriptionController.dispose();
@@ -106,6 +132,10 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     _userDisplayNameController.dispose();
     _auditActionController.dispose();
     _auditActorController.dispose();
+    _partnerEmailController.dispose();
+    _partnerPasswordController.dispose();
+    _partnerNameController.dispose();
+    _partnerBrandController.dispose();
     super.dispose();
   }
 
@@ -155,6 +185,8 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               const SizedBox(height: 12),
               _buildUsersSection(context, state, isBusy),
               const SizedBox(height: 12),
+              _buildPartnerSection(context, isBusy),
+              const SizedBox(height: 12),
               _buildAuditSection(context, state, isBusy),
               const SizedBox(height: 12),
               _buildActivityLeaderboardSection(context, state, isBusy),
@@ -185,6 +217,14 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               decoration: const InputDecoration(labelText: 'Title'),
             ),
             const SizedBox(height: 8),
+            TextField(
+              controller: _eventDescriptionController,
+              enabled: !isBusy,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(labelText: 'Description (optional)'),
+            ),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
@@ -207,21 +247,90 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _eventRecurrence,
+                    items: _eventRecurrences
+                        .map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text(r),
+                            ))
+                        .toList(),
+                    onChanged: isBusy
+                        ? null
+                        : (value) => setState(
+                              () => _eventRecurrence = value ?? _eventRecurrence,
+                            ),
+                    decoration: const InputDecoration(labelText: 'Recurrence'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _eventLocationController,
+                    enabled: !isBusy,
+                    decoration: const InputDecoration(labelText: 'Location'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
                   child: TextField(
                     controller: _eventPointsController,
                     enabled: !isBusy,
                     keyboardType: TextInputType.number,
-                    decoration:
-                        const InputDecoration(labelText: 'Points reward'),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                    ],
+                    decoration: const InputDecoration(
+                      labelText: 'Points reward',
+                      hintText: 'ex: 100',
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             TextField(
-              controller: _eventLocationController,
+              controller: _eventCapacityController,
               enabled: !isBusy,
-              decoration: const InputDecoration(labelText: 'Location'),
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+              ],
+              decoration: const InputDecoration(
+                labelText: 'Max participants (optional)',
+                hintText: 'leave empty for unlimited',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _eventRouteMapUrlController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(
+                labelText: 'Google Maps',
+                hintText: '<iframe src="...">',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _eventStravaClubUrlController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(
+                labelText: 'Strava Club URL (optional)',
+                hintText: 'https://www.strava.com/...',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _eventWhatsappGroupUrlController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(
+                labelText: 'WhatsApp Group URL (optional)',
+                hintText: 'https://chat.whatsapp.com/...',
+              ),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
@@ -525,6 +634,68 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     );
   }
 
+  Widget _buildPartnerSection(BuildContext context, bool isBusy) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Create partner account',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerNameController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(labelText: 'Display name'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerBrandController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(labelText: 'Brand'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerEmailController,
+              enabled: !isBusy,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _partnerPasswordController,
+              enabled: !isBusy,
+              decoration: const InputDecoration(labelText: 'Password (min 6)'),
+            ),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              onPressed: isBusy ? null : _createPartner,
+              icon: const Icon(Icons.storefront_outlined),
+              label: const Text('Create partner'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _createPartner() async {
+    final email = _partnerEmailController.text.trim();
+    final password = _partnerPasswordController.text;
+    final brand = _partnerBrandController.text.trim();
+    if (email.isEmpty || password.length < 6 || brand.isEmpty) {
+      _showValidation('Email, brand și parolă (min 6) sunt obligatorii.');
+      return;
+    }
+    await context.read<AdminPanelCubit>().createPartner(
+          email: email,
+          password: password,
+          displayName: _partnerNameController.text,
+          brand: brand,
+        );
+  }
+
   Widget _buildUsersSection(
     BuildContext context,
     AdminPanelState state,
@@ -652,10 +823,24 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                   : (value) => setState(() => _auditSuccess = value),
             ),
             const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: isBusy ? null : _refreshAuditLogs,
-              icon: const Icon(Icons.search),
-              label: const Text('Search logs'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: isBusy ? null : _refreshAuditLogs,
+                    icon: const Icon(Icons.search),
+                    label: const Text('Search logs'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : _exportAuditLogs,
+                    icon: const Icon(Icons.download_rounded),
+                    label: const Text('Export logs'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 8),
             if (state.auditLogs.isEmpty)
@@ -773,12 +958,33 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
       return;
     }
 
+    final capacityText = _eventCapacityController.text.trim();
+    final capacity = capacityText.isEmpty ? null : int.tryParse(capacityText);
+    if (capacityText.isNotEmpty && (capacity == null || capacity <= 0)) {
+      _showValidation('Max participants must be a positive number.');
+      return;
+    }
+
     await context.read<AdminPanelCubit>().createEvent(
           title: title,
           activityType: _eventActivity,
           location: location,
           startsAtIso: _toLocalDateTimeIso(_eventStartsAt),
           pointsReward: points,
+          capacity: capacity,
+          description: _eventDescriptionController.text.trim().isEmpty
+              ? null
+              : _eventDescriptionController.text.trim(),
+          recurrence: _eventRecurrence,
+          routeMapUrl: _eventRouteMapUrlController.text.trim().isEmpty
+              ? null
+              : _eventRouteMapUrlController.text.trim(),
+          stravaClubUrl: _eventStravaClubUrlController.text.trim().isEmpty
+              ? null
+              : _eventStravaClubUrlController.text.trim(),
+          whatsappGroupUrl: _eventWhatsappGroupUrlController.text.trim().isEmpty
+              ? null
+              : _eventWhatsappGroupUrlController.text.trim(),
         );
   }
 
@@ -873,6 +1079,14 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
         );
   }
 
+  Future<void> _exportAuditLogs() async {
+    await context.read<AdminPanelCubit>().exportAuditLogs(
+          action: _auditActionController.text,
+          actor: _auditActorController.text,
+          success: _auditSuccess,
+        );
+  }
+
   Future<DateTime?> _pickDateTime(
       BuildContext context, DateTime initial) async {
     final pickedDate = await showDatePicker(
@@ -941,7 +1155,7 @@ class _AuthMeCard extends StatelessWidget {
             Text('Auth /me', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
             Text('Subject: ${authMe!.subject}'),
-            Text('Authenticated: ${authMe!.authenticated}'),
+            // Text('Authenticated: ${authMe!.authenticated}'),
             const SizedBox(height: 8),
             Wrap(
               spacing: 6,
