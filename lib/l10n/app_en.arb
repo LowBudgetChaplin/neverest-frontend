@@ -459,6 +459,7 @@
     }
   },
   "adminScanCapacityExceeded": "Number of spots exceeded",
+  "adminScanNotJoined": "This member has not joined the event",
   "adminScanNext": "Next scan",
 
   "dashboardLoadFailed": "Could not load dashboard data."

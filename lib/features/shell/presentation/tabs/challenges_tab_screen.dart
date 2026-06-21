@@ -20,8 +20,13 @@ class ChallengesTabScreen extends StatefulWidget {
 }
 
 class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
+  static const int _pageSize = 10;
+  static const int _maxArchive = 100;
+
   bool _showCompleted = false;
   bool _partnerOnly = false;
+  bool _showExpired = false;
+  int _expiredPage = 0;
 
   Future<void> _confirmDeleteChallenge(ChallengeSummary challenge) async {
     final l10n = AppLocalizations.of(context)!;
@@ -106,12 +111,38 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
             .where((item) => !item.done && !_challengeExpired(item.summary))
             .toList();
         final done = items.where((item) => item.done).toList();
-        var list = _showCompleted ? done : active;
+        // Obiectivele expirate (neterminate) raman doar pentru admin, ca arhiva.
+        final expired = items
+            .where((item) => !item.done && _challengeExpired(item.summary))
+            .toList()
+          ..sort((a, b) =>
+              (b.summary.endsAt ?? '').compareTo(a.summary.endsAt ?? ''));
+        final showingExpired = isAdmin && _showExpired;
+
+        var list = showingExpired
+            ? expired
+            : (_showCompleted ? done : active);
         if (_partnerOnly) {
           list = list
               .where((item) => item.summary.isPartnerChallenge)
               .toList();
         }
+
+        // Arhiva expirata: plafon 100, paginare 10/pagina (max 10 pagini).
+        final cappedArchive =
+            list.length > _maxArchive ? list.sublist(0, _maxArchive) : list;
+        final totalPages = showingExpired
+            ? (cappedArchive.length / _pageSize).ceil().clamp(1, 10)
+            : 1;
+        final safePage =
+            showingExpired ? _expiredPage.clamp(0, totalPages - 1) : 0;
+        if (showingExpired) {
+          list = cappedArchive
+              .skip(safePage * _pageSize)
+              .take(_pageSize)
+              .toList();
+        }
+
         final hasPartnerChallenges =
             items.any((item) => item.summary.isPartnerChallenge);
 
@@ -140,21 +171,41 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
             //   ),
             // ),
             const SizedBox(height: 12),
-            Padding(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
                   NeverestFilterChip(
                     label: l10n.challengesActiveCount(active.length),
-                    selected: !_showCompleted,
-                    onTap: () => setState(() => _showCompleted = false),
+                    selected: !_showCompleted && !_showExpired,
+                    onTap: () => setState(() {
+                      _showCompleted = false;
+                      _showExpired = false;
+                    }),
                   ),
                   const SizedBox(width: 8),
                   NeverestFilterChip(
                     label: l10n.challengesCompletedCount(done.length),
-                    selected: _showCompleted,
-                    onTap: () => setState(() => _showCompleted = true),
+                    selected: _showCompleted && !_showExpired,
+                    onTap: () => setState(() {
+                      _showCompleted = true;
+                      _showExpired = false;
+                    }),
                   ),
+                  if (isAdmin) ...[
+                    const SizedBox(width: 8),
+                    NeverestFilterChip(
+                      label: 'Expirate (${expired.length})',
+                      icon: Icons.history_rounded,
+                      selected: _showExpired,
+                      onTap: () => setState(() {
+                        _showExpired = true;
+                        _showCompleted = false;
+                        _expiredPage = 0;
+                      }),
+                    ),
+                  ],
                   if (hasPartnerChallenges) ...[
                     const SizedBox(width: 8),
                     NeverestFilterChip(
@@ -179,32 +230,59 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
-            else
+            else ...[
               ...list.map(
                 (item) => Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                  child: _ChallengeCard(
-                    item: item,
-                    featured: true,
-                    onDelete:
-                        isAdmin ? () => _confirmDeleteChallenge(item.summary) : null,
-                    onEdit: isAdmin
-                        ? () => Navigator.of(context).push(
+                  child: Stack(
+                    children: [
+                      Opacity(
+                        opacity: showingExpired ? 0.55 : 1,
+                        child: _ChallengeCard(
+                          item: item,
+                          featured: true,
+                          onDelete: isAdmin
+                              ? () => _confirmDeleteChallenge(item.summary)
+                              : null,
+                          onEdit: isAdmin
+                              ? () => Navigator.of(context).push(
+                                    AppPageRoute.fadeSlide(
+                                      ChallengeEditScreen(
+                                          challenge: item.summary),
+                                    ),
+                                  )
+                              : null,
+                          onTap: () {
+                            Navigator.of(context).push(
                               AppPageRoute.fadeSlide(
-                                ChallengeEditScreen(challenge: item.summary),
+                                ChallengeDetailsScreen(challenge: item.summary),
                               ),
-                            )
-                        : null,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        AppPageRoute.fadeSlide(
-                          ChallengeDetailsScreen(challenge: item.summary),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                      if (showingExpired)
+                        const Positioned(
+                          top: 12,
+                          right: 12,
+                          child: _ExpiredBadge(),
+                        ),
+                    ],
                   ),
                 ),
               ),
+              if (showingExpired && totalPages > 1)
+                _Pager(
+                  page: safePage,
+                  totalPages: totalPages,
+                  onPrev: safePage > 0
+                      ? () => setState(() => _expiredPage = safePage - 1)
+                      : null,
+                  onNext: safePage < totalPages - 1
+                      ? () => setState(() => _expiredPage = safePage + 1)
+                      : null,
+                ),
+            ],
           ],
         );
       },
@@ -608,7 +686,10 @@ bool _challengeExpired(ChallengeSummary summary) {
   if (endsAt == null || endsAt.isEmpty) return false;
   final date = DateTime.tryParse(endsAt);
   if (date == null) return false;
-  return date.isBefore(DateTime.now());
+  final endDay = DateTime(date.year, date.month, date.day);
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  return endDay.isBefore(today);
 }
 
 List<_ChallengeItem> _toChallengeItems(
@@ -662,5 +743,69 @@ class _ChallengeItem {
   final String deadline;
   bool get done => summary.completed;
   String get id => summary.id;
+}
+
+class _ExpiredBadge extends StatelessWidget {
+  const _ExpiredBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: NeverestPalette.danger,
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        'EXPIRAT',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+      ),
+    );
+  }
+}
+
+class _Pager extends StatelessWidget {
+  const _Pager({
+    required this.page,
+    required this.totalPages,
+    this.onPrev,
+    this.onNext,
+  });
+
+  final int page;
+  final int totalPages;
+  final VoidCallback? onPrev;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: onPrev,
+            icon: const Icon(Icons.chevron_left_rounded),
+          ),
+          Text(
+            '${page + 1} / $totalPages',
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            onPressed: onNext,
+            icon: const Icon(Icons.chevron_right_rounded),
+          ),
+        ],
+      ),
+    );
+  }
 }
 

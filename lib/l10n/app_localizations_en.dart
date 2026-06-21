@@ -865,6 +865,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminScanCapacityExceeded => 'Number of spots exceeded';
 
   @override
+  String get adminScanNotJoined => 'This member has not joined the event';
+
+  @override
   String get adminScanNext => 'Next scan';
 
   @override

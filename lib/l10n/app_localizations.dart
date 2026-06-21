@@ -1715,6 +1715,12 @@ abstract class AppLocalizations {
   /// **'Number of spots exceeded'**
   String get adminScanCapacityExceeded;
 
+  /// No description provided for @adminScanNotJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'This member has not joined the event'**
+  String get adminScanNotJoined;
+
   /// No description provided for @adminScanNext.
   ///
   /// In en, this message translates to:

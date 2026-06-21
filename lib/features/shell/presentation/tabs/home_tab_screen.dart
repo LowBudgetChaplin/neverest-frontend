@@ -38,8 +38,12 @@ class HomeTabScreen extends StatelessWidget {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final data = state.data;
-        final events = data?.events ?? const <EventSummary>[];
-        final challenges = data?.challenges ?? const <ChallengeSummary>[];
+        final events = (data?.events ?? const <EventSummary>[])
+            .where((event) => !event.isPast)
+            .toList();
+        final challenges = (data?.challenges ?? const <ChallengeSummary>[])
+            .where((challenge) => !challenge.isExpired)
+            .toList();
         final rewards = data?.rewards ?? const <RewardSummary>[];
         final totalPoints = profile?.totalPoints ?? 0;
         final availablePoints = profile?.availablePoints ?? 0;

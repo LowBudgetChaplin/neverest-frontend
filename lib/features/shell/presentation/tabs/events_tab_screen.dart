@@ -20,7 +20,12 @@ class EventsTabScreen extends StatefulWidget {
 }
 
 class _EventsTabScreenState extends State<EventsTabScreen> {
+  static const int _pageSize = 10;
+  static const int _maxArchive = 100;
+
   String _filter = 'ALL';
+  bool _showPast = false;
+  int _pastPage = 0;
 
   @override
   void initState() {
@@ -78,17 +83,41 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final sourceEvents = state.data?.events ?? const <EventSummary>[];
+        // Non-adminii nu vad evenimentele trecute; adminul le vede ca arhiva.
+        final upcoming =
+            sourceEvents.where((event) => !event.isPast).toList();
+        final past = sourceEvents.where((event) => event.isPast).toList()
+          ..sort((a, b) => b.startsAt.compareTo(a.startsAt));
+        final showingPast = isAdmin && _showPast;
+
         final sportCodes = <String>[
           'ALL',
           ...{
             for (final e in sourceEvents) e.activityType.toUpperCase(),
           },
         ];
-        final filtered = _filter == 'ALL'
-            ? sourceEvents
-            : sourceEvents
-                .where((event) => event.activityType.toUpperCase() == _filter)
-                .toList();
+
+        List<EventSummary> applySport(List<EventSummary> list) =>
+            _filter == 'ALL'
+                ? list
+                : list
+                    .where(
+                        (event) => event.activityType.toUpperCase() == _filter)
+                    .toList();
+
+        final baseList = applySport(showingPast ? past : upcoming);
+        final cappedArchive =
+            baseList.length > _maxArchive ? baseList.sublist(0, _maxArchive) : baseList;
+        final totalPages = showingPast
+            ? (cappedArchive.length / _pageSize).ceil().clamp(1, 10)
+            : 1;
+        final safePage = showingPast ? _pastPage.clamp(0, totalPages - 1) : 0;
+        final filtered = showingPast
+            ? cappedArchive
+                .skip(safePage * _pageSize)
+                .take(_pageSize)
+                .toList()
+            : baseList;
 
         return ListView(
           padding: EdgeInsets.only(
@@ -110,7 +139,13 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                l10n.eventsSubtitle(sourceEvents.length, 65),
+                l10n.eventsSubtitle(
+                  sourceEvents.length,
+                  sourceEvents.fold<int>(
+                    0,
+                    (sum, event) => sum + event.participantCount,
+                  ),
+                ),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ),
@@ -133,6 +168,35 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                 },
               ),
             ),
+            if (isAdmin) ...[
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    NeverestFilterChip(
+                      label: 'Viitoare (${upcoming.length})',
+                      selected: !_showPast,
+                      onTap: () => setState(() {
+                        _showPast = false;
+                        _pastPage = 0;
+                      }),
+                    ),
+                    const SizedBox(width: 8),
+                    NeverestFilterChip(
+                      label: 'Trecute (${past.length})',
+                      icon: Icons.history_rounded,
+                      selected: _showPast,
+                      onTap: () => setState(() {
+                        _showPast = true;
+                        _pastPage = 0;
+                      }),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             if (state.status == DashboardStatus.loading && sourceEvents.isEmpty)
               Padding(
@@ -184,12 +248,13 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
-            else
+            else ...[
               ...filtered.map(
                 (event) => Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: _EventLargeCard(
                     event: event,
+                    past: showingPast,
                     onDelete: isAdmin ? () => _confirmDeleteEvent(event) : null,
                     onEdit: isAdmin
                         ? () => Navigator.of(context).push(
@@ -208,6 +273,18 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                   ),
                 ),
               ),
+              if (showingPast && totalPages > 1)
+                _Pager(
+                  page: safePage,
+                  totalPages: totalPages,
+                  onPrev: safePage > 0
+                      ? () => setState(() => _pastPage = safePage - 1)
+                      : null,
+                  onNext: safePage < totalPages - 1
+                      ? () => setState(() => _pastPage = safePage + 1)
+                      : null,
+                ),
+            ],
           ],
         );
       },
@@ -240,12 +317,14 @@ class _EventLargeCard extends StatelessWidget {
     required this.onTap,
     this.onDelete,
     this.onEdit,
+    this.past = false,
   });
 
   final EventSummary event;
   final VoidCallback onTap;
   final VoidCallback? onDelete;
   final VoidCallback? onEdit;
+  final bool past;
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +339,9 @@ class _EventLargeCard extends StatelessWidget {
         ? '07:00'
         : '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
-    return InkWell(
+    return Opacity(
+      opacity: past ? 0.55 : 1,
+      child: InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: onTap,
       child: Ink(
@@ -336,11 +417,24 @@ class _EventLargeCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          event.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                event.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w800),
                               ),
+                            ),
+                            if (past) ...[
+                              const SizedBox(width: 8),
+                              const _PastBadge(),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -365,7 +459,30 @@ class _EventLargeCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  if (event.spotsLeft != null)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.people_alt_outlined,
+                        size: 14,
+                        color: isDark
+                            ? NeverestPalette.inkMuted
+                            : NeverestPalette.paperMuted,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${event.participantCount}',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: isDark
+                                  ? NeverestPalette.inkMuted
+                                  : NeverestPalette.paperMuted,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
+                  ),
+                  if (event.spotsLeft != null) ...[
+                    const SizedBox(width: 12),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -397,6 +514,7 @@ class _EventLargeCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ],
                   const Spacer(),
                   Text(
                     '+${event.pointsReward} PTS',
@@ -429,8 +547,73 @@ class _EventLargeCard extends StatelessWidget {
           ],
         ),
       ),
+      ),
     );
   }
 
+}
+
+class _PastBadge extends StatelessWidget {
+  const _PastBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: NeverestPalette.danger.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        'TRECUT',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: NeverestPalette.danger,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+      ),
+    );
+  }
+}
+
+class _Pager extends StatelessWidget {
+  const _Pager({
+    required this.page,
+    required this.totalPages,
+    this.onPrev,
+    this.onNext,
+  });
+
+  final int page;
+  final int totalPages;
+  final VoidCallback? onPrev;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: onPrev,
+            icon: const Icon(Icons.chevron_left_rounded),
+          ),
+          Text(
+            '${page + 1} / $totalPages',
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            onPressed: onNext,
+            icon: const Icon(Icons.chevron_right_rounded),
+          ),
+        ],
+      ),
+    );
+  }
 }
 

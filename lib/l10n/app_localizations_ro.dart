@@ -865,6 +865,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get adminScanCapacityExceeded => 'Numarul de locuri a fost depasit';
 
   @override
+  String get adminScanNotJoined => 'Acest membru nu s-a inscris la eveniment';
+
+  @override
   String get adminScanNext => 'Scanare urmatoare';
 
   @override

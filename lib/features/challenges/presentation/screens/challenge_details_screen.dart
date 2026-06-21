@@ -741,13 +741,22 @@ class _StravaActivityCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              _StatChip(label: 'KM', value: activity.distanceKm.toStringAsFixed(2)),
-              const SizedBox(width: 14),
-              _StatChip(label: 'DURATĂ', value: activity.formattedDuration),
-              const SizedBox(width: 14),
-              _StatChip(label: 'RITM', value: activity.formattedPace),
-              const SizedBox(width: 14),
-              _StatChip(label: 'ELEVAȚIE', value: '${activity.totalElevationGain.toStringAsFixed(0)}m'),
+              Expanded(
+                child: _StatChip(
+                    label: 'KM', value: activity.distanceKm.toStringAsFixed(2)),
+              ),
+              Expanded(
+                child: _StatChip(
+                    label: 'DURATĂ', value: activity.formattedDuration),
+              ),
+              Expanded(
+                child: _StatChip(label: 'RITM', value: activity.formattedPace),
+              ),
+              Expanded(
+                child: _StatChip(
+                    label: 'ELEVAȚIE',
+                    value: '${activity.totalElevationGain.toStringAsFixed(0)}m'),
+              ),
             ],
           ),
           if (activity.startLatLng != null || activity.endLatLng != null) ...[
@@ -815,10 +824,14 @@ class _StatChip extends StatelessWidget {
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
         ),
         Text(
           value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],

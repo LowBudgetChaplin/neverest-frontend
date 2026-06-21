@@ -1,6 +1,50 @@
 import '../../../app/services/api_client.dart';
 import '../domain/event_check_in_result.dart';
 
+class EventParticipant {
+  const EventParticipant({
+    required this.userId,
+    required this.name,
+    this.avatarB64,
+  });
+
+  factory EventParticipant.fromJson(Map<String, dynamic> json) {
+    return EventParticipant(
+      userId: json['userId'] as String? ?? '',
+      name: json['name'] as String? ?? '—',
+      avatarB64: json['avatarB64'] as String?,
+    );
+  }
+
+  final String userId;
+  final String name;
+  final String? avatarB64;
+}
+
+class EventParticipants {
+  const EventParticipants({
+    required this.going,
+    required this.count,
+    required this.participants,
+  });
+
+  factory EventParticipants.fromJson(Map<String, dynamic> json) {
+    final rawList = json['participants'] as List<dynamic>? ?? const [];
+    return EventParticipants(
+      going: json['going'] as bool? ?? false,
+      count: (json['count'] as num?)?.toInt() ?? rawList.length,
+      participants: rawList
+          .whereType<Map<String, dynamic>>()
+          .map(EventParticipant.fromJson)
+          .toList(),
+    );
+  }
+
+  final bool going;
+  final int count;
+  final List<EventParticipant> participants;
+}
+
 class EventActionRepository {
   EventActionRepository(this._apiClient);
 
@@ -30,6 +74,30 @@ class EventActionRepository {
 
   Future<void> deleteEvent(String eventId) async {
     await _apiClient.delete('/api/v1/events/$eventId');
+  }
+
+  Future<EventParticipants> getParticipants(String eventId) async {
+    final response = await _apiClient.get('/api/v1/events/$eventId/participants');
+    return EventParticipants.fromJson(_asMap(response.data));
+  }
+
+  Future<EventParticipants> joinEvent(String eventId) async {
+    final response =
+        await _apiClient.post('/api/v1/events/$eventId/participants/me');
+    return EventParticipants.fromJson(_asMap(response.data));
+  }
+
+  Future<EventParticipants> leaveEvent(String eventId) async {
+    final response =
+        await _apiClient.delete('/api/v1/events/$eventId/participants/me');
+    return EventParticipants.fromJson(_asMap(response.data));
+  }
+
+  Map<String, dynamic> _asMap(dynamic payload) {
+    if (payload is! Map<String, dynamic>) {
+      throw ApiException('Invalid participants response payload.');
+    }
+    return payload;
   }
 
   Future<void> updateEvent({

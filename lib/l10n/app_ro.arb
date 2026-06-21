@@ -452,6 +452,7 @@
     }
   },
   "adminScanCapacityExceeded": "Numarul de locuri a fost depasit",
+  "adminScanNotJoined": "Acest membru nu s-a inscris la eveniment",
   "adminScanNext": "Scanare urmatoare",
 
   "dashboardLoadFailed": "Datele dashboard nu au putut fi incarcate."
