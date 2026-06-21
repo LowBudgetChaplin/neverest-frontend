@@ -220,10 +220,11 @@
   "challengeAdminRequired": "Admin role is required for submission review.",
   "challengeApproveSubmission": "Approve submission",
   "challengeRejectSubmission": "Reject submission",
-  "challengeReviewerNoteOptional": "Reviewer note (optional)",
+  "challengeReviewerNoteOptional": "Reviewer note",
   "challengeSubmitProgress": "Submit progress",
   "challengeProofLabel": "Proof text",
-  "challengeMetricLabel": "Metric value (optional)",
+  "challengeActivityNameLabel": "Activity name",
+  "challengeMetricLabel": "Metric value",
   "challengeSubmit": "Submit challenge",
   "challengeSubmissionId": "Submission {id}",
   "@challengeSubmissionId": {

@@ -6,6 +6,7 @@ import '../../access/presentation/cubit/access_cubit.dart';
 import '../../admin/presentation/screens/admin_center_screen.dart';
 import '../../auth/presentation/bloc/auth_bloc.dart';
 import '../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../shell/presentation/design/neverest_design.dart';
 import '../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../l10n/app_localizations.dart';
@@ -60,6 +61,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   );
               context.read<DashboardBloc>().add(const DashboardLoadRequested());
               context.read<AccessCubit>().refresh();
+              context.read<NotificationCubit>().refreshUnreadCount();
               return;
             }
 
@@ -75,6 +77,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
                   .read<DashboardBloc>()
                   .add(const DashboardClearedRequested());
               context.read<AccessCubit>().refresh();
+              context.read<NotificationCubit>().clear();
             }
           },
         ),
@@ -169,6 +172,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
             preferMeEndpoints: true,
           ),
         );
+    context.read<NotificationCubit>().refreshUnreadCount();
   }
 
   void _openAdminCenter() {
@@ -192,6 +196,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         );
     context.read<DashboardBloc>().add(const DashboardLoadRequested());
     context.read<AccessCubit>().refresh();
+    context.read<NotificationCubit>().refreshUnreadCount();
   }
 
   String _suggestDisplayName(AuthState authState) {

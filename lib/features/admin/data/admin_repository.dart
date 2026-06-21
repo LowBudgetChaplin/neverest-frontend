@@ -80,6 +80,7 @@ class AdminRepository {
     required String password,
     required String displayName,
     required String brand,
+    required String phoneNumber,
   }) async {
     await _apiClient.post(
       '/api/v1/partners',
@@ -88,6 +89,7 @@ class AdminRepository {
         'password': password,
         'displayName': displayName.trim(),
         'brand': brand.trim(),
+        'phoneNumber': phoneNumber.trim(),
       },
     );
   }
@@ -154,8 +156,6 @@ class AdminRepository {
     );
   }
 
-  /// Actualizeaza o recompensa. Campurile null nu sunt trimise (raman
-  /// neschimbate). Pentru a sterge stocul/imaginea foloseste clearStock/clearImage.
   Future<void> updateReward({
     required String rewardId,
     String? title,

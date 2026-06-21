@@ -3,9 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../app/services/api_client.dart';
+import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../../events/data/event_action_repository.dart';
 import '../../../events/presentation/screens/event_details_screen.dart';
+import '../../../events/presentation/screens/event_edit_screen.dart';
 import '../design/neverest_design.dart';
 
 class EventsTabScreen extends StatefulWidget {
@@ -32,13 +36,48 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
     });
   }
 
+  Future<void> _confirmDeleteEvent(EventSummary event) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Șterge evenimentul'),
+        content: Text('Sigur ștergi „${event.title}”? Acțiunea nu poate fi anulată.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Șterge'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await context.read<EventActionRepository>().deleteEvent(event.id);
+      if (!mounted) return;
+      context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Eveniment șters.')));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isAdmin = context.select<AccessCubit, bool>(
+      (cubit) => cubit.state.canOpenAdminCenter,
+    );
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final sourceEvents = state.data?.events ?? const <EventSummary>[];
-        // Sporturile din filtre vin dinamic din tipurile prezente în evenimente.
         final sportCodes = <String>[
           'ALL',
           ...{
@@ -151,6 +190,14 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: _EventLargeCard(
                     event: event,
+                    onDelete: isAdmin ? () => _confirmDeleteEvent(event) : null,
+                    onEdit: isAdmin
+                        ? () => Navigator.of(context).push(
+                              AppPageRoute.fadeSlide(
+                                EventEditScreen(event: event),
+                              ),
+                            )
+                        : null,
                     onTap: () {
                       Navigator.of(context).push(
                         AppPageRoute.fadeSlide(
@@ -191,10 +238,14 @@ class _EventLargeCard extends StatelessWidget {
   const _EventLargeCard({
     required this.event,
     required this.onTap,
+    this.onDelete,
+    this.onEdit,
   });
 
   final EventSummary event;
   final VoidCallback onTap;
+  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -354,6 +405,24 @@ class _EventLargeCard extends StatelessWidget {
                           fontWeight: FontWeight.w900,
                         ),
                   ),
+                  if (onEdit != null)
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.only(left: 8),
+                      constraints: const BoxConstraints(),
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_outlined,
+                          size: 18, color: NeverestPalette.orange),
+                    ),
+                  if (onDelete != null)
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.only(left: 8),
+                      constraints: const BoxConstraints(),
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline_rounded,
+                          size: 18, color: NeverestPalette.danger),
+                    ),
                 ],
               ),
             ),
@@ -364,5 +433,4 @@ class _EventLargeCard extends StatelessWidget {
   }
 
 }
-
 

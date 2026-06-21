@@ -22,7 +22,7 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
     try {
       final authMeFuture = _repository.getAuthMe();
       final usersFuture = _repository.getUsers();
-      final auditLogsFuture = _repository.getAuditLogs(limit: 25);
+      final auditLogsFuture = _repository.getAuditLogs(limit: 100);
       final leaderboardFuture = _repository.getActivityLeaderboard(
         activityType: state.selectedActivityType,
         limit: 20,
@@ -56,7 +56,7 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
   }
 
   Future<void> refreshAuditLogs({
-    int limit = 50,
+    int limit = 100,
     String? action,
     String? actor,
     bool? success,
@@ -86,8 +86,6 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
     }
   }
 
-  /// Exporta jurnalul de audit ca fisier CSV local pe device si returneaza
-  /// calea fisierului prin successMessage.
   Future<void> exportAuditLogs({
     String? action,
     String? actor,
@@ -130,8 +128,6 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
   }
 
   Future<Directory> _exportDirectory() async {
-    // Pe Android folosim storage-ul extern al aplicatiei (vizibil prin file
-    // manager / USB); fallback la documentele aplicatiei pe restul platformelor.
     if (Platform.isAndroid) {
       final external = await getExternalStorageDirectory();
       if (external != null) return external;
@@ -235,6 +231,7 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
     required String password,
     required String displayName,
     required String brand,
+    required String phoneNumber,
   }) async {
     emit(state.copyWith(isBusy: true, clearMessage: true));
     try {
@@ -243,6 +240,7 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
         password: password,
         displayName: displayName,
         brand: brand,
+        phoneNumber: phoneNumber,
       );
       emit(state.copyWith(
         isBusy: false,

@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../dashboard/domain/dashboard_data.dart';
-import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
+import '../../domain/notification_models.dart';
+import '../cubit/notification_cubit.dart';
 
-/// A simple notifications inbox. Items are derived from the latest dashboard
-/// data (new challenges, partner offers, upcoming events). The push toggle is
-/// stored locally so the user controls whether push notifications are enabled.
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
 
@@ -24,6 +21,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     _loadPref();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final cubit = context.read<NotificationCubit>();
+      await cubit.loadAll();
+      await cubit.markAllRead();
+    });
   }
 
   Future<void> _loadPref() async {
@@ -41,59 +43,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final data = context.watch<DashboardBloc>().state.data;
-    final items = _buildItems(data);
+    final state = context.watch<NotificationCubit>().state;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notificări')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _PushToggleCard(enabled: _pushEnabled, onChanged: _setPush),
-          const SizedBox(height: 16),
-          if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Center(child: Text('Nicio notificare nouă.')),
-            )
-          else
-            ...items.map((n) => _NotificationTile(item: n)),
-        ],
+      body: RefreshIndicator(
+        onRefresh: () => context.read<NotificationCubit>().loadAll(),
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _PushToggleCard(enabled: _pushEnabled, onChanged: _setPush),
+            const SizedBox(height: 16),
+            if (state.isLoading && state.items.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (state.items.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(24),
+                child: Center(child: Text('Nicio notificare nouă.')),
+              )
+            else
+              ...state.items.map((n) => _NotificationTile(item: n)),
+          ],
+        ),
       ),
     );
-  }
-
-  List<_NotifItem> _buildItems(DashboardData? data) {
-    if (data == null) return const [];
-    final items = <_NotifItem>[];
-
-    for (final o in data.offers) {
-      items.add(_NotifItem(
-        icon: Icons.local_offer_rounded,
-        color: NeverestPalette.orange,
-        title: 'Ofertă nouă: ${o.brand}',
-        subtitle: o.discountLabel != null && o.discountLabel!.isNotEmpty
-            ? '${o.title} · ${o.discountLabel}'
-            : o.title,
-      ));
-    }
-    for (final c in data.challenges) {
-      items.add(_NotifItem(
-        icon: Icons.flag_rounded,
-        color: neverestActivityColor(c.activityType),
-        title: 'Provocare: ${c.title}',
-        subtitle: '+${c.pointsReward} puncte',
-      ));
-    }
-    for (final e in data.events) {
-      items.add(_NotifItem(
-        icon: Icons.event_rounded,
-        color: neverestActivityColor(e.activityType),
-        title: 'Eveniment: ${e.title}',
-        subtitle: e.location,
-      ));
-    }
-    return items;
   }
 }
 
@@ -141,11 +117,25 @@ class _PushToggleCard extends StatelessWidget {
 class _NotificationTile extends StatelessWidget {
   const _NotificationTile({required this.item});
 
-  final _NotifItem item;
+  final AppNotification item;
+
+  ({IconData icon, Color color}) _visualFor(String type) {
+    switch (type) {
+      case 'SUBMISSION_APPROVED':
+        return (icon: Icons.check_circle_rounded, color: NeverestPalette.success);
+      case 'SUBMISSION_REJECTED':
+        return (icon: Icons.cancel_rounded, color: NeverestPalette.danger);
+      case 'SUBMISSION_PENDING':
+        return (icon: Icons.hourglass_top_rounded, color: NeverestPalette.orange);
+      default:
+        return (icon: Icons.notifications_rounded, color: NeverestPalette.orange);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final visual = _visualFor(item.type);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
@@ -153,19 +143,22 @@ class _NotificationTile extends StatelessWidget {
         color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          color: item.read
+              ? (isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine)
+              : NeverestPalette.orange.withOpacity(0.5),
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: item.color.withOpacity(0.15),
+              color: visual.color.withOpacity(0.15),
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Icon(item.icon, color: item.color, size: 20),
+            child: Icon(visual.icon, color: visual.color, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -177,27 +170,24 @@ class _NotificationTile extends StatelessWidget {
                         .textTheme
                         .titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700)),
-                Text(item.subtitle,
-                    style: Theme.of(context).textTheme.bodySmall),
+                const SizedBox(height: 2),
+                Text(item.body, style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
           ),
+          if (!item.read) ...[
+            const SizedBox(width: 8),
+            Container(
+              width: 9,
+              height: 9,
+              decoration: const BoxDecoration(
+                color: NeverestPalette.orange,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
-}
-
-class _NotifItem {
-  const _NotifItem({
-    required this.icon,
-    required this.color,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
 }

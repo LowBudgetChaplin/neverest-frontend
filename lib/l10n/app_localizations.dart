@@ -812,7 +812,7 @@ abstract class AppLocalizations {
   /// No description provided for @challengeReviewerNoteOptional.
   ///
   /// In en, this message translates to:
-  /// **'Reviewer note (optional)'**
+  /// **'Reviewer note'**
   String get challengeReviewerNoteOptional;
 
   /// No description provided for @challengeSubmitProgress.
@@ -827,10 +827,16 @@ abstract class AppLocalizations {
   /// **'Proof text'**
   String get challengeProofLabel;
 
+  /// No description provided for @challengeActivityNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity name'**
+  String get challengeActivityNameLabel;
+
   /// No description provided for @challengeMetricLabel.
   ///
   /// In en, this message translates to:
-  /// **'Metric value (optional)'**
+  /// **'Metric value'**
   String get challengeMetricLabel;
 
   /// No description provided for @challengeSubmit.

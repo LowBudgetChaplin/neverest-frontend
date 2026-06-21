@@ -1,5 +1,3 @@
-/// Image assets that correspond to the path of the global assets folder
-// *Note: please write those static String paths in lower camelCase
 class ImageAssets{
   static const String imagePath = "assets/images";
 

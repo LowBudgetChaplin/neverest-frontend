@@ -1,4 +1,3 @@
-///Base error model for the app, used to propagate failures from data layer to UI
 abstract class Failure {
   final int? code;
   final String message;
@@ -7,7 +6,6 @@ abstract class Failure {
   const Failure.withMessage(this.message) : code = -1;
 }
 
-// Represents failures originating from server/HTTP responses
 class ServerError extends Failure {
   const ServerError(int? code, String message) : super(code, message);
   const ServerError.withMessage(String message) : super.withMessage(message);

@@ -125,7 +125,6 @@ class EventSummary {
   final String? description;
   final String? recurrence;
 
-  /// Locuri ramase, daca evenimentul are capacitate setata.
   int? get spotsLeft {
     final cap = capacity;
     if (cap == null) return null;
@@ -178,7 +177,6 @@ class ChallengeSummary {
     );
   }
 
-  /// True dacă provocarea e creată de un partener (are recompensă-beneficiu).
   bool get isPartnerChallenge => brand != null && brand!.isNotEmpty;
 
   final String id;
@@ -232,7 +230,6 @@ class RewardSummary {
     );
   }
 
-  /// True dacă userul a folosit deja cuponul (one-time) și e încă în fereastra de rotație.
   bool get couponUsed => couponStatus == 'USED';
 
   final String id;
@@ -243,19 +240,14 @@ class RewardSummary {
   final String? address;
   final String? description;
 
-  /// Imaginea recompensei ca data URI base64 (null = se folosesc cercurile default).
   final String? imageB64;
 
-  /// Categoria recompensei, stocată în DB (BOOKS/CAFE/MUSIC/PRINT/GOODS/PARTNER).
   final String? category;
 
-  /// Starea cuponului per user: AVAILABLE / USED.
   final String? couponStatus;
 
-  /// Codul unic de cupon al userului (când a fost revendicat).
   final String? couponCode;
 
-  /// Când devine disponibil din nou cuponul (rotație), ISO string.
   final String? availableAgainAt;
 }
 

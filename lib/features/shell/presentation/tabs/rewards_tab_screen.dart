@@ -40,7 +40,6 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
         final dbCategories =
             state.data?.rewardCategories ?? const <RewardCategory>[];
         final localeCode = Localizations.localeOf(context).languageCode;
-        // Filter chips come straight from the DB categories table.
         final categories = <String>['ALL', ...dbCategories.map((c) => c.code)];
         final filtered = _category == 'ALL'
             ? source
@@ -273,7 +272,9 @@ class _RewardGridCard extends StatelessWidget {
     final canRedeem = myPoints >= reward.pointsCost;
     final accent = _rewardAccent(reward);
 
-    return InkWell(
+    return Opacity(
+      opacity: reward.couponUsed ? 0.5 : 1.0,
+      child: InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Ink(
@@ -302,7 +303,6 @@ class _RewardGridCard extends StatelessWidget {
                     fallbackColor: accent,
                     ringCount: 6,
                   ),
-                  // gradient pentru lizibilitatea numelui peste o poza
                   if (reward.imageB64 != null && reward.imageB64!.isNotEmpty)
                     const Positioned.fill(
                       child: DecoratedBox(
@@ -366,7 +366,6 @@ class _RewardGridCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   if (reward.couponUsed)
-                    // Cupon folosit (one-time) — disabled, cu codul userului.
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -436,6 +435,7 @@ class _RewardGridCard extends StatelessWidget {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -446,7 +446,6 @@ String _shortDate(String iso) {
   return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }
 
-// Categoria vine din baza de date (coloana `category` din nev_rewards).
 String _rewardCategory(RewardSummary reward) {
   final c = reward.category;
   if (c == null || c.trim().isEmpty) return 'PARTNER';

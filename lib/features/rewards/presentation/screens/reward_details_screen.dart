@@ -335,14 +335,29 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                 ),
                 child: SizedBox(
                   width: double.infinity,
-                  child: FilledButton(
-                    onPressed: state.isRedeeming || !canRedeem ? null : _redeemReward,
-                    child: Text(
-                      canRedeem
-                          ? l10n.rewardRedeemButton(widget.reward.pointsCost)
-                          : l10n.rewardNeedMore(widget.reward.pointsCost - points),
-                    ),
-                  ),
+                  child: (widget.reward.couponUsed &&
+                          widget.reward.couponCode != null)
+                      ? FilledButton.icon(
+                          onPressed: () => _showQrDialog(
+                            context,
+                            widget.reward.couponCode!,
+                            widget.reward,
+                            accent,
+                          ),
+                          icon: const Icon(Icons.qr_code_2_rounded),
+                          label: const Text('Arată codul QR'),
+                        )
+                      : FilledButton(
+                          onPressed: state.isRedeeming || !canRedeem
+                              ? null
+                              : _redeemReward,
+                          child: Text(
+                            canRedeem
+                                ? l10n.rewardRedeemButton(widget.reward.pointsCost)
+                                : l10n.rewardNeedMore(
+                                    widget.reward.pointsCost - points),
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -603,6 +618,77 @@ void _showRedeemDialog(
                 child: FilledButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(l10n.commonClose),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+void _showQrDialog(
+  BuildContext context,
+  String code,
+  RewardSummary reward,
+  Color accent,
+) {
+  showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: NeverestPalette.ink,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+        child: Padding(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                reward.partnerName.toUpperCase(),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: QrImageView(
+                  data: code,
+                  version: QrVersions.auto,
+                  size: 208,
+                  backgroundColor: Colors.white,
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: accent,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: NeverestPalette.ink,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                code,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: Colors.white,
+                      letterSpacing: 2.2,
+                    ),
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(AppLocalizations.of(context)!.commonClose),
                 ),
               ),
             ],

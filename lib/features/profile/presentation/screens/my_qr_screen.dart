@@ -38,8 +38,6 @@ class MyQrScreen extends StatelessWidget {
 
                 return BlocBuilder<ProfileBloc, ProfileState>(
                   builder: (context, profileState) {
-                    // Doar la prima incarcare aratam spinner-ul; pe refresh-ul
-                    // periodic pastram QR-ul vizibil ca sa nu clipeasca ecranul.
                     if (profileState.status == ProfileStatus.loading &&
                         profileState.profile == null) {
                       return const Center(child: CircularProgressIndicator());
@@ -218,7 +216,6 @@ class MyQrScreen extends StatelessWidget {
 class _RefreshCountdown extends StatefulWidget {
   const _RefreshCountdown({required this.onRefresh});
 
-  /// Durata unui ciclu de reimprospatare, in secunde.
   static const int cycleSeconds = 42;
 
   final VoidCallback onRefresh;
@@ -241,7 +238,6 @@ class _RefreshCountdownState extends State<_RefreshCountdown> {
   void _tick(Timer timer) {
     if (!mounted) return;
     if (_remaining <= 1) {
-      // Am ajuns la 0: reimprospatam QR-ul si reluam numaratoarea.
       widget.onRefresh();
       setState(() => _remaining = _RefreshCountdown.cycleSeconds);
     } else {

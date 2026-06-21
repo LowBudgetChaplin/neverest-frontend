@@ -112,7 +112,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get onboardingCta1 => 'Incepe';
 
   @override
-  String get onboardingHeadline2 => 'MISCATE.\nCASTIGA PUNCTE.';
+  String get onboardingHeadline2 => 'PARTICIPA.\nCASTIGA PUNCTE.';
 
   @override
   String get onboardingSubtitle2 => 'Alearga, urca pe munte, joaca padel. Participa la evenimente. Bifeaza provocari saptamanale. Fiecare miscare conteaza.';
@@ -388,7 +388,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get challengeRejectSubmission => 'Respinge trimiterea';
 
   @override
-  String get challengeReviewerNoteOptional => 'Nota evaluator (optional)';
+  String get challengeReviewerNoteOptional => 'Nota evaluator';
 
   @override
   String get challengeSubmitProgress => 'Trimite progres';
@@ -397,7 +397,10 @@ class AppLocalizationsRo extends AppLocalizations {
   String get challengeProofLabel => 'Text dovada';
 
   @override
-  String get challengeMetricLabel => 'Valoare metrica (optional)';
+  String get challengeActivityNameLabel => 'Nume activitate';
+
+  @override
+  String get challengeMetricLabel => 'Valoare metrica';
 
   @override
   String get challengeSubmit => 'Trimite provocarea';

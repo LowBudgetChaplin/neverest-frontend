@@ -72,7 +72,7 @@ class ChallengeActionBloc
     emit(state.copyWith(isSubmitting: true, clearMessages: true));
 
     try {
-      await _repository.submit(
+      final result = await _repository.submit(
         challengeId: event.challengeId,
         proofText: event.proofText,
         metricValue: event.metricValue,
@@ -85,12 +85,15 @@ class ChallengeActionBloc
         userId: event.userId,
       );
 
+      final approved = result.status.toUpperCase() == 'APPROVED';
       emit(
         state.copyWith(
           isSubmitting: false,
           submissions: submissions,
           adminView: false,
-          successMessage: 'Challenge submission sent successfully.',
+          successMessage: approved
+              ? 'Provocare validată! Punctele au fost adăugate.'
+              : 'Trimis spre revizuire. Primești o notificare după aprobarea adminului.',
         ),
       );
     } on ApiException catch (error) {

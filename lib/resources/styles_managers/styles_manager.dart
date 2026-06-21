@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../extensions/app_colors_ext.dart';
 import 'font_manager.dart';
 
-/// Centralizes the app’s text styles that are aware of the current theme
 TextStyle _getTextStyle(
     double fontSize,
     FontWeight fontWeight,
@@ -10,7 +9,7 @@ TextStyle _getTextStyle(
 
   return TextStyle(
       fontSize: fontSize,
-      fontFamily: 'PlusJakarta', //TODO: to see if we keep this font
+      fontFamily: 'PlusJakarta',
       fontFamilyFallback: const ['Roboto', 'sans-serif'],
       color: color, fontWeight:
   fontWeight);
@@ -20,7 +19,6 @@ extension AppThemeGetters on BuildContext {
   AppColorsExt get colors => Theme.of(this).extension<AppColorsExt>()!;
 }
 
-/// Helper for choosing the color depending on the context on themeColors
 Color _resolveColor({
   BuildContext? context,
   AppColorsExt? themeColors,
@@ -31,8 +29,6 @@ Color _resolveColor({
   assert(themeColors != null, 'context is null, provide themeColors');
   return themeColors!.txtDefault;
 }
-
-/// TITLES / HEADERS
 
 TextStyle getTitleHeader1Style({
   BuildContext? context,
@@ -105,8 +101,6 @@ TextStyle getSecondaryHeaderStyleBase({
   final baseColor = _resolveColor(context: context, themeColors: themeColors, explicitColor: color);
   return _getTextStyle(fontSize, fw, baseColor);
 }
-
-/// BODY
 
 TextStyle getBodyLargeStyle({
   BuildContext? context,

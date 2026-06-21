@@ -43,7 +43,6 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
   bool _detectionLocked = false;
   _ScanEntry? _lastSuccess;
 
-  // Capacitatea (optionala) si numarul curent de check-in-uri pentru eveniment.
   int? _capacity;
   int _checkedIn = 0;
 
@@ -81,7 +80,6 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
               if (_recentEntries.length > 6) {
                 _recentEntries.removeLast();
               }
-              // Sincronizam contorul si capacitatea cu raspunsul backend-ului.
               _checkedIn = state.result!.checkInCount ?? (_checkedIn + 1);
               _capacity = state.result!.capacity ?? _capacity;
             });
@@ -93,7 +91,6 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
           if (state.status == EventCheckInStatus.failure) {
             _detectionLocked = false;
             // Backend-ul semnaleaza capacitatea depasita printr-un marcaj stabil,
-            // pe care il traducem aici in mesajul localizat.
             final raw = state.errorMessage ?? '';
             final message = raw.contains('EVENT_CAPACITY_EXCEEDED')
                 ? l10n.adminScanCapacityExceeded
@@ -512,7 +509,6 @@ class _ScanEntry {
   final int points;
   final String time;
 
-  /// Numele daca exista, altfel ID-ul ca fallback.
   String get label => (name != null && name!.isNotEmpty) ? name! : userId;
 }
 

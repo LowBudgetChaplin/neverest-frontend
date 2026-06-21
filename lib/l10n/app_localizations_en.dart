@@ -388,7 +388,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get challengeRejectSubmission => 'Reject submission';
 
   @override
-  String get challengeReviewerNoteOptional => 'Reviewer note (optional)';
+  String get challengeReviewerNoteOptional => 'Reviewer note';
 
   @override
   String get challengeSubmitProgress => 'Submit progress';
@@ -397,7 +397,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get challengeProofLabel => 'Proof text';
 
   @override
-  String get challengeMetricLabel => 'Metric value (optional)';
+  String get challengeActivityNameLabel => 'Activity name';
+
+  @override
+  String get challengeMetricLabel => 'Metric value';
 
   @override
   String get challengeSubmit => 'Submit challenge';

@@ -9,8 +9,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/utils/dates.dart';
 
-/// This is the screen where the user has access after login
-/// It contains the user's progress, stats, active challenges, nearby rewards & friends activity
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -27,16 +25,14 @@ class _HomeContent extends ConsumerStatefulWidget {
   ConsumerState<_HomeContent> createState() => _HomeContentState();
 }
 
-//TODO: it should read a state render or smth after the fetch and continuously updating the stats
-//TODO: discuss the proper business logic before starting integrating the backend/WS but until then lets pretend its working so small beak and play of ankles
 class _HomeContentState extends ConsumerState<_HomeContent> {
-  var _stepsToday = 0; // today's number of steps
+  var _stepsToday = 0;
   var _goal =
-      10000; // today's actual step goal //TODO: only for mock. fetch the goal from API
+      10000;
   int?
-      _baseLineAtMidnight; // the cumulative no. of steps at first data reading of the day
-  DateTime _day = DateTime.now(); // current date for midnight reset
-  StreamSubscription<StepCount>? _subscription; // steps counter listener
+      _baseLineAtMidnight;
+  DateTime _day = DateTime.now();
+  StreamSubscription<StepCount>? _subscription;
 
   @override
   void initState() {
@@ -44,12 +40,11 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     _initPedometer();
   }
 
-  // initializing the step counter listener which will determine the actual no. of steps
   Future<void> _initPedometer() async {
     final status = await Permission.activityRecognition.request();
     if (!status.isGranted) {
       setState(() {
-        _stepsToday = 2002; // TODO: only for mock
+        _stepsToday = 2002;
         _goal = 10000;
       });
       return;
@@ -58,7 +53,6 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
         .listen(_onStepEvent, onError: _onStepError, cancelOnError: false);
   }
 
-  // event listener for step counter and steps reset
   void _onStepEvent(StepCount event) {
     final now = DateTime.now();
 
@@ -75,15 +69,14 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     setState(() {
       _stepsToday = today
           .clamp(0, 1000000)
-          .toInt(); // arbitrary range. maybe we change it in the future
+          .toInt();
     });
   }
 
-  // fallback when the sensor is not available
   void _onStepError(Object error, [StackTrace? errorTrace]) {
     setState(() {
       _stepsToday =
-          69669; //TODO: only for mock. probably the fallback will be 0 and 0 in to the future
+          69669;
       _goal = 100001;
     });
   }
@@ -100,7 +93,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
     final sp = context.spacing;
     final progress = (_stepsToday / _goal).clamp(0.0, 1.0);
     return Scaffold(
-      appBar: AppBar(), //TODO: change it after merge
+      appBar: AppBar(),
       body: SafeArea(
           child: SingleChildScrollView(
         padding: EdgeInsets.only(top: sp.itemDefaultMargin),
@@ -119,7 +112,7 @@ class _HomeContentState extends ConsumerState<_HomeContent> {
                     steps: _stepsToday,
                     goal: _goal,
                     points: (_stepsToday / 50)
-                        .floor(), //TODO: for mock only 1pct per 50 steps
+                        .floor(),
                   ),
                 ),
               ),

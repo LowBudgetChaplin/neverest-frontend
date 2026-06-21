@@ -28,15 +28,11 @@ class EventCheckInResult {
   final int pointsAwarded;
   final int updatedTotalPoints;
 
-  /// Numele afisat al userului scanat (poate lipsi).
   final String? userName;
 
-  /// Avatarul userului scanat ca data URI base64 (poate lipsi).
   final String? userAvatarB64;
 
-  /// Numarul total de check-in-uri pentru eveniment dupa aceasta scanare.
   final int? checkInCount;
 
-  /// Capacitatea maxima a evenimentului (null = nelimitat).
   final int? capacity;
 }

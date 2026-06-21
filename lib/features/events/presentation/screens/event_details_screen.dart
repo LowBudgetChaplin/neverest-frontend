@@ -28,25 +28,16 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   bool _going = false;
   WebViewController? _mapController;
 
-  /// Clean URL extracted from routeMapUrl. The admin may paste either a plain
-  /// URL OR the full embed snippet `<iframe src="https://..." ...></iframe>`.
-  /// We pull the value of src="..." (or src='...') so Uri.parse won't choke
-  /// on the leading '<'.
   String? get _routeUrl {
     final raw = widget.event.routeMapUrl?.trim();
     if (raw == null || raw.isEmpty) return null;
     final m = RegExp('src\\s*=\\s*"([^"]+)"').firstMatch(raw) ??
         RegExp("src\\s*=\\s*'([^']+)'").firstMatch(raw);
     if (m != null) return m.group(1);
-    // Not an iframe snippet — if it already looks like a URL, use it as-is.
     if (raw.startsWith('http')) return raw;
     return null;
   }
 
-  /// A clean, openable Google Maps link for the "Open in Maps" button.
-  /// Embed URLs (/maps/embed?pb=...) only work inside an iframe and won't open
-  /// in the Maps app/browser, so we extract the coordinates and build a normal
-  /// search link.
   String? get _openableMapUrl {
     final url = _routeUrl;
     if (url == null) return null;
@@ -60,9 +51,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return url;
   }
 
-  /// True only for proper Google Maps *embed* URLs that render inside a WebView.
-  /// Plain share links (maps.app.goo.gl, google.com/maps/place...) cannot be
-  /// embedded, so we show a tappable card that opens the external Maps app.
   bool get _isEmbeddableMap {
     final url = _routeUrl ?? '';
     return url.contains('/maps/embed') || url.contains('output=embed');
@@ -73,8 +61,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     super.initState();
     final mapUrl = _routeUrl;
     if (mapUrl != null && mapUrl.isNotEmpty && _isEmbeddableMap) {
-      // The Google Maps embed URL MUST be loaded inside a real <iframe>, not as
-      // a top-level page (otherwise Google shows "must be used in an iframe").
       _mapController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..loadHtmlString(_buildMapHtml(mapUrl));
@@ -107,7 +93,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      // Fallback: force external application mode regardless of canLaunch result.
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
@@ -226,7 +211,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ),
 
-                // ── Meta grid ──────────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                   child: GridView(
@@ -265,12 +249,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ),
 
-                // ── Route map ──────────────────────────────────────────────
                 if (hasRoute)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
                     child: _mapController != null
-                        // Proper embed URL → render inline, tap to open externally
                         ? Column(
                             children: [
                               ClipRRect(
@@ -287,7 +269,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               ),
                             ],
                           )
-                        // Share link → tappable map card opening Google Maps
                         : _RouteMapCard(
                             location: event.location,
                             activityColor: activityColor,
@@ -295,7 +276,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           ),
                   ),
 
-                // ── About ─────────────────────────────────────────────────
                 if (event.description != null &&
                     event.description!.isNotEmpty) ...[
                   Padding(
@@ -320,7 +300,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ],
 
-                // ── Participants (going) ───────────────────────────────────
                 if (_going) ...[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
@@ -357,7 +336,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ],
 
-                // ── Social links ───────────────────────────────────────────
                 if (event.stravaClubUrl != null &&
                     event.stravaClubUrl!.isNotEmpty)
                   Padding(
@@ -387,7 +365,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
 
-          // ── Bottom action bar ──────────────────────────────────────────
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -451,8 +428,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
   };
 }
 
-// ── Social bar ────────────────────────────────────────────────────────────────
-
 class _SocialBar extends StatelessWidget {
   const _SocialBar({
     required this.icon,
@@ -501,8 +476,6 @@ class _SocialBar extends StatelessWidget {
     );
   }
 }
-
-// ── Route map card (for non-embeddable share links) ──────────────────────────
 
 class _RouteMapCard extends StatelessWidget {
   const _RouteMapCard({
@@ -624,8 +597,6 @@ class _OpenMapButton extends StatelessWidget {
     );
   }
 }
-
-// ── Meta tile ─────────────────────────────────────────────────────────────────
 
 class _MetaTile extends StatelessWidget {
   const _MetaTile({

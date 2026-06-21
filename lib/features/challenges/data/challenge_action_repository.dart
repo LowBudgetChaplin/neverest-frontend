@@ -102,6 +102,36 @@ class ChallengeActionRepository {
     return ChallengeSubmissionItem.fromJson(payload);
   }
 
+  Future<void> deleteChallenge(String challengeId) async {
+    await _apiClient.delete('/api/v1/challenges/$challengeId');
+  }
+
+  Future<void> updateChallenge({
+    required String challengeId,
+    String? title,
+    String? description,
+    String? activityType,
+    int? pointsReward,
+    double? targetValue,
+    String? targetUnit,
+    String? startsAtIso,
+    String? endsAtIso,
+  }) async {
+    await _apiClient.patch(
+      '/api/v1/challenges/$challengeId',
+      data: {
+        if (title != null) 'title': title.trim(),
+        if (description != null) 'description': description.trim(),
+        if (activityType != null) 'activityType': activityType,
+        if (pointsReward != null) 'pointsReward': pointsReward,
+        if (targetValue != null) 'targetValue': targetValue,
+        if (targetUnit != null) 'targetUnit': targetUnit.trim(),
+        if (startsAtIso != null) 'startsAt': startsAtIso,
+        if (endsAtIso != null) 'endsAt': endsAtIso,
+      },
+    );
+  }
+
   List<ChallengeSubmissionItem> _toSubmissionList(dynamic data) {
     if (data is! List) {
       throw ApiException('Invalid challenge submissions payload.');

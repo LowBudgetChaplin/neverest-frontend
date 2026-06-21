@@ -44,10 +44,13 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
   final TextEditingController _proofController = TextEditingController();
   final TextEditingController _metricController = TextEditingController();
   bool _adminView = false;
+  int? _selectedStravaActivityId;
 
   @override
   void initState() {
     super.initState();
+    // Strava e partajat, altfel activitățile vechi rămân afișate (și validabile)
+    context.read<StravaCubit>().clearVerification();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSubmissions();
       context.read<StravaCubit>().loadStatus();
@@ -105,7 +108,6 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
               bottom: 30,
             ),
             children: [
-              // ── Header ──────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                 child: Row(
@@ -138,10 +140,12 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
                 ),
               ),
               const SizedBox(height: 20),
-              // ── Verificare Strava ────────────────────────────────────
-              _StravaActivitySection(challenge: widget.challenge),
+              _StravaActivitySection(
+                challenge: widget.challenge,
+                selectedActivityId: _selectedStravaActivityId,
+                onActivitySelected: _onStravaActivitySelected,
+              ),
               const SizedBox(height: 16),
-              // ── Trimite dovadă ───────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _SubmissionComposer(
@@ -152,6 +156,7 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
                   onSubmit: _submitChallenge,
                   onRefresh: _loadSubmissions,
                   showProgress: state.isSubmitting,
+                  metricReadOnly: true,
                 ),
               ),
               const SizedBox(height: 10),
@@ -201,6 +206,33 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
         },
       ),
     );
+  }
+
+  void _onStravaActivitySelected(StravaActivity activity) {
+    final metric = _metricForActivity(activity);
+    setState(() {
+      _selectedStravaActivityId = activity.stravaId;
+      _proofController.text = activity.name;
+      _metricController.text = metric;
+    });
+  }
+
+  String _metricForActivity(StravaActivity activity) {
+    final unit = (widget.challenge.targetUnit ?? '').toLowerCase();
+    final isElevation = unit.contains('elev') ||
+        unit.contains('d+') ||
+        (widget.challenge.activityType.toUpperCase() == 'MOUNTAIN' &&
+            (unit == 'm' || unit.contains('metri')));
+    if (isElevation) {
+      return activity.totalElevationGain.toStringAsFixed(0);
+    }
+    if (unit.contains('km')) {
+      return activity.distanceKm.toStringAsFixed(2);
+    }
+    if (unit.contains('m')) {
+      return activity.distanceMeters.toStringAsFixed(0);
+    }
+    return activity.distanceKm.toStringAsFixed(2);
   }
 
   void _loadSubmissions() {
@@ -323,6 +355,7 @@ class _SubmissionComposer extends StatelessWidget {
     required this.onSubmit,
     required this.onRefresh,
     required this.showProgress,
+    this.metricReadOnly = false,
   });
 
   final bool isBusy;
@@ -332,6 +365,7 @@ class _SubmissionComposer extends StatelessWidget {
   final VoidCallback onSubmit;
   final VoidCallback onRefresh;
   final bool showProgress;
+  final bool metricReadOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -359,16 +393,22 @@ class _SubmissionComposer extends StatelessWidget {
           TextField(
             controller: proofController,
             enabled: !isBusy,
-            minLines: 2,
-            maxLines: 4,
-            decoration: InputDecoration(labelText: l10n.challengeProofLabel),
+            minLines: 1,
+            maxLines: 2,
+            decoration: InputDecoration(labelText: l10n.challengeActivityNameLabel),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: metricController,
             enabled: !isBusy,
+            readOnly: metricReadOnly,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(labelText: l10n.challengeMetricLabel),
+            decoration: InputDecoration(
+              labelText: l10n.challengeMetricLabel,
+              suffixIcon: metricReadOnly
+                  ? const Icon(Icons.lock_outline_rounded, size: 16)
+                  : null,
+            ),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -475,8 +515,14 @@ class _SubmissionCard extends StatelessWidget {
 }
 
 class _StravaActivitySection extends StatelessWidget {
-  const _StravaActivitySection({required this.challenge});
+  const _StravaActivitySection({
+    required this.challenge,
+    required this.selectedActivityId,
+    required this.onActivitySelected,
+  });
   final ChallengeSummary challenge;
+  final int? selectedActivityId;
+  final ValueChanged<StravaActivity> onActivitySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -534,6 +580,8 @@ class _StravaActivitySection extends StatelessWidget {
                 verification: stravaState.verification!,
                 isDark: isDark,
                 onClear: () => context.read<StravaCubit>().clearVerification(),
+                selectedActivityId: selectedActivityId,
+                onActivitySelected: onActivitySelected,
               ),
             ] else ...[
               Text(
@@ -562,11 +610,15 @@ class _VerificationResult extends StatelessWidget {
     required this.verification,
     required this.isDark,
     required this.onClear,
+    required this.selectedActivityId,
+    required this.onActivitySelected,
   });
 
   final StravaChallengeVerification verification;
   final bool isDark;
   final VoidCallback onClear;
+  final int? selectedActivityId;
+  final ValueChanged<StravaActivity> onActivitySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -599,12 +651,17 @@ class _VerificationResult extends StatelessWidget {
         if (verification.matchingActivities.isNotEmpty) ...[
           const SizedBox(height: 10),
           Text(
-            'Activități compatibile:',
+            'Alege activitatea care confirmă provocarea:',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
           ),
           const SizedBox(height: 6),
           ...verification.matchingActivities.take(3).map(
-            (a) => _StravaActivityCard(activity: a, isDark: isDark),
+            (a) => _StravaActivityCard(
+              activity: a,
+              isDark: isDark,
+              selected: selectedActivityId == a.stravaId,
+              onTap: () => onActivitySelected(a),
+            ),
           ),
         ],
         const SizedBox(height: 8),
@@ -622,20 +679,35 @@ class _VerificationResult extends StatelessWidget {
 }
 
 class _StravaActivityCard extends StatelessWidget {
-  const _StravaActivityCard({required this.activity, required this.isDark});
+  const _StravaActivityCard({
+    required this.activity,
+    required this.isDark,
+    this.selected = false,
+    this.onTap,
+  });
   final StravaActivity activity;
   final bool isDark;
+  final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        color: selected
+            ? NeverestPalette.orange.withOpacity(isDark ? 0.16 : 0.10)
+            : (isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          color: selected
+              ? NeverestPalette.orange
+              : (isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine),
+          width: selected ? 1.5 : 1,
         ),
       ),
       child: Column(
@@ -704,6 +776,7 @@ class _StravaActivityCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }

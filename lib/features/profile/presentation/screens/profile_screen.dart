@@ -181,7 +181,6 @@ class ProfileScreen extends StatelessWidget {
                               .withOpacity(0.4)),
                     ),
                     onPressed: () {
-                      // Pop to root first so LaunchGateScreen can switch to AuthMenuScreen
                       Navigator.of(context)
                           .popUntil((route) => route.isFirst);
                       context
@@ -302,8 +301,6 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-// ── Edit profile bottom sheet ─────────────────────────────────────────────────
-
 class _EditProfileSheet extends StatefulWidget {
   const _EditProfileSheet({
     required this.initialName,
@@ -402,8 +399,6 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   }
 }
 
-// ── Profile identity card ─────────────────────────────────────────────────────
-
 class _ProfileIdentityCard extends StatelessWidget {
   const _ProfileIdentityCard({
     required this.displayName,
@@ -456,7 +451,6 @@ class _ProfileIdentityCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    // Tappable avatar
                     GestureDetector(
                       onTap: onAvatarTap,
                       child: Stack(
@@ -726,10 +720,10 @@ class _SettingsCard extends StatelessWidget {
                             fontWeight: FontWeight.w700,
                           ),
                     ),
-                    Text(
-                      l10n.profileDarkThemeSubtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                    // Text(
+                    //   l10n.profileDarkThemeSubtitle,
+                    //   style: Theme.of(context).textTheme.bodySmall,
+                    // ),
                   ],
                 ),
               ),
@@ -771,7 +765,6 @@ class _SettingsCard extends StatelessWidget {
 }
 
 /// High-contrast language selector chip: filled orange when selected,
-/// bordered + muted when not — clearly readable in both themes.
 class _LangChip extends StatelessWidget {
   const _LangChip({
     required this.label,

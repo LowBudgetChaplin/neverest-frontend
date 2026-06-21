@@ -8,13 +8,13 @@ import '../styles_managers/styles_manager.dart';
 
 /// Circular progress 'bar' (used in home screen)
 class AppCircularStepRing extends StatefulWidget{
-  final double progress; // the progress value; it takes values from 0.0 to 1.0
-  final Duration duration; // it's the duration of the circle color filling animation based on the progress
-  final double size;  // base widget size
-  final double strokeWidth; // fill color radius
-  final Color color; // fill color
-  final Color trackColor; // base color of the ring
-  final Widget? center; // the center widget with other details in it
+  final double progress;
+  final Duration duration;
+  final double size;
+  final double strokeWidth;
+  final Color color;
+  final Color trackColor;
+  final Widget? center;
 
   const AppCircularStepRing({
     super.key,
@@ -31,10 +31,9 @@ class AppCircularStepRing extends StatefulWidget{
   State<AppCircularStepRing> createState() => _AppCircularStepRingState();
 }
 
-/// Circular progress bar animation based on state
 class _AppCircularStepRingState extends State<AppCircularStepRing> with SingleTickerProviderStateMixin{
-  late Animation<double> _animation; // filling animation
-  late AnimationController _controller; // filling controller animation
+  late Animation<double> _animation;
+  late AnimationController _controller;
 
   @override
   void initState() {
@@ -93,7 +92,6 @@ class _AppCircularStepRingState extends State<AppCircularStepRing> with SingleTi
   }
 }
 
-/// Progress ring custom canva painter
 class AppRingPainter extends CustomPainter {
   final double progress;
   final double strokeWidth;
@@ -112,7 +110,6 @@ class AppRingPainter extends CustomPainter {
     final rect = Offset.zero & size;
     final center = rect.center;
     final radius = (size.shortestSide - strokeWidth) / 2;
-
 
     final track = Paint()
       ..style = PaintingStyle.stroke
@@ -141,7 +138,6 @@ class AppRingPainter extends CustomPainter {
     old.trackColor != trackColor;
 }
 
-/// The ring center of the circular progress bar with the live pedometer stats
 class AppRingCenter extends StatelessWidget {
   final int steps;
   final int goal;
