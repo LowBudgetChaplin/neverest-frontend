@@ -59,7 +59,7 @@ class ChallengeActionBloc
       emit(
         state.copyWith(
           isLoading: false,
-          errorMessage: 'Could not load challenge submissions.',
+          feedback: ChallengeFeedback.loadFailed,
         ),
       );
     }
@@ -91,9 +91,9 @@ class ChallengeActionBloc
           isSubmitting: false,
           submissions: submissions,
           adminView: false,
-          successMessage: approved
-              ? 'Provocare validată! Punctele au fost adăugate.'
-              : 'Trimis spre revizuire. Primești o notificare după aprobarea adminului.',
+          feedback: approved
+              ? ChallengeFeedback.submitApproved
+              : ChallengeFeedback.submitPending,
         ),
       );
     } on ApiException catch (error) {
@@ -107,7 +107,7 @@ class ChallengeActionBloc
       emit(
         state.copyWith(
           isSubmitting: false,
-          errorMessage: 'Could not submit challenge.',
+          feedback: ChallengeFeedback.submitFailed,
         ),
       );
     }
@@ -138,9 +138,9 @@ class ChallengeActionBloc
           isReviewing: false,
           submissions: submissions,
           adminView: true,
-          successMessage: event.approved
-              ? 'Submission approved successfully.'
-              : 'Submission rejected successfully.',
+          feedback: event.approved
+              ? ChallengeFeedback.reviewApproved
+              : ChallengeFeedback.reviewRejected,
         ),
       );
     } on ApiException catch (error) {
@@ -154,7 +154,7 @@ class ChallengeActionBloc
       emit(
         state.copyWith(
           isReviewing: false,
-          errorMessage: 'Could not review submission.',
+          feedback: ChallengeFeedback.reviewFailed,
         ),
       );
     }

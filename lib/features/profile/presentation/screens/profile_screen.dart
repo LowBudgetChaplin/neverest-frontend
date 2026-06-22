@@ -747,7 +747,7 @@ class _SettingsCard extends StatelessWidget {
                 onTap: () => onLocaleChanged(AppLocaleCubit.systemCode),
               ),
               _LangChip(
-                label: 'Română',
+                label: 'Romana',
                 selected: localeCode == AppLocaleCubit.roCode,
                 onTap: () => onLocaleChanged(AppLocaleCubit.roCode),
               ),

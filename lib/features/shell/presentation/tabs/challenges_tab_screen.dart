@@ -33,8 +33,8 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Șterge obiectivul'),
-        content: Text('Sigur ștergi „${challenge.title}”? Acțiunea nu poate fi anulată.'),
+        title: Text(l10n.challengeDeleteTitle),
+        content: Text(l10n.challengeDeleteConfirm(challenge.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -42,7 +42,7 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Șterge'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -53,7 +53,7 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
       if (!mounted) return;
       context.read<DashboardBloc>().add(const DashboardRefreshRequested());
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Obiectiv șters.')));
+          .showSnackBar(SnackBar(content: Text(l10n.challengeDeletedToast)));
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -196,7 +196,7 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                   if (isAdmin) ...[
                     const SizedBox(width: 8),
                     NeverestFilterChip(
-                      label: 'Expirate (${expired.length})',
+                      label: l10n.challengesFilterExpired(expired.length),
                       icon: Icons.history_rounded,
                       selected: _showExpired,
                       onTap: () => setState(() {
@@ -490,7 +490,8 @@ class _ChallengeCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       Flexible(
                         child: Text(
-                          'POWERED BY ${item.summary.brand!.toUpperCase()}',
+                          AppLocalizations.of(context)!
+                              .challengePoweredBy(item.summary.brand!.toUpperCase()),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -726,7 +727,7 @@ String _deadlineLabelFor(ChallengeSummary summary, AppLocalizations l10n) {
   if (date == null) return endsAt;
   final diff = date.difference(DateTime.now()).inDays;
   if (diff < 0) return l10n.challengeAlwaysOn;
-  if (diff == 0) return 'TODAY';
+  if (diff == 0) return l10n.challengeDeadlineToday;
   if (diff <= 7) return l10n.challengeDeadlineDays(diff);
   return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
 }
@@ -757,7 +758,7 @@ class _ExpiredBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
-        'EXPIRAT',
+        AppLocalizations.of(context)!.commonExpired,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w900,

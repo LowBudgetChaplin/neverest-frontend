@@ -85,7 +85,7 @@ class _ChallengeEditScreenState extends State<ChallengeEditScreen> {
         points == null ||
         points <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Titlu, descriere și puncte (>0) sunt obligatorii.')),
+        const SnackBar(content: Text('Titlu, descriere si puncte (>0) sunt obligatorii.')),
       );
       return;
     }
@@ -93,7 +93,7 @@ class _ChallengeEditScreenState extends State<ChallengeEditScreen> {
     final targetValue = targetRaw.isEmpty ? null : double.tryParse(targetRaw);
     if (targetRaw.isNotEmpty && targetValue == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Valoarea țintă trebuie să fie numerică.')),
+        const SnackBar(content: Text('Valoarea tinta trebuie sa fie numerica.')),
       );
       return;
     }
@@ -125,7 +125,7 @@ class _ChallengeEditScreenState extends State<ChallengeEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Editează obiectiv')),
+      appBar: AppBar(title: const Text('Editeaza obiectiv')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -169,7 +169,7 @@ class _ChallengeEditScreenState extends State<ChallengeEditScreen> {
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   decoration:
-                      const InputDecoration(labelText: 'Valoare țintă (opțional)'),
+                      const InputDecoration(labelText: 'Valoare tinta (optional)'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -217,7 +217,7 @@ class _ChallengeEditScreenState extends State<ChallengeEditScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Salvează'),
+                  : const Text('Salveaza'),
             ),
           ),
         ],

@@ -86,7 +86,7 @@ class _PartnerScanScreenState extends State<PartnerScanScreen> {
         return (
           color: NeverestPalette.danger,
           icon: Icons.lock_outline_rounded,
-          title: 'Codul nu aparține beneficiilor tale',
+          title: 'Codul nu apartine beneficiilor tale',
         );
       case 'NOT_FOUND':
       default:
@@ -149,7 +149,7 @@ class _PartnerScanScreenState extends State<PartnerScanScreen> {
                       right: 16,
                       bottom: 18,
                       child: Text(
-                        'Scanează codul QR al beneficiului prezentat de client',
+                        'Scaneaza codul QR al beneficiului prezentat de client',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white),
                       ),
@@ -188,7 +188,7 @@ class _PartnerScanScreenState extends State<PartnerScanScreen> {
                             onPressed: _busy
                                 ? null
                                 : () => _validate(_manualController.text),
-                            child: const Text('Validează'),
+                            child: const Text('Valideaza'),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -268,7 +268,7 @@ class _PartnerScanScreenState extends State<PartnerScanScreen> {
                   width: double.infinity,
                   child: FilledButton(
                     onPressed: _resetScanner,
-                    child: const Text('Scanează altul'),
+                    child: const Text('Scaneaza altul'),
                   ),
                 ),
               ],

@@ -6,19 +6,16 @@
   "internal_server_error": "A aparut o eroare de server. Incearca din nou mai tarziu.",
   "unknown_error": "A aparut o eroare necunoscuta.",
   "unauthorized": "Sesiunea a expirat. Te rugam sa te autentifici din nou.",
-
   "home": "Acasa",
   "rewards": "Recompense",
   "challenges": "Provocari",
   "social": "Social",
   "wallet": "Portofel",
-
   "navHome": "Acasa",
   "navEvents": "Evenimente",
   "navChallenges": "Obiective",
   "navLeaderboard": "Clasament",
   "navRewards": "Beneficii",
-
   "commonAll": "Toate",
   "commonNew": "Noi",
   "commonOverall": "General",
@@ -30,11 +27,9 @@
   "commonCancel": "Anuleaza",
   "commonConfirm": "Confirma",
   "commonEdit": "Editeaza",
-
   "activityRunning": "Alergare",
   "activityPadel": "Padel",
   "activityMountain": "Munte",
-
   "onboardingSkip": "Sari",
   "onboardingAlreadyHaveAccount": "Am deja cont",
   "onboardingHeadline1": "FARA VARF.\nFARA LIMITA.",
@@ -57,7 +52,6 @@
       }
     }
   },
-
   "homeLiveNow": "Live acum",
   "homeThisWeek": "Saptamana asta",
   "homeActivities": "Activitati",
@@ -85,7 +79,6 @@
       }
     }
   },
-
   "eventsTitle": "Evenimente",
   "eventsEmptyState": "Nu exista evenimente pentru acest filtru.",
   "eventsGoingLabel": "participanti",
@@ -100,9 +93,7 @@
       }
     }
   },
-
   "profilePhone": "Numar de telefon",
-
   "eventWhen": "Cand",
   "eventWhere": "Unde",
   "eventReward": "Recompensa",
@@ -134,7 +125,6 @@
     }
   },
   "eventFull": "Complet",
-
   "challengesTitle": "Provocari",
   "challengesSubtitle": "Castiga puncte in stilul tau",
   "challengesEarned": "Castigate",
@@ -168,7 +158,7 @@
   "challengeAlwaysOn": "Permanent",
   "challengeProgress23": "2/3 completate",
   "challengeDeadlineDays": "{days} zile ramase",
-  "yourPointsHome" : "PUNCTELE TALE",
+  "yourPointsHome": "PUNCTELE TALE",
   "@challengeDeadlineDays": {
     "placeholders": {
       "days": {
@@ -176,7 +166,6 @@
       }
     }
   },
-
   "challengePaused": "Pauza",
   "challengeGpsLive": "GPS · Live",
   "challengeDestination": "Destinatie",
@@ -221,6 +210,15 @@
   "challengeApproveSubmission": "Aproba trimiterea",
   "challengeRejectSubmission": "Respinge trimiterea",
   "challengeReviewerNoteOptional": "Nota evaluator",
+  "challengeFeedbackSubmitApproved": "Provocare validata! Punctele au fost adaugate.",
+  "challengeFeedbackSubmitPending": "Trimis spre revizuire. Primesti o notificare dupa aprobarea adminului.",
+  "challengeFeedbackReviewApproved": "Submisie aprobata.",
+  "challengeFeedbackReviewRejected": "Submisie respinsa.",
+  "challengeFeedbackLoadFailed": "Nu am putut incarca submisiile.",
+  "challengeFeedbackSubmitFailed": "Nu am putut trimite provocarea.",
+  "challengeFeedbackReviewFailed": "Nu am putut salva revizuirea.",
+  "challengeCompletedBannerTitle": "Provocare finalizata",
+  "challengeCompletedBannerBody": "Ai completat deja acest obiectiv. Nu mai poti verifica din nou cu Strava.",
   "challengeSubmitProgress": "Trimite progres",
   "challengeProofLabel": "Text dovada",
   "challengeActivityNameLabel": "Nume activitate",
@@ -238,37 +236,35 @@
   "challengeReviewerNote": "Nota evaluator",
   "challengeApprove": "Aproba",
   "challengeReject": "Respinge",
-
   "leaderboardTitle": "Clasament",
   "leaderboardSubtitle": "Actualizare in fiecare minut",
-
   "offersSectionTitle": "Oferte parteneri",
   "partnerCenterTitle": "Panou Partener",
   "partnerAccessRequired": "Cont de partener necesar.",
-  "partnerPublishOffer": "Publică o ofertă / reclamă",
-  "partnerEditOffer": "Editează oferta",
+  "partnerPublishOffer": "Publica o oferta / reclama",
+  "partnerEditOffer": "Editeaza oferta",
   "partnerBrand": "Brand",
-  "partnerOfferTitleField": "Titlu produs/ofertă",
+  "partnerOfferTitleField": "Titlu produs/oferta",
   "partnerDescriptionField": "Descriere",
   "partnerDiscountHint": "Reducere (ex: -20%)",
-  "partnerLinkOptional": "Link (opțional)",
-  "partnerChangePhoto": "Schimbă poza",
-  "partnerAddPhoto": "Adaugă poză",
+  "partnerLinkOptional": "Link (optional)",
+  "partnerChangePhoto": "Schimba poza",
+  "partnerAddPhoto": "Adauga poza",
   "partnerFrom": "De la",
-  "partnerUntil": "Până la",
-  "partnerPublish": "Publică",
-  "partnerSave": "Salvează",
+  "partnerUntil": "Pana la",
+  "partnerPublish": "Publica",
+  "partnerSave": "Salveaza",
   "partnerMyOffers": "Ofertele mele",
-  "partnerNoOffers": "Nu ai publicat încă nicio ofertă.",
-  "partnerBrandTitleRequired": "Brand și titlu sunt obligatorii.",
-  "partnerOfferUpdated": "Ofertă actualizată.",
-  "partnerOfferPublished": "Ofertă publicată.",
-  "partnerCreateChallenge": "Creează o provocare",
-  "partnerEditChallenge": "Editează provocarea",
+  "partnerNoOffers": "Nu ai publicat inca nicio oferta.",
+  "partnerBrandTitleRequired": "Brand si titlu sunt obligatorii.",
+  "partnerOfferUpdated": "Oferta actualizata.",
+  "partnerOfferPublished": "Oferta publicata.",
+  "partnerCreateChallenge": "Creeaza o provocare",
+  "partnerEditChallenge": "Editeaza provocarea",
   "partnerActivity": "Activitate",
-  "partnerBenefitLabel": "Beneficiu (fără puncte)",
-  "partnerNoChallenges": "Nu ai creat încă nicio provocare.",
-  "partnerChallengeRequired": "Titlul și beneficiul sunt obligatorii.",
+  "partnerBenefitLabel": "Beneficiu (fara puncte)",
+  "partnerNoChallenges": "Nu ai creat inca nicio provocare.",
+  "partnerChallengeRequired": "Titlul si beneficiul sunt obligatorii.",
   "commonError": "Eroare",
   "rewardsTitle": "Recompense",
   "rewardsWallet": "Portofel",
@@ -299,7 +295,6 @@
       }
     }
   },
-
   "rewardUnlimited": "Nelimitat",
   "rewardLocalPartner": "partener local",
   "rewardCost": "Cost",
@@ -336,7 +331,6 @@
   },
   "rewardRedeemedLabel": "Revendicat",
   "rewardValidUntil": "Valabil pana maine la 18:00",
-
   "profileTitle": "Profil",
   "profileLevelLabel": "Climber · Nivel 7",
   "profileTotalPoints": "Puncte totale",
@@ -367,7 +361,6 @@
       }
     }
   },
-
   "authTitle": "Acces cont",
   "authLoginSubtitle": "Autentifica-te pentru a sincroniza profilul, recompensele si progresul la evenimente.",
   "authRegisterSubtitle": "Creeaza un cont Neverest in cateva secunde.",
@@ -398,7 +391,6 @@
   "authManageSession": "Gestioneaza contul",
   "authCardTitle": "Cont",
   "authCardSubtitle": "Autentifica-te sau inregistreaza-te pentru a sincroniza profilul si punctele.",
-
   "qrSignInRequired": "Autentificare necesara",
   "qrSignInSubtitle": "Autentifica-te mai intai pentru a incarca codul QR.",
   "qrNotAvailable": "QR indisponibil",
@@ -407,7 +399,6 @@
   "qrShowAtGate": "ARATA ACESTA\nLA INTRARE",
   "qrScanHint": "Organizatorul scaneaza → punctele sunt creditate",
   "qrRefreshCountdown": "Se reimprospateaza in {time}",
-
   "adminScanHeader": "● Admin · Sunrise Run",
   "adminScanHint": "Aliniaza QR-ul membrului in interiorul ramei",
   "adminScanManualCheckin": "Simuleaza check-in",
@@ -454,6 +445,102 @@
   "adminScanCapacityExceeded": "Numarul de locuri a fost depasit",
   "adminScanNotJoined": "Acest membru nu s-a inscris la eveniment",
   "adminScanNext": "Scanare urmatoare",
-
-  "dashboardLoadFailed": "Datele dashboard nu au putut fi incarcate."
+  "dashboardLoadFailed": "Datele dashboard nu au putut fi incarcate.",
+  "commonDelete": "Sterge",
+  "commonPast": "TRECUT",
+  "commonExpired": "EXPIRAT",
+  "eventDeleteTitle": "Sterge evenimentul",
+  "eventDeleteConfirm": "Sigur stergi \"{title}\"? Actiunea nu poate fi anulata.",
+  "@eventDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "eventDeletedToast": "Eveniment sters.",
+  "eventsFilterUpcoming": "Viitoare ({count})",
+  "@eventsFilterUpcoming": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsFilterPast": "Trecute ({count})",
+  "@eventsFilterPast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsLoading": "Se incarca evenimente...",
+  "challengeDeleteTitle": "Sterge obiectivul",
+  "challengeDeleteConfirm": "Sigur stergi \"{title}\"? Actiunea nu poate fi anulata.",
+  "@challengeDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeDeletedToast": "Obiectiv sters.",
+  "challengesFilterExpired": "Expirate ({count})",
+  "@challengesFilterExpired": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "challengePoweredBy": "POWERED BY {brand}",
+  "@challengePoweredBy": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeDeadlineToday": "AZI",
+  "stravaSectionHeader": "VERIFICARE STRAVA",
+  "stravaConnectPrompt": "Conecteaza-ti contul Strava pentru a verifica automat daca ai completat traseul.",
+  "stravaVerifying": "Se verifica activitatile Strava...",
+  "stravaConnectedAs": "Strava conectat ca {name}. Apasa pentru a verifica daca ai completat traseul.",
+  "@stravaConnectedAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stravaAthleteFallback": "Atlet",
+  "stravaVerifyButton": "Verifica cu Strava",
+  "stravaChooseActivity": "Alege activitatea care confirma provocarea:",
+  "stravaVerifyAgain": "Verifica din nou",
+  "stravaStatKm": "KM",
+  "stravaStatDuration": "DURATA",
+  "stravaStatPace": "RITM",
+  "stravaStatElevation": "ELEVATIE",
+  "notificationsTitle": "Notificari",
+  "notificationsEmpty": "Nicio notificare noua.",
+  "commonSave": "Salveaza",
+  "offerEditTitle": "Editeaza oferta",
+  "offerBrandLabel": "Brand",
+  "offerTitleLabel": "Titlu",
+  "offerDescriptionLabel": "Descriere",
+  "offerDiscountLabel": "Eticheta reducere",
+  "offerLinkLabel": "Link",
+  "offerRequiredToast": "Brandul si titlul sunt obligatorii.",
+  "offerSavedToast": "Oferta actualizata.",
+  "offerDeleteTitle": "Sterge oferta",
+  "offerDeleteConfirm": "Sigur stergi \"{title}\"? Actiunea nu poate fi anulata.",
+  "@offerDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "offerDeletedToast": "Oferta stearsa."
 }

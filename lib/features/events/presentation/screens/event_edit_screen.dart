@@ -111,7 +111,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
         points == null ||
         points <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Titlu, locație și puncte (>0) sunt obligatorii.')),
+        const SnackBar(content: Text('Titlu, locatie si puncte (>0) sunt obligatorii.')),
       );
       return;
     }
@@ -149,7 +149,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Editează eveniment')),
+      appBar: AppBar(title: const Text('Editeaza eveniment')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -171,13 +171,13 @@ class _EventEditScreenState extends State<EventEditScreen> {
           TextField(
             controller: _locationController,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Locație'),
+            decoration: const InputDecoration(labelText: 'Locatie'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: _saving ? null : _pickStartsAt,
             icon: const Icon(Icons.event_outlined),
-            label: Text('Începe: ${_dateLabel(_startsAt)}'),
+            label: Text('Incepe: ${_dateLabel(_startsAt)}'),
           ),
           const SizedBox(height: 8),
           Row(
@@ -196,7 +196,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                   controller: _capacityController,
                   enabled: !_saving,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Capacitate (opțional)'),
+                  decoration: const InputDecoration(labelText: 'Capacitate (optional)'),
                 ),
               ),
             ],
@@ -209,7 +209,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                 .toList(),
             onChanged:
                 _saving ? null : (v) => setState(() => _recurrence = v ?? _recurrence),
-            decoration: const InputDecoration(labelText: 'Recurență'),
+            decoration: const InputDecoration(labelText: 'Recurenta'),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -223,19 +223,19 @@ class _EventEditScreenState extends State<EventEditScreen> {
           TextField(
             controller: _routeMapController,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Link traseu (opțional)'),
+            decoration: const InputDecoration(labelText: 'Link traseu (optional)'),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _stravaClubController,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Link Strava Club (opțional)'),
+            decoration: const InputDecoration(labelText: 'Link Strava Club (optional)'),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: _whatsappController,
             enabled: !_saving,
-            decoration: const InputDecoration(labelText: 'Link grup WhatsApp (opțional)'),
+            decoration: const InputDecoration(labelText: 'Link grup WhatsApp (optional)'),
           ),
           const SizedBox(height: 18),
           SizedBox(
@@ -248,7 +248,7 @@ class _EventEditScreenState extends State<EventEditScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Salvează'),
+                  : const Text('Salveaza'),
             ),
           ),
         ],

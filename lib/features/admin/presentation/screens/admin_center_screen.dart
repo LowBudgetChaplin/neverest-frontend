@@ -736,7 +736,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     final brand = _partnerBrandController.text.trim();
     final phone = _partnerPhoneController.text.trim();
     if (email.isEmpty || password.length < 6 || brand.isEmpty || phone.isEmpty) {
-      _showValidation('Email, brand, telefon și parolă (min 6) sunt obligatorii.');
+      _showValidation('Email, brand, telefon si parola (min 6) sunt obligatorii.');
       return;
     }
     await context.read<AdminPanelCubit>().createPartner(

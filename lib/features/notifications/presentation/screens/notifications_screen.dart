@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
 import '../../domain/notification_models.dart';
 import '../cubit/notification_cubit.dart';
@@ -44,25 +45,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<NotificationCubit>().state;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Notificări')),
+      appBar: AppBar(title: Text(l10n.notificationsTitle)),
       body: RefreshIndicator(
         onRefresh: () => context.read<NotificationCubit>().loadAll(),
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _PushToggleCard(enabled: _pushEnabled, onChanged: _setPush),
-            const SizedBox(height: 16),
+            // _PushToggleCard(enabled: _pushEnabled, onChanged: _setPush),
+            // const SizedBox(height: 16),
             if (state.isLoading && state.items.isEmpty)
               const Padding(
                 padding: EdgeInsets.all(24),
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (state.items.isEmpty)
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Center(child: Text('Nicio notificare nouă.')),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(child: Text(l10n.notificationsEmpty)),
               )
             else
               ...state.items.map((n) => _NotificationTile(item: n)),
@@ -73,6 +75,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 }
 
+//todo de facut notificari push cand iau contul de apple developer pe MAC
 class _PushToggleCard extends StatelessWidget {
   const _PushToggleCard({required this.enabled, required this.onChanged});
 
@@ -97,12 +100,12 @@ class _PushToggleCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Notificări push',
+                Text('Notificari push',
                     style: Theme.of(context)
                         .textTheme
                         .titleSmall
                         ?.copyWith(fontWeight: FontWeight.w700)),
-                Text('Primește alerte pentru provocări și oferte noi.',
+                Text('Primeste alerte pentru provocari si oferte noi.',
                     style: Theme.of(context).textTheme.bodySmall),
               ],
             ),

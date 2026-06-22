@@ -391,6 +391,33 @@ class AppLocalizationsRo extends AppLocalizations {
   String get challengeReviewerNoteOptional => 'Nota evaluator';
 
   @override
+  String get challengeFeedbackSubmitApproved => 'Provocare validata! Punctele au fost adaugate.';
+
+  @override
+  String get challengeFeedbackSubmitPending => 'Trimis spre revizuire. Primesti o notificare dupa aprobarea adminului.';
+
+  @override
+  String get challengeFeedbackReviewApproved => 'Submisie aprobata.';
+
+  @override
+  String get challengeFeedbackReviewRejected => 'Submisie respinsa.';
+
+  @override
+  String get challengeFeedbackLoadFailed => 'Nu am putut incarca submisiile.';
+
+  @override
+  String get challengeFeedbackSubmitFailed => 'Nu am putut trimite provocarea.';
+
+  @override
+  String get challengeFeedbackReviewFailed => 'Nu am putut salva revizuirea.';
+
+  @override
+  String get challengeCompletedBannerTitle => 'Provocare finalizata';
+
+  @override
+  String get challengeCompletedBannerBody => 'Ai completat deja acest obiectiv. Nu mai poti verifica din nou cu Strava.';
+
+  @override
   String get challengeSubmitProgress => 'Trimite progres';
 
   @override
@@ -444,16 +471,16 @@ class AppLocalizationsRo extends AppLocalizations {
   String get partnerAccessRequired => 'Cont de partener necesar.';
 
   @override
-  String get partnerPublishOffer => 'Publică o ofertă / reclamă';
+  String get partnerPublishOffer => 'Publica o oferta / reclama';
 
   @override
-  String get partnerEditOffer => 'Editează oferta';
+  String get partnerEditOffer => 'Editeaza oferta';
 
   @override
   String get partnerBrand => 'Brand';
 
   @override
-  String get partnerOfferTitleField => 'Titlu produs/ofertă';
+  String get partnerOfferTitleField => 'Titlu produs/oferta';
 
   @override
   String get partnerDescriptionField => 'Descriere';
@@ -462,58 +489,58 @@ class AppLocalizationsRo extends AppLocalizations {
   String get partnerDiscountHint => 'Reducere (ex: -20%)';
 
   @override
-  String get partnerLinkOptional => 'Link (opțional)';
+  String get partnerLinkOptional => 'Link (optional)';
 
   @override
-  String get partnerChangePhoto => 'Schimbă poza';
+  String get partnerChangePhoto => 'Schimba poza';
 
   @override
-  String get partnerAddPhoto => 'Adaugă poză';
+  String get partnerAddPhoto => 'Adauga poza';
 
   @override
   String get partnerFrom => 'De la';
 
   @override
-  String get partnerUntil => 'Până la';
+  String get partnerUntil => 'Pana la';
 
   @override
-  String get partnerPublish => 'Publică';
+  String get partnerPublish => 'Publica';
 
   @override
-  String get partnerSave => 'Salvează';
+  String get partnerSave => 'Salveaza';
 
   @override
   String get partnerMyOffers => 'Ofertele mele';
 
   @override
-  String get partnerNoOffers => 'Nu ai publicat încă nicio ofertă.';
+  String get partnerNoOffers => 'Nu ai publicat inca nicio oferta.';
 
   @override
-  String get partnerBrandTitleRequired => 'Brand și titlu sunt obligatorii.';
+  String get partnerBrandTitleRequired => 'Brand si titlu sunt obligatorii.';
 
   @override
-  String get partnerOfferUpdated => 'Ofertă actualizată.';
+  String get partnerOfferUpdated => 'Oferta actualizata.';
 
   @override
-  String get partnerOfferPublished => 'Ofertă publicată.';
+  String get partnerOfferPublished => 'Oferta publicata.';
 
   @override
-  String get partnerCreateChallenge => 'Creează o provocare';
+  String get partnerCreateChallenge => 'Creeaza o provocare';
 
   @override
-  String get partnerEditChallenge => 'Editează provocarea';
+  String get partnerEditChallenge => 'Editeaza provocarea';
 
   @override
   String get partnerActivity => 'Activitate';
 
   @override
-  String get partnerBenefitLabel => 'Beneficiu (fără puncte)';
+  String get partnerBenefitLabel => 'Beneficiu (fara puncte)';
 
   @override
-  String get partnerNoChallenges => 'Nu ai creat încă nicio provocare.';
+  String get partnerNoChallenges => 'Nu ai creat inca nicio provocare.';
 
   @override
-  String get partnerChallengeRequired => 'Titlul și beneficiul sunt obligatorii.';
+  String get partnerChallengeRequired => 'Titlul si beneficiul sunt obligatorii.';
 
   @override
   String get commonError => 'Eroare';
@@ -872,4 +899,143 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get dashboardLoadFailed => 'Datele dashboard nu au putut fi incarcate.';
+
+  @override
+  String get commonDelete => 'Sterge';
+
+  @override
+  String get commonPast => 'TRECUT';
+
+  @override
+  String get commonExpired => 'EXPIRAT';
+
+  @override
+  String get eventDeleteTitle => 'Sterge evenimentul';
+
+  @override
+  String eventDeleteConfirm(String title) {
+    return 'Sigur stergi \"$title\"? Actiunea nu poate fi anulata.';
+  }
+
+  @override
+  String get eventDeletedToast => 'Eveniment sters.';
+
+  @override
+  String eventsFilterUpcoming(int count) {
+    return 'Viitoare ($count)';
+  }
+
+  @override
+  String eventsFilterPast(int count) {
+    return 'Trecute ($count)';
+  }
+
+  @override
+  String get eventsLoading => 'Se incarca evenimente...';
+
+  @override
+  String get challengeDeleteTitle => 'Sterge obiectivul';
+
+  @override
+  String challengeDeleteConfirm(String title) {
+    return 'Sigur stergi \"$title\"? Actiunea nu poate fi anulata.';
+  }
+
+  @override
+  String get challengeDeletedToast => 'Obiectiv sters.';
+
+  @override
+  String challengesFilterExpired(int count) {
+    return 'Expirate ($count)';
+  }
+
+  @override
+  String challengePoweredBy(String brand) {
+    return 'POWERED BY $brand';
+  }
+
+  @override
+  String get challengeDeadlineToday => 'AZI';
+
+  @override
+  String get stravaSectionHeader => 'VERIFICARE STRAVA';
+
+  @override
+  String get stravaConnectPrompt => 'Conecteaza-ti contul Strava pentru a verifica automat daca ai completat traseul.';
+
+  @override
+  String get stravaVerifying => 'Se verifica activitatile Strava...';
+
+  @override
+  String stravaConnectedAs(String name) {
+    return 'Strava conectat ca $name. Apasa pentru a verifica daca ai completat traseul.';
+  }
+
+  @override
+  String get stravaAthleteFallback => 'Atlet';
+
+  @override
+  String get stravaVerifyButton => 'Verifica cu Strava';
+
+  @override
+  String get stravaChooseActivity => 'Alege activitatea care confirma provocarea:';
+
+  @override
+  String get stravaVerifyAgain => 'Verifica din nou';
+
+  @override
+  String get stravaStatKm => 'KM';
+
+  @override
+  String get stravaStatDuration => 'DURATA';
+
+  @override
+  String get stravaStatPace => 'RITM';
+
+  @override
+  String get stravaStatElevation => 'ELEVATIE';
+
+  @override
+  String get notificationsTitle => 'Notificari';
+
+  @override
+  String get notificationsEmpty => 'Nicio notificare noua.';
+
+  @override
+  String get commonSave => 'Salveaza';
+
+  @override
+  String get offerEditTitle => 'Editeaza oferta';
+
+  @override
+  String get offerBrandLabel => 'Brand';
+
+  @override
+  String get offerTitleLabel => 'Titlu';
+
+  @override
+  String get offerDescriptionLabel => 'Descriere';
+
+  @override
+  String get offerDiscountLabel => 'Eticheta reducere';
+
+  @override
+  String get offerLinkLabel => 'Link';
+
+  @override
+  String get offerRequiredToast => 'Brandul si titlul sunt obligatorii.';
+
+  @override
+  String get offerSavedToast => 'Oferta actualizata.';
+
+  @override
+  String get offerDeleteTitle => 'Sterge oferta';
+
+  @override
+  String offerDeleteConfirm(String title) {
+    return 'Sigur stergi \"$title\"? Actiunea nu poate fi anulata.';
+  }
+
+  @override
+  String get offerDeletedToast => 'Oferta stearsa.';
 }

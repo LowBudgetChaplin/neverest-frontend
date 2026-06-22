@@ -815,6 +815,60 @@ abstract class AppLocalizations {
   /// **'Reviewer note'**
   String get challengeReviewerNoteOptional;
 
+  /// No description provided for @challengeFeedbackSubmitApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge approved! Points were added.'**
+  String get challengeFeedbackSubmitApproved;
+
+  /// No description provided for @challengeFeedbackSubmitPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted for review. You will be notified after the admin approves.'**
+  String get challengeFeedbackSubmitPending;
+
+  /// No description provided for @challengeFeedbackReviewApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission approved.'**
+  String get challengeFeedbackReviewApproved;
+
+  /// No description provided for @challengeFeedbackReviewRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission rejected.'**
+  String get challengeFeedbackReviewRejected;
+
+  /// No description provided for @challengeFeedbackLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load challenge submissions.'**
+  String get challengeFeedbackLoadFailed;
+
+  /// No description provided for @challengeFeedbackSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not submit challenge.'**
+  String get challengeFeedbackSubmitFailed;
+
+  /// No description provided for @challengeFeedbackReviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not review submission.'**
+  String get challengeFeedbackReviewFailed;
+
+  /// No description provided for @challengeCompletedBannerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge completed'**
+  String get challengeCompletedBannerTitle;
+
+  /// No description provided for @challengeCompletedBannerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have already completed this challenge. You cannot verify again with Strava.'**
+  String get challengeCompletedBannerBody;
+
   /// No description provided for @challengeSubmitProgress.
   ///
   /// In en, this message translates to:
@@ -1732,6 +1786,252 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load dashboard data.'**
   String get dashboardLoadFailed;
+
+  /// No description provided for @commonDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get commonDelete;
+
+  /// No description provided for @commonPast.
+  ///
+  /// In en, this message translates to:
+  /// **'PAST'**
+  String get commonPast;
+
+  /// No description provided for @commonExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPIRED'**
+  String get commonExpired;
+
+  /// No description provided for @eventDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete event'**
+  String get eventDeleteTitle;
+
+  /// No description provided for @eventDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{title}\"? This action cannot be undone.'**
+  String eventDeleteConfirm(String title);
+
+  /// No description provided for @eventDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Event deleted.'**
+  String get eventDeletedToast;
+
+  /// No description provided for @eventsFilterUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming ({count})'**
+  String eventsFilterUpcoming(int count);
+
+  /// No description provided for @eventsFilterPast.
+  ///
+  /// In en, this message translates to:
+  /// **'Past ({count})'**
+  String eventsFilterPast(int count);
+
+  /// No description provided for @eventsLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading events...'**
+  String get eventsLoading;
+
+  /// No description provided for @challengeDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete challenge'**
+  String get challengeDeleteTitle;
+
+  /// No description provided for @challengeDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{title}\"? This action cannot be undone.'**
+  String challengeDeleteConfirm(String title);
+
+  /// No description provided for @challengeDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Challenge deleted.'**
+  String get challengeDeletedToast;
+
+  /// No description provided for @challengesFilterExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired ({count})'**
+  String challengesFilterExpired(int count);
+
+  /// No description provided for @challengePoweredBy.
+  ///
+  /// In en, this message translates to:
+  /// **'POWERED BY {brand}'**
+  String challengePoweredBy(String brand);
+
+  /// No description provided for @challengeDeadlineToday.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY'**
+  String get challengeDeadlineToday;
+
+  /// No description provided for @stravaSectionHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'STRAVA VERIFICATION'**
+  String get stravaSectionHeader;
+
+  /// No description provided for @stravaConnectPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect your Strava account to automatically verify whether you completed the route.'**
+  String get stravaConnectPrompt;
+
+  /// No description provided for @stravaVerifying.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking Strava activities...'**
+  String get stravaVerifying;
+
+  /// No description provided for @stravaConnectedAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to Strava as {name}. Tap to verify whether you completed the route.'**
+  String stravaConnectedAs(String name);
+
+  /// No description provided for @stravaAthleteFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'Athlete'**
+  String get stravaAthleteFallback;
+
+  /// No description provided for @stravaVerifyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with Strava'**
+  String get stravaVerifyButton;
+
+  /// No description provided for @stravaChooseActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the activity that confirms the challenge:'**
+  String get stravaChooseActivity;
+
+  /// No description provided for @stravaVerifyAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify again'**
+  String get stravaVerifyAgain;
+
+  /// No description provided for @stravaStatKm.
+  ///
+  /// In en, this message translates to:
+  /// **'KM'**
+  String get stravaStatKm;
+
+  /// No description provided for @stravaStatDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'DURATION'**
+  String get stravaStatDuration;
+
+  /// No description provided for @stravaStatPace.
+  ///
+  /// In en, this message translates to:
+  /// **'PACE'**
+  String get stravaStatPace;
+
+  /// No description provided for @stravaStatElevation.
+  ///
+  /// In en, this message translates to:
+  /// **'ELEVATION'**
+  String get stravaStatElevation;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No new notifications.'**
+  String get notificationsEmpty;
+
+  /// No description provided for @commonSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get commonSave;
+
+  /// No description provided for @offerEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit offer'**
+  String get offerEditTitle;
+
+  /// No description provided for @offerBrandLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand'**
+  String get offerBrandLabel;
+
+  /// No description provided for @offerTitleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get offerTitleLabel;
+
+  /// No description provided for @offerDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get offerDescriptionLabel;
+
+  /// No description provided for @offerDiscountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount label'**
+  String get offerDiscountLabel;
+
+  /// No description provided for @offerLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get offerLinkLabel;
+
+  /// No description provided for @offerRequiredToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Brand and title are required.'**
+  String get offerRequiredToast;
+
+  /// No description provided for @offerSavedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer updated.'**
+  String get offerSavedToast;
+
+  /// No description provided for @offerDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete offer'**
+  String get offerDeleteTitle;
+
+  /// No description provided for @offerDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{title}\"? This action cannot be undone.'**
+  String offerDeleteConfirm(String title);
+
+  /// No description provided for @offerDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Offer deleted.'**
+  String get offerDeletedToast;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

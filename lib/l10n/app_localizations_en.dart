@@ -391,6 +391,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get challengeReviewerNoteOptional => 'Reviewer note';
 
   @override
+  String get challengeFeedbackSubmitApproved => 'Challenge approved! Points were added.';
+
+  @override
+  String get challengeFeedbackSubmitPending => 'Submitted for review. You will be notified after the admin approves.';
+
+  @override
+  String get challengeFeedbackReviewApproved => 'Submission approved.';
+
+  @override
+  String get challengeFeedbackReviewRejected => 'Submission rejected.';
+
+  @override
+  String get challengeFeedbackLoadFailed => 'Could not load challenge submissions.';
+
+  @override
+  String get challengeFeedbackSubmitFailed => 'Could not submit challenge.';
+
+  @override
+  String get challengeFeedbackReviewFailed => 'Could not review submission.';
+
+  @override
+  String get challengeCompletedBannerTitle => 'Challenge completed';
+
+  @override
+  String get challengeCompletedBannerBody => 'You have already completed this challenge. You cannot verify again with Strava.';
+
+  @override
   String get challengeSubmitProgress => 'Submit progress';
 
   @override
@@ -872,4 +899,143 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardLoadFailed => 'Could not load dashboard data.';
+
+  @override
+  String get commonDelete => 'Delete';
+
+  @override
+  String get commonPast => 'PAST';
+
+  @override
+  String get commonExpired => 'EXPIRED';
+
+  @override
+  String get eventDeleteTitle => 'Delete event';
+
+  @override
+  String eventDeleteConfirm(String title) {
+    return 'Are you sure you want to delete \"$title\"? This action cannot be undone.';
+  }
+
+  @override
+  String get eventDeletedToast => 'Event deleted.';
+
+  @override
+  String eventsFilterUpcoming(int count) {
+    return 'Upcoming ($count)';
+  }
+
+  @override
+  String eventsFilterPast(int count) {
+    return 'Past ($count)';
+  }
+
+  @override
+  String get eventsLoading => 'Loading events...';
+
+  @override
+  String get challengeDeleteTitle => 'Delete challenge';
+
+  @override
+  String challengeDeleteConfirm(String title) {
+    return 'Are you sure you want to delete \"$title\"? This action cannot be undone.';
+  }
+
+  @override
+  String get challengeDeletedToast => 'Challenge deleted.';
+
+  @override
+  String challengesFilterExpired(int count) {
+    return 'Expired ($count)';
+  }
+
+  @override
+  String challengePoweredBy(String brand) {
+    return 'POWERED BY $brand';
+  }
+
+  @override
+  String get challengeDeadlineToday => 'TODAY';
+
+  @override
+  String get stravaSectionHeader => 'STRAVA VERIFICATION';
+
+  @override
+  String get stravaConnectPrompt => 'Connect your Strava account to automatically verify whether you completed the route.';
+
+  @override
+  String get stravaVerifying => 'Checking Strava activities...';
+
+  @override
+  String stravaConnectedAs(String name) {
+    return 'Connected to Strava as $name. Tap to verify whether you completed the route.';
+  }
+
+  @override
+  String get stravaAthleteFallback => 'Athlete';
+
+  @override
+  String get stravaVerifyButton => 'Verify with Strava';
+
+  @override
+  String get stravaChooseActivity => 'Choose the activity that confirms the challenge:';
+
+  @override
+  String get stravaVerifyAgain => 'Verify again';
+
+  @override
+  String get stravaStatKm => 'KM';
+
+  @override
+  String get stravaStatDuration => 'DURATION';
+
+  @override
+  String get stravaStatPace => 'PACE';
+
+  @override
+  String get stravaStatElevation => 'ELEVATION';
+
+  @override
+  String get notificationsTitle => 'Notifications';
+
+  @override
+  String get notificationsEmpty => 'No new notifications.';
+
+  @override
+  String get commonSave => 'Save';
+
+  @override
+  String get offerEditTitle => 'Edit offer';
+
+  @override
+  String get offerBrandLabel => 'Brand';
+
+  @override
+  String get offerTitleLabel => 'Title';
+
+  @override
+  String get offerDescriptionLabel => 'Description';
+
+  @override
+  String get offerDiscountLabel => 'Discount label';
+
+  @override
+  String get offerLinkLabel => 'Link';
+
+  @override
+  String get offerRequiredToast => 'Brand and title are required.';
+
+  @override
+  String get offerSavedToast => 'Offer updated.';
+
+  @override
+  String get offerDeleteTitle => 'Delete offer';
+
+  @override
+  String offerDeleteConfirm(String title) {
+    return 'Are you sure you want to delete \"$title\"? This action cannot be undone.';
+  }
+
+  @override
+  String get offerDeletedToast => 'Offer deleted.';
 }

@@ -26,7 +26,7 @@
     </queries>
 
     <application
-        android:label="neverest"
+        android:label="Neverest"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

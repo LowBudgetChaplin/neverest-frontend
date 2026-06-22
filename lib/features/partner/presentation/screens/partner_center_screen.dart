@@ -177,7 +177,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
     final partner = _rwPartnerController.text.trim();
     final cost = int.tryParse(_rwCostController.text.trim());
     if (title.isEmpty || partner.isEmpty || cost == null || cost <= 0) {
-      _toast('Titlu, brand și cost (puncte > 0) sunt obligatorii.');
+      _toast('Titlu, brand si cost (puncte > 0) sunt obligatorii.');
       return;
     }
     final stock = int.tryParse(_rwStockController.text.trim());
@@ -439,7 +439,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
         title: Text(l10n.partnerCenterTitle),
         actions: [
           IconButton(
-            tooltip: 'Scanează cod',
+            tooltip: 'Scaneaza cod',
             icon: const Icon(Icons.qr_code_scanner_rounded),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const PartnerScanScreen()),
@@ -539,7 +539,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // acțiuni (full-width, fără overflow)
+                  // actiuni (full-width, fara overflow)
                   Row(
                     children: [
                       if (_editingId != null) ...[
@@ -737,8 +737,8 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                 children: [
                   Text(
                     _editingRewardId == null
-                        ? 'Creează beneficiu (puncte)'
-                        : 'Editează beneficiul',
+                        ? 'Creeaza beneficiu (puncte)'
+                        : 'Editeaza beneficiul',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 10),
@@ -777,7 +777,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                           controller: _rwStockController,
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
-                              labelText: 'Stoc (opțional)'),
+                              labelText: 'Stoc (optional)'),
                         ),
                       ),
                     ],

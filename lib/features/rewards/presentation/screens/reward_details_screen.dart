@@ -345,7 +345,7 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                             accent,
                           ),
                           icon: const Icon(Icons.qr_code_2_rounded),
-                          label: const Text('Arată codul QR'),
+                          label: const Text('Arata codul QR'),
                         )
                       : FilledButton(
                           onPressed: state.isRedeeming || !canRedeem

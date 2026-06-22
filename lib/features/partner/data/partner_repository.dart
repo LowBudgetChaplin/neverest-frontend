@@ -87,6 +87,36 @@ class PartnerRepository {
     await _apiClient.delete('/api/v1/offers/$offerId');
   }
 
+  Future<OfferSummary> adminUpdateOffer({
+    required String offerId,
+    required String brand,
+    required String title,
+    String? description,
+    String? discountLabel,
+    String? linkUrl,
+  }) async {
+    final response = await _apiClient.patch(
+      '/api/v1/admin/offers/$offerId',
+      data: {
+        'brand': brand.trim(),
+        'title': title.trim(),
+        'description': description?.trim() ?? '',
+        'discountLabel': discountLabel?.trim() ?? '',
+        'linkUrl': linkUrl?.trim() ?? '',
+        'active': true,
+      },
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw ApiException('Invalid offer update payload.');
+    }
+    return OfferSummary.fromJson(data);
+  }
+
+  Future<void> adminDeleteOffer(String offerId) async {
+    await _apiClient.delete('/api/v1/admin/offers/$offerId');
+  }
+
   Future<List<ChallengeSummary>> getMyChallenges() async {
     final response = await _apiClient.get('/api/v1/partner-challenges/mine');
     final data = response.data;

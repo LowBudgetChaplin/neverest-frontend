@@ -46,8 +46,8 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Șterge evenimentul'),
-        content: Text('Sigur ștergi „${event.title}”? Acțiunea nu poate fi anulată.'),
+        title: Text(l10n.eventDeleteTitle),
+        content: Text(l10n.eventDeleteConfirm(event.title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -55,7 +55,7 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Șterge'),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -66,7 +66,7 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
       if (!mounted) return;
       context.read<DashboardBloc>().add(const DashboardRefreshRequested());
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Eveniment șters.')));
+          .showSnackBar(SnackBar(content: Text(l10n.eventDeletedToast)));
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -176,7 +176,7 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                 child: Row(
                   children: [
                     NeverestFilterChip(
-                      label: 'Viitoare (${upcoming.length})',
+                      label: l10n.eventsFilterUpcoming(upcoming.length),
                       selected: !_showPast,
                       onTap: () => setState(() {
                         _showPast = false;
@@ -185,7 +185,7 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                     ),
                     const SizedBox(width: 8),
                     NeverestFilterChip(
-                      label: 'Trecute (${past.length})',
+                      label: l10n.eventsFilterPast(past.length),
                       icon: Icons.history_rounded,
                       selected: _showPast,
                       onTap: () => setState(() {
@@ -211,7 +211,7 @@ class _EventsTabScreenState extends State<EventsTabScreen> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Se incarca evenimente...',
+                        l10n.eventsLoading,
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
@@ -565,7 +565,7 @@ class _PastBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(99),
       ),
       child: Text(
-        'TRECUT',
+        AppLocalizations.of(context)!.commonPast,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: NeverestPalette.danger,
               fontWeight: FontWeight.w900,
