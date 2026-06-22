@@ -44,10 +44,13 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
   final TextEditingController _proofController = TextEditingController();
   final TextEditingController _metricController = TextEditingController();
   bool _adminView = false;
+  int? _selectedStravaActivityId;
 
   @override
   void initState() {
     super.initState();
+    // Strava e partajat, altfel activitatile vechi raman afisate (si validabile)
+    context.read<StravaCubit>().clearVerification();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSubmissions();
       context.read<StravaCubit>().loadStatus();
@@ -68,13 +71,12 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
       (cubit) => cubit.state.canOpenAdminCenter,
     );
     final effectiveAdminView = _adminView && canUseAdminFeatures;
-    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: BlocConsumer<ChallengeActionBloc, ChallengeActionState>(
         listenWhen: (previous, current) =>
             previous.errorMessage != current.errorMessage ||
-            previous.successMessage != current.successMessage,
+            previous.feedback != current.feedback,
         listener: (context, state) {
           if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -85,10 +87,9 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
                 .add(const ChallengeMessagesCleared());
             return;
           }
-          if (state.successMessage != null &&
-              state.successMessage!.isNotEmpty) {
+          if (state.feedback != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.successMessage!)),
+              SnackBar(content: Text(_feedbackMessage(l10n, state.feedback!))),
             );
             context
                 .read<ChallengeActionBloc>()
@@ -105,7 +106,6 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
               bottom: 30,
             ),
             children: [
-              // ── Header ──────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                 child: Row(
@@ -138,23 +138,34 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
                 ),
               ),
               const SizedBox(height: 20),
-              // ── Verificare Strava ────────────────────────────────────
-              _StravaActivitySection(challenge: widget.challenge),
-              const SizedBox(height: 16),
-              // ── Trimite dovadă ───────────────────────────────────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _SubmissionComposer(
-                  isBusy: isBusy,
-                  isLoading: state.isLoading,
-                  proofController: _proofController,
-                  metricController: _metricController,
-                  onSubmit: _submitChallenge,
-                  onRefresh: _loadSubmissions,
-                  showProgress: state.isSubmitting,
+              if (widget.challenge.completed && !effectiveAdminView) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: _CompletedBanner(),
                 ),
-              ),
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
+              ] else ...[
+                _StravaActivitySection(
+                  challenge: widget.challenge,
+                  selectedActivityId: _selectedStravaActivityId,
+                  onActivitySelected: _onStravaActivitySelected,
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _SubmissionComposer(
+                    isBusy: isBusy,
+                    isLoading: state.isLoading,
+                    proofController: _proofController,
+                    metricController: _metricController,
+                    onSubmit: _submitChallenge,
+                    onRefresh: _loadSubmissions,
+                    showProgress: state.isSubmitting,
+                    metricReadOnly: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
               if (canUseAdminFeatures)
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -201,6 +212,33 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
         },
       ),
     );
+  }
+
+  void _onStravaActivitySelected(StravaActivity activity) {
+    final metric = _metricForActivity(activity);
+    setState(() {
+      _selectedStravaActivityId = activity.stravaId;
+      _proofController.text = activity.name;
+      _metricController.text = metric;
+    });
+  }
+
+  String _metricForActivity(StravaActivity activity) {
+    final unit = (widget.challenge.targetUnit ?? '').toLowerCase();
+    final isElevation = unit.contains('elev') ||
+        unit.contains('d+') ||
+        (widget.challenge.activityType.toUpperCase() == 'MOUNTAIN' &&
+            (unit == 'm' || unit.contains('metri')));
+    if (isElevation) {
+      return activity.totalElevationGain.toStringAsFixed(0);
+    }
+    if (unit.contains('km')) {
+      return activity.distanceKm.toStringAsFixed(2);
+    }
+    if (unit.contains('m')) {
+      return activity.distanceMeters.toStringAsFixed(0);
+    }
+    return activity.distanceKm.toStringAsFixed(2);
   }
 
   void _loadSubmissions() {
@@ -254,39 +292,10 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
       return;
     }
 
-    final noteController = TextEditingController();
     final note = await showDialog<String>(
       context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(
-            approved
-                ? l10n.challengeApproveSubmission
-                : l10n.challengeRejectSubmission,
-          ),
-          content: TextField(
-            controller: noteController,
-            minLines: 2,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: l10n.challengeReviewerNoteOptional,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.commonCancel),
-            ),
-            FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(noteController.text),
-              child: Text(l10n.commonConfirm),
-            ),
-          ],
-        );
-      },
+      builder: (_) => _ReviewNoteDialog(approved: approved),
     );
-    noteController.dispose();
 
     if (!mounted || note == null) {
       return;
@@ -314,6 +323,67 @@ class _ChallengeDetailsViewState extends State<_ChallengeDetailsView> {
 
 }
 
+class _ReviewNoteDialog extends StatefulWidget {
+  const _ReviewNoteDialog({required this.approved});
+
+  final bool approved;
+
+  @override
+  State<_ReviewNoteDialog> createState() => _ReviewNoteDialogState();
+}
+
+class _ReviewNoteDialogState extends State<_ReviewNoteDialog> {
+  final TextEditingController _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      title: Text(
+        widget.approved
+            ? l10n.challengeApproveSubmission
+            : l10n.challengeRejectSubmission,
+      ),
+      content: TextField(
+        controller: _noteController,
+        minLines: 2,
+        maxLines: 3,
+        decoration: InputDecoration(
+          labelText: l10n.challengeReviewerNoteOptional,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_noteController.text),
+          child: Text(l10n.commonConfirm),
+        ),
+      ],
+    );
+  }
+}
+
+String _feedbackMessage(AppLocalizations l10n, ChallengeFeedback feedback) {
+  return switch (feedback) {
+    ChallengeFeedback.submitApproved => l10n.challengeFeedbackSubmitApproved,
+    ChallengeFeedback.submitPending => l10n.challengeFeedbackSubmitPending,
+    ChallengeFeedback.reviewApproved => l10n.challengeFeedbackReviewApproved,
+    ChallengeFeedback.reviewRejected => l10n.challengeFeedbackReviewRejected,
+    ChallengeFeedback.loadFailed => l10n.challengeFeedbackLoadFailed,
+    ChallengeFeedback.submitFailed => l10n.challengeFeedbackSubmitFailed,
+    ChallengeFeedback.reviewFailed => l10n.challengeFeedbackReviewFailed,
+  };
+}
+
 class _SubmissionComposer extends StatelessWidget {
   const _SubmissionComposer({
     required this.isBusy,
@@ -323,6 +393,7 @@ class _SubmissionComposer extends StatelessWidget {
     required this.onSubmit,
     required this.onRefresh,
     required this.showProgress,
+    this.metricReadOnly = false,
   });
 
   final bool isBusy;
@@ -332,6 +403,7 @@ class _SubmissionComposer extends StatelessWidget {
   final VoidCallback onSubmit;
   final VoidCallback onRefresh;
   final bool showProgress;
+  final bool metricReadOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -359,16 +431,22 @@ class _SubmissionComposer extends StatelessWidget {
           TextField(
             controller: proofController,
             enabled: !isBusy,
-            minLines: 2,
-            maxLines: 4,
-            decoration: InputDecoration(labelText: l10n.challengeProofLabel),
+            minLines: 1,
+            maxLines: 2,
+            decoration: InputDecoration(labelText: l10n.challengeActivityNameLabel),
           ),
           const SizedBox(height: 8),
           TextField(
             controller: metricController,
             enabled: !isBusy,
+            readOnly: metricReadOnly,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: InputDecoration(labelText: l10n.challengeMetricLabel),
+            decoration: InputDecoration(
+              labelText: l10n.challengeMetricLabel,
+              suffixIcon: metricReadOnly
+                  ? const Icon(Icons.lock_outline_rounded, size: 16)
+                  : null,
+            ),
           ),
           const SizedBox(height: 10),
           Wrap(
@@ -413,8 +491,19 @@ class _SubmissionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isPending = submission.status.toUpperCase() == 'PENDING';
+    final status = submission.status.toUpperCase();
+    final isPending = status == 'PENDING';
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color badgeColor;
+    if (status.contains('APPROV') || status.contains('ACCEPT')) {
+      badgeColor = NeverestPalette.success;
+    } else if (status.contains('REJECT') || status.contains('DEN')) {
+      badgeColor = NeverestPalette.danger;
+    } else {
+      badgeColor = NeverestPalette.orange;
+    }
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -429,17 +518,21 @@ class _SubmissionCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Expanded(
-              //   child: Text(
-              //     l10n.challengeSubmissionId(submission.id),
-              //     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              //           fontWeight: FontWeight.w800,
-              //         ),
-              //   ),
-              // ),
-              NeverestFilterChip(
-                label: submission.status,
-                selected: isPending,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                decoration: BoxDecoration(
+                  color: badgeColor,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  submission.status.toUpperCase(),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.2,
+                      ),
+                ),
               ),
             ],
           ),
@@ -453,17 +546,26 @@ class _SubmissionCard extends StatelessWidget {
             Text('${l10n.challengeReviewerNote}: ${submission.reviewerNote}'),
           if (adminView && isPending) ...[
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: [
-                FilledButton(
-                  onPressed: isReviewing ? null : onApprove,
-                  child: Text(l10n.challengeApprove),
+                Expanded(
+                  child: SizedBox(
+                    height: 46,
+                    child: FilledButton(
+                      onPressed: isReviewing ? null : onApprove,
+                      child: Text(l10n.challengeApprove),
+                    ),
+                  ),
                 ),
-                OutlinedButton(
-                  onPressed: isReviewing ? null : onReject,
-                  child: Text(l10n.challengeReject),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: SizedBox(
+                    height: 46,
+                    child: OutlinedButton(
+                      onPressed: isReviewing ? null : onReject,
+                      child: Text(l10n.challengeReject),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -474,12 +576,64 @@ class _SubmissionCard extends StatelessWidget {
   }
 }
 
-class _StravaActivitySection extends StatelessWidget {
-  const _StravaActivitySection({required this.challenge});
-  final ChallengeSummary challenge;
+class _CompletedBanner extends StatelessWidget {
+  const _CompletedBanner();
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: NeverestPalette.success.withOpacity(isDark ? 0.14 : 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: NeverestPalette.success.withOpacity(0.5)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.verified_rounded,
+              color: NeverestPalette.success, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.challengeCompletedBannerTitle,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: NeverestPalette.success,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.challengeCompletedBannerBody,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StravaActivitySection extends StatelessWidget {
+  const _StravaActivitySection({
+    required this.challenge,
+    required this.selectedActivityId,
+    required this.onActivitySelected,
+  });
+  final ChallengeSummary challenge;
+  final int? selectedActivityId;
+  final ValueChanged<StravaActivity> onActivitySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final stravaState = context.watch<StravaCubit>().state;
     final status = stravaState.status;
@@ -503,7 +657,7 @@ class _StravaActivitySection extends StatelessWidget {
                 const Icon(Icons.directions_run_rounded, size: 16, color: NeverestPalette.orange),
                 const SizedBox(width: 6),
                 Text(
-                  'VERIFICARE STRAVA',
+                  l10n.stravaSectionHeader,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: NeverestPalette.orange,
                         letterSpacing: 1.2,
@@ -515,18 +669,18 @@ class _StravaActivitySection extends StatelessWidget {
             const SizedBox(height: 8),
             if (status == null || !status.connected) ...[
               Text(
-                'Conectează-ți contul Strava pentru a verifica automat dacă ai completat traseul.',
+                l10n.stravaConnectPrompt,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
             ] else if (stravaState.isVerifying) ...[
-              const Row(
+              Row(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 16, height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  SizedBox(width: 10),
-                  Text('Se verifică activitățile Strava...'),
+                  const SizedBox(width: 10),
+                  Text(l10n.stravaVerifying),
                 ],
               ),
             ] else if (stravaState.verification != null) ...[
@@ -534,10 +688,12 @@ class _StravaActivitySection extends StatelessWidget {
                 verification: stravaState.verification!,
                 isDark: isDark,
                 onClear: () => context.read<StravaCubit>().clearVerification(),
+                selectedActivityId: selectedActivityId,
+                onActivitySelected: onActivitySelected,
               ),
             ] else ...[
               Text(
-                'Strava conectat ca ${status.athleteName ?? "Atlet"}. Apasă pentru a verifica dacă ai completat traseul.',
+                l10n.stravaConnectedAs(status.athleteName ?? l10n.stravaAthleteFallback),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 10),
@@ -546,7 +702,7 @@ class _StravaActivitySection extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => context.read<StravaCubit>().verifyChallenge(challenge.id),
                   icon: const Icon(Icons.verified_rounded, size: 16),
-                  label: const Text('Verifică cu Strava'),
+                  label: Text(l10n.stravaVerifyButton),
                 ),
               ),
             ],
@@ -562,14 +718,19 @@ class _VerificationResult extends StatelessWidget {
     required this.verification,
     required this.isDark,
     required this.onClear,
+    required this.selectedActivityId,
+    required this.onActivitySelected,
   });
 
   final StravaChallengeVerification verification;
   final bool isDark;
   final VoidCallback onClear;
+  final int? selectedActivityId;
+  final ValueChanged<StravaActivity> onActivitySelected;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = verification.verified ? NeverestPalette.success : NeverestPalette.danger;
     final icon = verification.verified ? Icons.check_circle_rounded : Icons.cancel_rounded;
 
@@ -599,12 +760,17 @@ class _VerificationResult extends StatelessWidget {
         if (verification.matchingActivities.isNotEmpty) ...[
           const SizedBox(height: 10),
           Text(
-            'Activități compatibile:',
+            l10n.stravaChooseActivity,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
           ),
           const SizedBox(height: 6),
           ...verification.matchingActivities.take(3).map(
-            (a) => _StravaActivityCard(activity: a, isDark: isDark),
+            (a) => _StravaActivityCard(
+              activity: a,
+              isDark: isDark,
+              selected: selectedActivityId == a.stravaId,
+              onTap: () => onActivitySelected(a),
+            ),
           ),
         ],
         const SizedBox(height: 8),
@@ -613,7 +779,7 @@ class _VerificationResult extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: onClear,
             icon: const Icon(Icons.refresh_rounded, size: 14),
-            label: const Text('Verifică din nou'),
+            label: Text(l10n.stravaVerifyAgain),
           ),
         ),
       ],
@@ -622,20 +788,36 @@ class _VerificationResult extends StatelessWidget {
 }
 
 class _StravaActivityCard extends StatelessWidget {
-  const _StravaActivityCard({required this.activity, required this.isDark});
+  const _StravaActivityCard({
+    required this.activity,
+    required this.isDark,
+    this.selected = false,
+    this.onTap,
+  });
   final StravaActivity activity;
   final bool isDark;
+  final bool selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final l10n = AppLocalizations.of(context)!;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised,
+        color: selected
+            ? NeverestPalette.orange.withOpacity(isDark ? 0.16 : 0.10)
+            : (isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine,
+          color: selected
+              ? NeverestPalette.orange
+              : (isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine),
+          width: selected ? 1.5 : 1,
         ),
       ),
       child: Column(
@@ -669,13 +851,25 @@ class _StravaActivityCard extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              _StatChip(label: 'KM', value: activity.distanceKm.toStringAsFixed(2)),
-              const SizedBox(width: 14),
-              _StatChip(label: 'DURATĂ', value: activity.formattedDuration),
-              const SizedBox(width: 14),
-              _StatChip(label: 'RITM', value: activity.formattedPace),
-              const SizedBox(width: 14),
-              _StatChip(label: 'ELEVAȚIE', value: '${activity.totalElevationGain.toStringAsFixed(0)}m'),
+              Expanded(
+                child: _StatChip(
+                    label: l10n.stravaStatKm,
+                    value: activity.distanceKm.toStringAsFixed(2)),
+              ),
+              Expanded(
+                child: _StatChip(
+                    label: l10n.stravaStatDuration,
+                    value: activity.formattedDuration),
+              ),
+              Expanded(
+                child: _StatChip(
+                    label: l10n.stravaStatPace, value: activity.formattedPace),
+              ),
+              Expanded(
+                child: _StatChip(
+                    label: l10n.stravaStatElevation,
+                    value: '${activity.totalElevationGain.toStringAsFixed(0)}m'),
+              ),
             ],
           ),
           if (activity.startLatLng != null || activity.endLatLng != null) ...[
@@ -704,6 +898,7 @@ class _StravaActivityCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }
@@ -742,10 +937,14 @@ class _StatChip extends StatelessWidget {
       children: [
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(letterSpacing: 0.8),
         ),
         Text(
           value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
       ],

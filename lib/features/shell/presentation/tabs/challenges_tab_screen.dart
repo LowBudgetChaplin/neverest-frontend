@@ -3,9 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../app/services/api_client.dart';
+import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../../challenges/data/challenge_action_repository.dart';
 import '../../../challenges/presentation/screens/challenge_details_screen.dart';
+import '../../../challenges/presentation/screens/challenge_edit_screen.dart';
 import '../design/neverest_design.dart';
 
 class ChallengesTabScreen extends StatefulWidget {
@@ -16,12 +20,53 @@ class ChallengesTabScreen extends StatefulWidget {
 }
 
 class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
+  static const int _pageSize = 10;
+  static const int _maxArchive = 100;
+
   bool _showCompleted = false;
   bool _partnerOnly = false;
+  bool _showExpired = false;
+  int _expiredPage = 0;
+
+  Future<void> _confirmDeleteChallenge(ChallengeSummary challenge) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.challengeDeleteTitle),
+        content: Text(l10n.challengeDeleteConfirm(challenge.title)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await context.read<ChallengeActionRepository>().deleteChallenge(challenge.id);
+      if (!mounted) return;
+      context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.challengeDeletedToast)));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isAdmin = context.select<AccessCubit, bool>(
+      (cubit) => cubit.state.canOpenAdminCenter,
+    );
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final source = state.data?.challenges ?? const <ChallengeSummary>[];
@@ -62,14 +107,42 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
           );
         }
         final items = _toChallengeItems(source, l10n);
-        final active = items.where((item) => !item.done).toList();
+        final active = items
+            .where((item) => !item.done && !_challengeExpired(item.summary))
+            .toList();
         final done = items.where((item) => item.done).toList();
-        var list = _showCompleted ? done : active;
+        // Obiectivele expirate (neterminate) raman doar pentru admin, ca arhiva.
+        final expired = items
+            .where((item) => !item.done && _challengeExpired(item.summary))
+            .toList()
+          ..sort((a, b) =>
+              (b.summary.endsAt ?? '').compareTo(a.summary.endsAt ?? ''));
+        final showingExpired = isAdmin && _showExpired;
+
+        var list = showingExpired
+            ? expired
+            : (_showCompleted ? done : active);
         if (_partnerOnly) {
           list = list
               .where((item) => item.summary.isPartnerChallenge)
               .toList();
         }
+
+        // Arhiva expirata: plafon 100, paginare 10/pagina (max 10 pagini).
+        final cappedArchive =
+            list.length > _maxArchive ? list.sublist(0, _maxArchive) : list;
+        final totalPages = showingExpired
+            ? (cappedArchive.length / _pageSize).ceil().clamp(1, 10)
+            : 1;
+        final safePage =
+            showingExpired ? _expiredPage.clamp(0, totalPages - 1) : 0;
+        if (showingExpired) {
+          list = cappedArchive
+              .skip(safePage * _pageSize)
+              .take(_pageSize)
+              .toList();
+        }
+
         final hasPartnerChallenges =
             items.any((item) => item.summary.isPartnerChallenge);
 
@@ -98,21 +171,41 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
             //   ),
             // ),
             const SizedBox(height: 12),
-            Padding(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
                   NeverestFilterChip(
                     label: l10n.challengesActiveCount(active.length),
-                    selected: !_showCompleted,
-                    onTap: () => setState(() => _showCompleted = false),
+                    selected: !_showCompleted && !_showExpired,
+                    onTap: () => setState(() {
+                      _showCompleted = false;
+                      _showExpired = false;
+                    }),
                   ),
                   const SizedBox(width: 8),
                   NeverestFilterChip(
                     label: l10n.challengesCompletedCount(done.length),
-                    selected: _showCompleted,
-                    onTap: () => setState(() => _showCompleted = true),
+                    selected: _showCompleted && !_showExpired,
+                    onTap: () => setState(() {
+                      _showCompleted = true;
+                      _showExpired = false;
+                    }),
                   ),
+                  if (isAdmin) ...[
+                    const SizedBox(width: 8),
+                    NeverestFilterChip(
+                      label: l10n.challengesFilterExpired(expired.length),
+                      icon: Icons.history_rounded,
+                      selected: _showExpired,
+                      onTap: () => setState(() {
+                        _showExpired = true;
+                        _showCompleted = false;
+                        _expiredPage = 0;
+                      }),
+                    ),
+                  ],
                   if (hasPartnerChallenges) ...[
                     const SizedBox(width: 8),
                     NeverestFilterChip(
@@ -137,23 +230,59 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               )
-            else
+            else ...[
               ...list.map(
                 (item) => Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-                  child: _ChallengeCard(
-                    item: item,
-                    featured: true,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        AppPageRoute.fadeSlide(
-                          ChallengeDetailsScreen(challenge: item.summary),
+                  child: Stack(
+                    children: [
+                      Opacity(
+                        opacity: showingExpired ? 0.55 : 1,
+                        child: _ChallengeCard(
+                          item: item,
+                          featured: true,
+                          onDelete: isAdmin
+                              ? () => _confirmDeleteChallenge(item.summary)
+                              : null,
+                          onEdit: isAdmin
+                              ? () => Navigator.of(context).push(
+                                    AppPageRoute.fadeSlide(
+                                      ChallengeEditScreen(
+                                          challenge: item.summary),
+                                    ),
+                                  )
+                              : null,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              AppPageRoute.fadeSlide(
+                                ChallengeDetailsScreen(challenge: item.summary),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
+                      ),
+                      if (showingExpired)
+                        const Positioned(
+                          top: 12,
+                          right: 12,
+                          child: _ExpiredBadge(),
+                        ),
+                    ],
                   ),
                 ),
               ),
+              if (showingExpired && totalPages > 1)
+                _Pager(
+                  page: safePage,
+                  totalPages: totalPages,
+                  onPrev: safePage > 0
+                      ? () => setState(() => _expiredPage = safePage - 1)
+                      : null,
+                  onNext: safePage < totalPages - 1
+                      ? () => setState(() => _expiredPage = safePage + 1)
+                      : null,
+                ),
+            ],
           ],
         );
       },
@@ -166,11 +295,15 @@ class _ChallengeCard extends StatelessWidget {
     required this.item,
     required this.featured,
     required this.onTap,
+    this.onDelete,
+    this.onEdit,
   });
 
   final _ChallengeItem item;
   final bool featured;
   final VoidCallback onTap;
+  final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
 
   static IconData _activityIcon(String type) => switch (type.toUpperCase()) {
         'RUNNING' => Icons.directions_run_rounded,
@@ -185,13 +318,11 @@ class _ChallengeCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final icon = _activityIcon(item.summary.activityType);
 
-    // ── culoare per sport ─────────────────────────────────────────────────────
     final sportColor = neverestActivityColor(item.summary.activityType);
     final accent = item.done
         ? (isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted)
         : sportColor;
 
-    // ── badge tip activitate ──────────────────────────────────────────────────
     final activityBadge = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -208,7 +339,6 @@ class _ChallengeCard extends StatelessWidget {
       ],
     );
 
-    // ── deadline ─────────────────────────────────────────────────────────────
     final deadlineText = Text(
       item.deadline.toUpperCase(),
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -219,7 +349,6 @@ class _ChallengeCard extends StatelessWidget {
           ),
     );
 
-    // ── punkte ───────────────────────────────────────────────────────────────
     final pointsWidget = Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -243,9 +372,6 @@ class _ChallengeCard extends StatelessWidget {
     );
 
     if (featured) {
-      // ── CARD MINIMALIST ── fundal plat cu tentă subtilă pe sport, fără
-      //    wave-uri, fără cutie de iconiță, fără divider. Doar tipografie
-      //    aerisită + un accent discret de culoare în spate.
       final muted =
           isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted;
       final base =
@@ -253,7 +379,6 @@ class _ChallengeCard extends StatelessWidget {
       // tenta de fundal preia culoarea sportului (sau gri pentru cele done)
       final lineColor =
           isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine;
-      // fundal minimalist specific sportului: o iconita mare, foarte discreta
       // (gri pentru provocarile finalizate)
       final watermark =
           (item.done ? muted : sportColor).withOpacity(isDark ? 0.08 : 0.06);
@@ -281,7 +406,6 @@ class _ChallengeCard extends StatelessWidget {
                   child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // header: punct + sport ····· deadline / finalizat
                 Row(
                   children: [
                     Container(
@@ -335,10 +459,11 @@ class _ChallengeCard extends StatelessWidget {
                               letterSpacing: 0.8,
                             ),
                       ),
+                    if (onEdit != null || onDelete != null)
+                      const SizedBox(width: 72),
                   ],
                 ),
                 const SizedBox(height: 18),
-                // titlu
                 Text(
                   item.summary.title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -347,7 +472,6 @@ class _ChallengeCard extends StatelessWidget {
                       ),
                 ),
                 const SizedBox(height: 6),
-                // subtitlu / descriere
                 Text(
                   item.subtitle,
                   maxLines: 2,
@@ -357,7 +481,6 @@ class _ChallengeCard extends StatelessWidget {
                       .bodySmall
                       ?.copyWith(color: muted, height: 1.35),
                 ),
-                // badge "Powered by [partener]" pentru provocările de partener
                 if (item.summary.isPartnerChallenge) ...[
                   const SizedBox(height: 10),
                   Row(
@@ -367,7 +490,8 @@ class _ChallengeCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       Flexible(
                         child: Text(
-                          'POWERED BY ${item.summary.brand!.toUpperCase()}',
+                          AppLocalizations.of(context)!
+                              .challengePoweredBy(item.summary.brand!.toUpperCase()),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -381,7 +505,6 @@ class _ChallengeCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 20),
-                // footer: recompensă ····· buton săgeată rotund
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -438,6 +561,42 @@ class _ChallengeCard extends StatelessWidget {
               ],
                   ),
                 ),
+                if (onEdit != null)
+                  Positioned(
+                    top: 8,
+                    right: onDelete != null ? 48 : 8,
+                    child: Material(
+                      color: NeverestPalette.orange.withOpacity(0.12),
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: onEdit,
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(Icons.edit_outlined,
+                              size: 18, color: NeverestPalette.orange),
+                        ),
+                      ),
+                    ),
+                  ),
+                if (onDelete != null)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: NeverestPalette.danger.withOpacity(0.12),
+                      shape: const CircleBorder(),
+                      clipBehavior: Clip.antiAlias,
+                      child: InkWell(
+                        onTap: onDelete,
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(Icons.delete_outline_rounded,
+                              size: 18, color: NeverestPalette.danger),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -445,7 +604,6 @@ class _ChallengeCard extends StatelessWidget {
       );
     }
 
-    // ── CARD COMPACT (row) ── aceeași structură, layout orizontal ─────────
     return InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: onTap,
@@ -460,7 +618,6 @@ class _ChallengeCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // icoana activitate
             Container(
               width: 44,
               height: 44,
@@ -477,7 +634,6 @@ class _ChallengeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // titlu + badge + deadline
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,13 +674,23 @@ class _ChallengeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // puncte
             pointsWidget,
           ],
         ),
       ),
     );
   }
+}
+
+bool _challengeExpired(ChallengeSummary summary) {
+  final endsAt = summary.endsAt;
+  if (endsAt == null || endsAt.isEmpty) return false;
+  final date = DateTime.tryParse(endsAt);
+  if (date == null) return false;
+  final endDay = DateTime(date.year, date.month, date.day);
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  return endDay.isBefore(today);
 }
 
 List<_ChallengeItem> _toChallengeItems(
@@ -561,7 +727,7 @@ String _deadlineLabelFor(ChallengeSummary summary, AppLocalizations l10n) {
   if (date == null) return endsAt;
   final diff = date.difference(DateTime.now()).inDays;
   if (diff < 0) return l10n.challengeAlwaysOn;
-  if (diff == 0) return 'TODAY';
+  if (diff == 0) return l10n.challengeDeadlineToday;
   if (diff <= 7) return l10n.challengeDeadlineDays(diff);
   return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
 }
@@ -578,5 +744,69 @@ class _ChallengeItem {
   final String deadline;
   bool get done => summary.completed;
   String get id => summary.id;
+}
+
+class _ExpiredBadge extends StatelessWidget {
+  const _ExpiredBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: NeverestPalette.danger,
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        AppLocalizations.of(context)!.commonExpired,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+      ),
+    );
+  }
+}
+
+class _Pager extends StatelessWidget {
+  const _Pager({
+    required this.page,
+    required this.totalPages,
+    this.onPrev,
+    this.onNext,
+  });
+
+  final int page;
+  final int totalPages;
+  final VoidCallback? onPrev;
+  final VoidCallback? onNext;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: onPrev,
+            icon: const Icon(Icons.chevron_left_rounded),
+          ),
+          Text(
+            '${page + 1} / $totalPages',
+            style: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            onPressed: onNext,
+            icon: const Icon(Icons.chevron_right_rounded),
+          ),
+        ],
+      ),
+    );
+  }
 }
 

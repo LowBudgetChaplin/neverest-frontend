@@ -8,7 +8,6 @@ import 'package:neverest/resources/styles/bottom_box_decoration_style.dart';
 
 import '../../resources/styles_managers/assets_manager.dart';
 
-/// Main root screen & root bottom navigation bar & root top app bar
 class MainScreen extends ConsumerStatefulWidget{
   const MainScreen({super.key});
 
@@ -16,11 +15,9 @@ class MainScreen extends ConsumerStatefulWidget{
   ConsumerState<MainScreen> createState() => _MainContentState();
 }
 
-/// Main root state
 class _MainContentState extends ConsumerState<MainScreen> {
   int positionIndex = 0;
   late List<Widget> pages;
-
 
   @override
   void initState() {
@@ -28,12 +25,10 @@ class _MainContentState extends ConsumerState<MainScreen> {
     initPages();
   }
 
-  // Initializing pages for each each main screens from the bottom navigation bar based on the user role
   void initPages(){
     pages = getPagesByRole();
   }
 
-  //TODO: Interface by role. It's only the customer role for now
   List<Widget> getPagesByRole(){
     return [
       const HomeScreen(),
@@ -50,7 +45,6 @@ class _MainContentState extends ConsumerState<MainScreen> {
     final sp = context.spacing;
     final c = context.colors;
 
-    //TODO: to be replaced. its only for mock to test the screens transition
     pages = [
       const HomeScreen(),
       Center(child: Text(l10n!.rewards)),
@@ -59,7 +53,6 @@ class _MainContentState extends ConsumerState<MainScreen> {
       Center(child: Text(l10n.wallet)),
     ];
 
-    // Bottom navigation elements for each app menu
     List<BottomNavigationBarItem> navItems = [
       BottomNavigationBarItem(
           icon: SvgPicture.asset(ImageAssets.home),
@@ -89,7 +82,6 @@ class _MainContentState extends ConsumerState<MainScreen> {
 
     return Scaffold(
       backgroundColor: c.bgDefault,
-      // appBar: _buildAppBar(ref), //TODO: AppBar custom style
       body:
       Padding(
         padding: sp.screenPadding,

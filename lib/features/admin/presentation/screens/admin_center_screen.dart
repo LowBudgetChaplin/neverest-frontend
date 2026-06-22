@@ -82,6 +82,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   final _partnerPasswordController = TextEditingController();
   final _partnerNameController = TextEditingController();
   final _partnerBrandController = TextEditingController();
+  final _partnerPhoneController = TextEditingController();
 
   String _eventActivity = 'RUNNING';
   String _eventRecurrence = 'NONE';
@@ -103,6 +104,11 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   DateTime _challengeEndsAt = DateTime.now().add(const Duration(days: 8));
 
   bool? _auditSuccess;
+  int _auditPage = 0;
+  static const int _auditPageSize = 10;
+  static const int _auditMaxLogs = 100;
+  int _usersPage = 0;
+  static const int _usersPageSize = 10;
 
   static const _activityTypes = ['PADEL', 'MOUNTAIN', 'RUNNING'];
   static const _challengeModes = ['ONLINE', 'OFFLINE'];
@@ -136,6 +142,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     _partnerPasswordController.dispose();
     _partnerNameController.dispose();
     _partnerBrandController.dispose();
+    _partnerPhoneController.dispose();
     super.dispose();
   }
 
@@ -349,10 +356,22 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               ),
             ),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: isBusy ? null : _createEvent,
-              icon: const Icon(Icons.add_circle_outline),
-              label: const Text('Create event'),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : _createEvent,
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Create event'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: isBusy ? null : _resetEventForm,
+                  icon: const Icon(Icons.restart_alt_rounded),
+                  label: const Text('Reset'),
+                ),
+              ],
             ),
             if (state.lastCreatedEvent != null) ...[
               const SizedBox(height: 10),
@@ -558,10 +577,22 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               ],
             ),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: isBusy ? null : _createChallenge,
-              icon: const Icon(Icons.flag_outlined),
-              label: const Text('Create challenge'),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : _createChallenge,
+                    icon: const Icon(Icons.flag_outlined),
+                    label: const Text('Create challenge'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: isBusy ? null : _resetChallengeForm,
+                  icon: const Icon(Icons.restart_alt_rounded),
+                  label: const Text('Reset'),
+                ),
+              ],
             ),
           ],
         ),
@@ -623,10 +654,22 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               ],
             ),
             const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: isBusy ? null : _createReward,
-              icon: const Icon(Icons.card_giftcard),
-              label: const Text('Create reward'),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: isBusy ? null : _createReward,
+                    icon: const Icon(Icons.card_giftcard),
+                    label: const Text('Create reward'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: isBusy ? null : _resetRewardForm,
+                  icon: const Icon(Icons.restart_alt_rounded),
+                  label: const Text('Reset'),
+                ),
+              ],
             ),
           ],
         ),
@@ -664,6 +707,13 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
             ),
             const SizedBox(height: 8),
             TextField(
+              controller: _partnerPhoneController,
+              enabled: !isBusy,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'Phone number'),
+            ),
+            const SizedBox(height: 8),
+            TextField(
               controller: _partnerPasswordController,
               enabled: !isBusy,
               decoration: const InputDecoration(labelText: 'Password (min 6)'),
@@ -684,8 +734,9 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     final email = _partnerEmailController.text.trim();
     final password = _partnerPasswordController.text;
     final brand = _partnerBrandController.text.trim();
-    if (email.isEmpty || password.length < 6 || brand.isEmpty) {
-      _showValidation('Email, brand și parolă (min 6) sunt obligatorii.');
+    final phone = _partnerPhoneController.text.trim();
+    if (email.isEmpty || password.length < 6 || brand.isEmpty || phone.isEmpty) {
+      _showValidation('Email, brand, telefon si parola (min 6) sunt obligatorii.');
       return;
     }
     await context.read<AdminPanelCubit>().createPartner(
@@ -693,6 +744,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
           password: password,
           displayName: _partnerNameController.text,
           brand: brand,
+          phoneNumber: phone,
         );
   }
 
@@ -751,15 +803,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                 subtitle: 'Create a user or refresh from backend.',
               )
             else
-              ...state.users.take(8).map(
-                    (user) => ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(user.displayName),
-                      subtitle: Text('Available: ${user.availablePoints}p'),
-                      trailing: Text(user.id.substring(0, 6)),
-                    ),
-                  ),
+              ..._buildPaginatedUsers(state.users),
           ],
         ),
       ),
@@ -850,22 +894,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                 subtitle: 'No entries match current filters.',
               )
             else
-              ...state.auditLogs.take(12).map(
-                    (log) => ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        log.success
-                            ? Icons.check_circle_outline
-                            : Icons.error_outline,
-                        color: log.success
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.error,
-                      ),
-                      title: Text(log.action),
-                      subtitle: Text('${log.actor} • ${log.message}'),
-                    ),
-                  ),
+              ..._buildPaginatedAuditLogs(state.auditLogs),
           ],
         ),
       ),
@@ -1061,6 +1090,39 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
         );
   }
 
+  void _resetEventForm() {
+    setState(() {
+      _eventTitleController.clear();
+      _eventDescriptionController.clear();
+      _eventLocationController.clear();
+      _eventPointsController.clear();
+      _eventCapacityController.clear();
+      _eventRouteMapUrlController.clear();
+      _eventStravaClubUrlController.clear();
+      _eventWhatsappGroupUrlController.clear();
+    });
+  }
+
+  void _resetChallengeForm() {
+    setState(() {
+      _challengeTitleController.clear();
+      _challengeDescriptionController.clear();
+      _challengePointsController.clear();
+      _challengeTargetValueController.clear();
+      _challengeTargetUnitController.clear();
+    });
+  }
+
+  void _resetRewardForm() {
+    setState(() {
+      _rewardTitleController.clear();
+      _rewardPartnerController.clear();
+      _rewardDescriptionController.clear();
+      _rewardPointsController.clear();
+      _rewardStockController.clear();
+    });
+  }
+
   Future<void> _createUser() async {
     final displayName = _userDisplayNameController.text.trim();
     if (displayName.isEmpty) {
@@ -1070,9 +1132,101 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     await context.read<AdminPanelCubit>().createUser(displayName);
   }
 
+  List<Widget> _buildPaginatedAuditLogs(List<dynamic> allLogs) {
+    final capped = allLogs.length > _auditMaxLogs
+        ? allLogs.sublist(0, _auditMaxLogs)
+        : allLogs;
+    final totalPages =
+        ((capped.length + _auditPageSize - 1) ~/ _auditPageSize).clamp(1, 10);
+    final page = _auditPage.clamp(0, totalPages - 1);
+    final start = page * _auditPageSize;
+    final pageLogs = capped.skip(start).take(_auditPageSize).toList();
+
+    return [
+      ...pageLogs.map(
+        (log) => ListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(
+            log.success ? Icons.check_circle_outline : Icons.error_outline,
+            color: log.success
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.error,
+          ),
+          title: Text(log.action),
+          subtitle: Text('${log.actor} • ${log.message}'),
+        ),
+      ),
+      if (totalPages > 1)
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: page > 0
+                    ? () => setState(() => _auditPage = page - 1)
+                    : null,
+                icon: const Icon(Icons.chevron_left_rounded),
+              ),
+              Text('Pagina ${page + 1} / $totalPages'),
+              IconButton(
+                onPressed: page < totalPages - 1
+                    ? () => setState(() => _auditPage = page + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right_rounded),
+              ),
+            ],
+          ),
+        ),
+    ];
+  }
+
+  List<Widget> _buildPaginatedUsers(List<dynamic> allUsers) {
+    final raw = (allUsers.length + _usersPageSize - 1) ~/ _usersPageSize;
+    final totalPages = raw < 1 ? 1 : raw;
+    final page = _usersPage.clamp(0, totalPages - 1);
+    final start = page * _usersPageSize;
+    final pageUsers = allUsers.skip(start).take(_usersPageSize).toList();
+
+    return [
+      ...pageUsers.map(
+        (user) => ListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          title: Text(user.displayName),
+          subtitle: Text('Available: ${user.availablePoints}p'),
+          trailing: Text(user.id.substring(0, 6)),
+        ),
+      ),
+      if (totalPages > 1)
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed:
+                    page > 0 ? () => setState(() => _usersPage = page - 1) : null,
+                icon: const Icon(Icons.chevron_left_rounded),
+              ),
+              Text('Pagina ${page + 1} / $totalPages'),
+              IconButton(
+                onPressed: page < totalPages - 1
+                    ? () => setState(() => _usersPage = page + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right_rounded),
+              ),
+            ],
+          ),
+        ),
+    ];
+  }
+
   Future<void> _refreshAuditLogs() async {
+    setState(() => _auditPage = 0);
     await context.read<AdminPanelCubit>().refreshAuditLogs(
-          limit: 50,
+          limit: 100,
           action: _auditActionController.text,
           actor: _auditActorController.text,
           success: _auditSuccess,

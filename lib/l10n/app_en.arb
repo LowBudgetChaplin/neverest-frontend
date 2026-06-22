@@ -6,19 +6,16 @@
   "internal_server_error": "An unexpected server error occurred. Please try again later.",
   "unknown_error": "An unknown error occurred.",
   "unauthorized": "Your session has expired. Please log in again.",
-
   "home": "Home",
   "rewards": "Rewards",
   "challenges": "Challenges",
   "social": "Social",
   "wallet": "Wallet",
-
   "navHome": "Home",
   "navEvents": "Events",
   "navChallenges": "Goals",
   "navLeaderboard": "Ranks",
   "navRewards": "Perks",
-
   "commonAll": "All",
   "commonNew": "New",
   "commonOverall": "Overall",
@@ -30,11 +27,9 @@
   "commonCancel": "Cancel",
   "commonConfirm": "Confirm",
   "commonEdit": "Edit",
-
   "activityRunning": "Running",
   "activityPadel": "Padel",
   "activityMountain": "Mountain",
-
   "onboardingSkip": "Skip",
   "onboardingAlreadyHaveAccount": "I already have an account",
   "onboardingHeadline1": "NO SUMMIT.\nNO LIMIT.",
@@ -57,7 +52,6 @@
       }
     }
   },
-
   "homeLiveNow": "Live now",
   "homeThisWeek": "This week",
   "homeActivities": "Activities",
@@ -85,7 +79,6 @@
       }
     }
   },
-
   "eventsTitle": "Events",
   "eventsEmptyState": "No events match this filter.",
   "eventsGoingLabel": "going",
@@ -100,9 +93,7 @@
       }
     }
   },
-
   "profilePhone": "Phone number",
-
   "eventWhen": "When",
   "eventWhere": "Where",
   "eventReward": "Reward",
@@ -134,7 +125,6 @@
     }
   },
   "eventFull": "Full",
-
   "challengesTitle": "Challenges",
   "challengesSubtitle": "Earn points your way",
   "challengesEarned": "Earned",
@@ -168,7 +158,7 @@
   "challengeAlwaysOn": "Always on",
   "challengeProgress23": "2/3 done",
   "challengeDeadlineDays": "{days} days left",
-  "yourPointsHome" : "YOUR POINTS",
+  "yourPointsHome": "YOUR POINTS",
   "@challengeDeadlineDays": {
     "placeholders": {
       "days": {
@@ -176,7 +166,6 @@
       }
     }
   },
-
   "challengePaused": "Paused",
   "challengeGpsLive": "GPS · Live",
   "challengeDestination": "Destination",
@@ -220,10 +209,20 @@
   "challengeAdminRequired": "Admin role is required for submission review.",
   "challengeApproveSubmission": "Approve submission",
   "challengeRejectSubmission": "Reject submission",
-  "challengeReviewerNoteOptional": "Reviewer note (optional)",
+  "challengeReviewerNoteOptional": "Reviewer note",
+  "challengeFeedbackSubmitApproved": "Challenge approved! Points were added.",
+  "challengeFeedbackSubmitPending": "Submitted for review. You will be notified after the admin approves.",
+  "challengeFeedbackReviewApproved": "Submission approved.",
+  "challengeFeedbackReviewRejected": "Submission rejected.",
+  "challengeFeedbackLoadFailed": "Could not load challenge submissions.",
+  "challengeFeedbackSubmitFailed": "Could not submit challenge.",
+  "challengeFeedbackReviewFailed": "Could not review submission.",
+  "challengeCompletedBannerTitle": "Challenge completed",
+  "challengeCompletedBannerBody": "You have already completed this challenge. You cannot verify again with Strava.",
   "challengeSubmitProgress": "Submit progress",
   "challengeProofLabel": "Proof text",
-  "challengeMetricLabel": "Metric value (optional)",
+  "challengeActivityNameLabel": "Activity name",
+  "challengeMetricLabel": "Metric value",
   "challengeSubmit": "Submit challenge",
   "challengeSubmissionId": "Submission {id}",
   "@challengeSubmissionId": {
@@ -237,10 +236,8 @@
   "challengeReviewerNote": "Reviewer note",
   "challengeApprove": "Approve",
   "challengeReject": "Reject",
-
   "leaderboardTitle": "Leaderboard",
   "leaderboardSubtitle": "Updates every minute",
-
   "offersSectionTitle": "Partner offers",
   "partnerCenterTitle": "Partner Center",
   "partnerAccessRequired": "Partner account required.",
@@ -298,7 +295,6 @@
       }
     }
   },
-
   "rewardUnlimited": "Unlimited",
   "rewardLocalPartner": "local partner",
   "rewardCost": "Cost",
@@ -335,7 +331,6 @@
   },
   "rewardRedeemedLabel": "Redeemed",
   "rewardValidUntil": "Valid until tomorrow 18:00",
-
   "profileTitle": "Profile",
   "profileLevelLabel": "Climber · Lvl 7",
   "profileTotalPoints": "Total pts",
@@ -366,7 +361,6 @@
       }
     }
   },
-
   "authTitle": "Account access",
   "authLoginSubtitle": "Sign in to sync profile, rewards, and event progress.",
   "authRegisterSubtitle": "Create a Neverest account in a few seconds.",
@@ -397,7 +391,6 @@
   "authManageSession": "Manage account",
   "authCardTitle": "Account",
   "authCardSubtitle": "Log in or register to sync your profile and points.",
-
   "qrSignInRequired": "Sign in required",
   "qrSignInSubtitle": "Sign in first to load your QR code.",
   "qrNotAvailable": "QR not available",
@@ -413,7 +406,6 @@
       }
     }
   },
-
   "adminScanHeader": "● Admin · Sunrise Run",
   "adminScanHint": "Align member QR inside the frame",
   "adminScanManualCheckin": "Simulate check-in",
@@ -458,7 +450,104 @@
     }
   },
   "adminScanCapacityExceeded": "Number of spots exceeded",
+  "adminScanNotJoined": "This member has not joined the event",
   "adminScanNext": "Next scan",
-
-  "dashboardLoadFailed": "Could not load dashboard data."
+  "dashboardLoadFailed": "Could not load dashboard data.",
+  "commonDelete": "Delete",
+  "commonPast": "PAST",
+  "commonExpired": "EXPIRED",
+  "eventDeleteTitle": "Delete event",
+  "eventDeleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+  "@eventDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "eventDeletedToast": "Event deleted.",
+  "eventsFilterUpcoming": "Upcoming ({count})",
+  "@eventsFilterUpcoming": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsFilterPast": "Past ({count})",
+  "@eventsFilterPast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eventsLoading": "Loading events...",
+  "challengeDeleteTitle": "Delete challenge",
+  "challengeDeleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+  "@challengeDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeDeletedToast": "Challenge deleted.",
+  "challengesFilterExpired": "Expired ({count})",
+  "@challengesFilterExpired": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "challengePoweredBy": "POWERED BY {brand}",
+  "@challengePoweredBy": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      }
+    }
+  },
+  "challengeDeadlineToday": "TODAY",
+  "stravaSectionHeader": "STRAVA VERIFICATION",
+  "stravaConnectPrompt": "Connect your Strava account to automatically verify whether you completed the route.",
+  "stravaVerifying": "Checking Strava activities...",
+  "stravaConnectedAs": "Connected to Strava as {name}. Tap to verify whether you completed the route.",
+  "@stravaConnectedAs": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stravaAthleteFallback": "Athlete",
+  "stravaVerifyButton": "Verify with Strava",
+  "stravaChooseActivity": "Choose the activity that confirms the challenge:",
+  "stravaVerifyAgain": "Verify again",
+  "stravaStatKm": "KM",
+  "stravaStatDuration": "DURATION",
+  "stravaStatPace": "PACE",
+  "stravaStatElevation": "ELEVATION",
+  "notificationsTitle": "Notifications",
+  "notificationsEmpty": "No new notifications.",
+  "commonSave": "Save",
+  "offerEditTitle": "Edit offer",
+  "offerBrandLabel": "Brand",
+  "offerTitleLabel": "Title",
+  "offerDescriptionLabel": "Description",
+  "offerDiscountLabel": "Discount label",
+  "offerLinkLabel": "Link",
+  "offerRequiredToast": "Brand and title are required.",
+  "offerSavedToast": "Offer updated.",
+  "offerDeleteTitle": "Delete offer",
+  "offerDeleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+  "@offerDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "offerDeletedToast": "Offer deleted."
 }

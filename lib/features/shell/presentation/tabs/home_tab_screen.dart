@@ -8,6 +8,7 @@ import '../../../partner/presentation/screens/partner_center_screen.dart';
 import '../../../notifications/presentation/screens/notifications_screen.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../../notifications/presentation/cubit/notification_cubit.dart';
 import '../../../events/presentation/screens/event_details_screen.dart';
 import '../../../profile/domain/app_profile.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
@@ -37,14 +38,18 @@ class HomeTabScreen extends StatelessWidget {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         final data = state.data;
-        final events = data?.events ?? const <EventSummary>[];
-        final challenges = data?.challenges ?? const <ChallengeSummary>[];
+        final events = (data?.events ?? const <EventSummary>[])
+            .where((event) => !event.isPast)
+            .toList();
+        final challenges = (data?.challenges ?? const <ChallengeSummary>[])
+            .where((challenge) => !challenge.isExpired)
+            .toList();
         final rewards = data?.rewards ?? const <RewardSummary>[];
         final totalPoints = profile?.totalPoints ?? 0;
         final availablePoints = profile?.availablePoints ?? 0;
-        // Beneficiile pe care userul si le permite cu punctele disponibile.
         final affordableRewards = rewards
-            .where((reward) => reward.pointsCost <= availablePoints)
+            .where((reward) =>
+                reward.pointsCost <= availablePoints && !reward.couponUsed)
             .toList();
 
         return ListView(
@@ -61,11 +66,14 @@ class HomeTabScreen extends StatelessWidget {
                 children: [
                   const NeverestLogo(compact: true),
                   const Spacer(),
-                  NeverestGlassIconButton(
-                    icon: Icons.notifications_none_rounded,
-                    onPressed: () => Navigator.of(context).push(
-                      AppPageRoute.fadeSlide(const NotificationsScreen()),
-                    ),
+                  _NotificationBell(
+                    onTap: () => Navigator.of(context)
+                        .push(
+                          AppPageRoute.fadeSlide(const NotificationsScreen()),
+                        )
+                        .then((_) => context
+                            .read<NotificationCubit>()
+                            .refreshUnreadCount()),
                   ),
                   const SizedBox(width: 8),
                   NeverestGlassIconButton(
@@ -222,7 +230,6 @@ class HomeTabScreen extends StatelessWidget {
             const SizedBox(height: 20),
             NeverestSectionHeader(title: l10n.homeSpendPoints),
             const SizedBox(height: 6),
-            // Punctele disponibile pentru cheltuiala.
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -407,7 +414,6 @@ class _HomeHeroCard extends StatelessWidget {
   }
 }
 
-
 class _QuickActionCard extends StatelessWidget {
   const _QuickActionCard({
     required this.icon,
@@ -481,7 +487,6 @@ class _QuickActionCard extends StatelessWidget {
   }
 }
 
-//todo: temp daca mai sync cu platforma web
 class _LiveCard extends StatelessWidget {
   const _LiveCard({
     required this.challenge,
@@ -790,6 +795,56 @@ class _RewardSpotlight extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final unread = context.select<NotificationCubit, int>(
+      (cubit) => cubit.state.unreadCount,
+    );
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        NeverestGlassIconButton(
+          icon: Icons.notifications_none_rounded,
+          onPressed: onTap,
+        ),
+        if (unread > 0)
+          Positioned(
+            right: -2,
+            top: -2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              decoration: BoxDecoration(
+                color: NeverestPalette.orange,
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.surface,
+                  width: 2,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                unread > 9 ? '9+' : '$unread',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  height: 1.1,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

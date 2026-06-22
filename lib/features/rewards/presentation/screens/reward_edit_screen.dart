@@ -12,9 +12,6 @@ import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
 
-/// Ecran de editare a unei recompense (doar admin). Permite schimbarea
-/// informatiilor, adaugarea unei poze (stocata in DB ca base64) sau revenirea
-/// la imaginea default (cercurile desenate).
 class RewardEditScreen extends StatefulWidget {
   const RewardEditScreen({super.key, required this.reward});
 

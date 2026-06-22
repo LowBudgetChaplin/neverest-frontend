@@ -73,7 +73,6 @@ class DashboardRepository {
         }
       }
     } catch (_) {
-      // Keep dashboard resilient even if optional health endpoint is absent.
     }
     return 'Backend reachable';
   }

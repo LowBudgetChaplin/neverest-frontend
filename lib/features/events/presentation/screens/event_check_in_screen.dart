@@ -43,7 +43,6 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
   bool _detectionLocked = false;
   _ScanEntry? _lastSuccess;
 
-  // Capacitatea (optionala) si numarul curent de check-in-uri pentru eveniment.
   int? _capacity;
   int _checkedIn = 0;
 
@@ -81,7 +80,6 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
               if (_recentEntries.length > 6) {
                 _recentEntries.removeLast();
               }
-              // Sincronizam contorul si capacitatea cu raspunsul backend-ului.
               _checkedIn = state.result!.checkInCount ?? (_checkedIn + 1);
               _capacity = state.result!.capacity ?? _capacity;
             });
@@ -93,11 +91,12 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
           if (state.status == EventCheckInStatus.failure) {
             _detectionLocked = false;
             // Backend-ul semnaleaza capacitatea depasita printr-un marcaj stabil,
-            // pe care il traducem aici in mesajul localizat.
             final raw = state.errorMessage ?? '';
             final message = raw.contains('EVENT_CAPACITY_EXCEEDED')
                 ? l10n.adminScanCapacityExceeded
-                : (raw.isEmpty ? l10n.adminScanFailed : raw);
+                : raw.contains('EVENT_NOT_JOINED')
+                    ? l10n.adminScanNotJoined
+                    : (raw.isEmpty ? l10n.adminScanFailed : raw);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(message)),
             );
@@ -185,25 +184,12 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                           left: 16,
                           right: 16,
                           bottom: 18,
-                          child: Column(
-                            children: [
-                              Text(
-                                l10n.adminScanHint,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Colors.white.withOpacity(0.86),
-                                    ),
-                              ),
-                              const SizedBox(height: 10),
-                              SizedBox(
-                                width: 205,
-                                child: FilledButton.icon(
-                                  onPressed: isSubmitting ? null : _submitManual,
-                                  icon: const Icon(Icons.flash_on_rounded),
-                                  label: Text(l10n.adminScanManualCheckin),
+                          child: Text(
+                            l10n.adminScanHint,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white.withOpacity(0.86),
                                 ),
-                              ),
-                            ],
                           ),
                         ),
                       ],
@@ -250,17 +236,26 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                        Row(
                           children: [
-                            FilledButton(
-                              onPressed: isSubmitting ? null : _submitManual,
-                              child: Text(l10n.adminScanSubmit),
+                            Expanded(
+                              child: SizedBox(
+                                height: 48,
+                                child: FilledButton(
+                                  onPressed: isSubmitting ? null : _submitManual,
+                                  child: Text(l10n.adminScanSubmit),
+                                ),
+                              ),
                             ),
-                            OutlinedButton(
-                              onPressed: isSubmitting ? null : _resetScanner,
-                              child: Text(l10n.adminScanReset),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: SizedBox(
+                                height: 48,
+                                child: OutlinedButton(
+                                  onPressed: isSubmitting ? null : _resetScanner,
+                                  child: Text(l10n.adminScanReset),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -512,7 +507,6 @@ class _ScanEntry {
   final int points;
   final String time;
 
-  /// Numele daca exista, altfel ID-ul ca fallback.
   String get label => (name != null && name!.isNotEmpty) ? name! : userId;
 }
 

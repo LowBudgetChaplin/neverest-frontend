@@ -55,6 +55,7 @@ class _LeaderboardTabScreenState extends State<LeaderboardTabScreen> {
                     userId: entry.userId,
                     name: entry.displayName,
                     points: entry.points,
+                    avatarB64: entry.avatarB64,
                   ),
                 )
                 .toList()
@@ -188,7 +189,11 @@ class _PodiumBlock extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        NeverestAvatar(name: row.name, size: isFirst ? 56 : 44),
+        NeverestAvatar(
+          name: row.name,
+          imageB64: row.avatarB64,
+          size: isFirst ? 56 : 44,
+        ),
         const SizedBox(height: 8),
         Text(
           row.name.split(' ').first,
@@ -294,7 +299,7 @@ class _LeaderboardList extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                NeverestAvatar(name: row.name, size: 32),
+                NeverestAvatar(name: row.name, imageB64: row.avatarB64, size: 32),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -325,10 +330,12 @@ class _LeaderboardRow {
     required this.userId,
     required this.name,
     required this.points,
+    this.avatarB64,
   });
 
   final String userId;
   final String name;
   final int points;
+  final String? avatarB64;
 }
 

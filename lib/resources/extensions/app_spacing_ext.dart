@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// Theme extension that centralizes paddings, margins, and gaps used in the app.
 /// Keeps spacing consistent and enables smooth theme transitions (copyWith/lerp)
 @immutable
 class AppSpacingExt extends ThemeExtension<AppSpacingExt> {

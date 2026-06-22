@@ -11,6 +11,7 @@ import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
 import '../../data/partner_repository.dart';
+import 'partner_scan_screen.dart';
 
 class PartnerCenterScreen extends StatefulWidget {
   const PartnerCenterScreen({super.key});
@@ -34,13 +35,20 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
   bool _busy = false;
   List<OfferSummary> _offers = const [];
 
-  // ── Partner challenge form ──────────────────────────────────────────────────
   final _chTitleController = TextEditingController();
   final _chDescriptionController = TextEditingController();
   final _chRewardController = TextEditingController();
   String _chActivity = 'RUNNING';
   String? _editingChallengeId;
   List<ChallengeSummary> _myChallenges = const [];
+
+  final _rwTitleController = TextEditingController();
+  final _rwPartnerController = TextEditingController();
+  final _rwDescriptionController = TextEditingController();
+  final _rwCostController = TextEditingController();
+  final _rwStockController = TextEditingController();
+  String? _editingRewardId;
+  List<RewardSummary> _myRewards = const [];
 
   static const _activityTypes = ['RUNNING', 'MOUNTAIN', 'PADEL'];
 
@@ -60,6 +68,11 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
     _chTitleController.dispose();
     _chDescriptionController.dispose();
     _chRewardController.dispose();
+    _rwTitleController.dispose();
+    _rwPartnerController.dispose();
+    _rwDescriptionController.dispose();
+    _rwCostController.dispose();
+    _rwStockController.dispose();
     super.dispose();
   }
 
@@ -69,10 +82,12 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
       final repo = context.read<PartnerRepository>();
       final offers = await repo.getMyOffers();
       final challenges = await repo.getMyChallenges();
+      final rewards = await repo.getMyRewards();
       if (!mounted) return;
       setState(() {
         _offers = offers;
         _myChallenges = challenges;
+        _myRewards = rewards;
       });
     } catch (e) {
       _toast('${AppLocalizations.of(context)!.commonError}: $e');
@@ -145,6 +160,88 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
     setState(() => _busy = true);
     try {
       await context.read<PartnerRepository>().deleteChallenge(id);
+      if (mounted) {
+        context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+      }
+      await _load();
+    } catch (e) {
+      _toast('${AppLocalizations.of(context)!.commonError}: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _saveReward() async {
+    final l10n = AppLocalizations.of(context)!;
+    final title = _rwTitleController.text.trim();
+    final partner = _rwPartnerController.text.trim();
+    final cost = int.tryParse(_rwCostController.text.trim());
+    if (title.isEmpty || partner.isEmpty || cost == null || cost <= 0) {
+      _toast('Titlu, brand si cost (puncte > 0) sunt obligatorii.');
+      return;
+    }
+    final stock = int.tryParse(_rwStockController.text.trim());
+    setState(() => _busy = true);
+    try {
+      final repo = context.read<PartnerRepository>();
+      if (_editingRewardId != null) {
+        await repo.updateReward(
+          rewardId: _editingRewardId!,
+          title: title,
+          partnerName: partner,
+          description: _rwDescriptionController.text,
+          pointsCost: cost,
+          stock: stock,
+        );
+      } else {
+        await repo.createReward(
+          title: title,
+          partnerName: partner,
+          description: _rwDescriptionController.text.trim().isEmpty
+              ? title
+              : _rwDescriptionController.text,
+          pointsCost: cost,
+          stock: stock,
+        );
+      }
+      _cancelRewardEdit();
+      if (mounted) {
+        context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+      }
+      await _load();
+    } catch (e) {
+      _toast('${l10n.commonError}: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  void _startEditReward(RewardSummary r) {
+    setState(() {
+      _editingRewardId = r.id;
+      _rwTitleController.text = r.title;
+      _rwPartnerController.text = r.partnerName;
+      _rwDescriptionController.text = r.description ?? '';
+      _rwCostController.text = r.pointsCost.toString();
+      _rwStockController.text = r.stock?.toString() ?? '';
+    });
+  }
+
+  void _cancelRewardEdit() {
+    setState(() {
+      _editingRewardId = null;
+      _rwTitleController.clear();
+      _rwPartnerController.clear();
+      _rwDescriptionController.clear();
+      _rwCostController.clear();
+      _rwStockController.clear();
+    });
+  }
+
+  Future<void> _deleteReward(String id) async {
+    setState(() => _busy = true);
+    try {
+      await context.read<PartnerRepository>().deleteReward(id);
       if (mounted) {
         context.read<DashboardBloc>().add(const DashboardRefreshRequested());
       }
@@ -338,7 +435,18 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.partnerCenterTitle)),
+      appBar: AppBar(
+        title: Text(l10n.partnerCenterTitle),
+        actions: [
+          IconButton(
+            tooltip: 'Scaneaza cod',
+            icon: const Icon(Icons.qr_code_scanner_rounded),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PartnerScanScreen()),
+            ),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -389,7 +497,6 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // miniatură + buton poză
                   Row(
                     children: [
                       _thumbnail(),
@@ -408,7 +515,6 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // programare valabilitate
                   Row(
                     children: [
                       Expanded(
@@ -433,7 +539,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // acțiuni (full-width, fără overflow)
+                  // actiuni (full-width, fara overflow)
                   Row(
                     children: [
                       if (_editingId != null) ...[
@@ -457,6 +563,14 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                               : l10n.partnerSave),
                         ),
                       ),
+                      if (_editingId == null) ...[
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : _cancelEdit,
+                          icon: const Icon(Icons.restart_alt_rounded),
+                          label: const Text('Reset'),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -497,7 +611,6 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
               ),
             ),
 
-          // ── Challenge-uri de partener ─────────────────────────────────────
           const SizedBox(height: 20),
           Card(
             child: Padding(
@@ -569,6 +682,14 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                               : l10n.partnerSave),
                         ),
                       ),
+                      if (_editingChallengeId == null) ...[
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : _cancelChallengeEdit,
+                          icon: const Icon(Icons.restart_alt_rounded),
+                          label: const Text('Reset'),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -600,6 +721,130 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                       IconButton(
                         icon: const Icon(Icons.delete_outline),
                         onPressed: _busy ? null : () => _deleteChallenge(c.id),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 20),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _editingRewardId == null
+                        ? 'Creeaza beneficiu (puncte)'
+                        : 'Editeaza beneficiul',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _rwTitleController,
+                    decoration:
+                        InputDecoration(labelText: l10n.partnerOfferTitleField),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _rwPartnerController,
+                    decoration: InputDecoration(labelText: l10n.partnerBrand),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _rwDescriptionController,
+                    minLines: 2,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                        labelText: l10n.partnerDescriptionField),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _rwCostController,
+                          keyboardType: TextInputType.number,
+                          decoration:
+                              const InputDecoration(labelText: 'Cost (puncte)'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: _rwStockController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'Stoc (optional)'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      if (_editingRewardId != null) ...[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _busy ? null : _cancelRewardEdit,
+                            child: Text(l10n.commonCancel),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Expanded(
+                        flex: 2,
+                        child: FilledButton.icon(
+                          onPressed: _busy ? null : _saveReward,
+                          icon: Icon(_editingRewardId == null
+                              ? Icons.card_giftcard_outlined
+                              : Icons.save_outlined),
+                          label: Text(_editingRewardId == null
+                              ? l10n.partnerPublish
+                              : l10n.partnerSave),
+                        ),
+                      ),
+                      if (_editingRewardId == null) ...[
+                        const SizedBox(width: 8),
+                        OutlinedButton.icon(
+                          onPressed: _busy ? null : _cancelRewardEdit,
+                          icon: const Icon(Icons.restart_alt_rounded),
+                          label: const Text('Reset'),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_myRewards.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Niciun beneficiu creat.'),
+            )
+          else
+            ..._myRewards.map(
+              (r) => Card(
+                child: ListTile(
+                  title: Text(r.title),
+                  subtitle: Text(
+                    '${r.partnerName} · ${r.pointsCost} pct'
+                    '${r.stock != null ? ' · stoc ${r.stock}' : ''}',
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: _busy ? null : () => _startEditReward(r),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: _busy ? null : () => _deleteReward(r.id),
                       ),
                     ],
                   ),

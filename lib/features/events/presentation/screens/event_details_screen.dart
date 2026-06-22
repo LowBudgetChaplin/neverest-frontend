@@ -7,9 +7,11 @@ import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
+import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../profile/domain/app_profile.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
 import '../../../shell/presentation/design/neverest_design.dart';
+import '../../data/event_action_repository.dart';
 import 'event_check_in_screen.dart';
 
 class EventDetailsScreen extends StatefulWidget {
@@ -26,27 +28,20 @@ class EventDetailsScreen extends StatefulWidget {
 
 class _EventDetailsScreenState extends State<EventDetailsScreen> {
   bool _going = false;
+  bool _busy = false;
+  List<EventParticipant> _participants = const [];
   WebViewController? _mapController;
 
-  /// Clean URL extracted from routeMapUrl. The admin may paste either a plain
-  /// URL OR the full embed snippet `<iframe src="https://..." ...></iframe>`.
-  /// We pull the value of src="..." (or src='...') so Uri.parse won't choke
-  /// on the leading '<'.
   String? get _routeUrl {
     final raw = widget.event.routeMapUrl?.trim();
     if (raw == null || raw.isEmpty) return null;
     final m = RegExp('src\\s*=\\s*"([^"]+)"').firstMatch(raw) ??
         RegExp("src\\s*=\\s*'([^']+)'").firstMatch(raw);
     if (m != null) return m.group(1);
-    // Not an iframe snippet — if it already looks like a URL, use it as-is.
     if (raw.startsWith('http')) return raw;
     return null;
   }
 
-  /// A clean, openable Google Maps link for the "Open in Maps" button.
-  /// Embed URLs (/maps/embed?pb=...) only work inside an iframe and won't open
-  /// in the Maps app/browser, so we extract the coordinates and build a normal
-  /// search link.
   String? get _openableMapUrl {
     final url = _routeUrl;
     if (url == null) return null;
@@ -60,9 +55,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     return url;
   }
 
-  /// True only for proper Google Maps *embed* URLs that render inside a WebView.
-  /// Plain share links (maps.app.goo.gl, google.com/maps/place...) cannot be
-  /// embedded, so we show a tappable card that opens the external Maps app.
   bool get _isEmbeddableMap {
     final url = _routeUrl ?? '';
     return url.contains('/maps/embed') || url.contains('output=embed');
@@ -73,11 +65,52 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     super.initState();
     final mapUrl = _routeUrl;
     if (mapUrl != null && mapUrl.isNotEmpty && _isEmbeddableMap) {
-      // The Google Maps embed URL MUST be loaded inside a real <iframe>, not as
-      // a top-level page (otherwise Google shows "must be used in an iframe").
       _mapController = WebViewController()
         ..setJavaScriptMode(JavaScriptMode.unrestricted)
         ..loadHtmlString(_buildMapHtml(mapUrl));
+    }
+    _loadParticipants();
+  }
+
+  Future<void> _loadParticipants() async {
+    try {
+      final result = await context
+          .read<EventActionRepository>()
+          .getParticipants(widget.event.id);
+      if (!mounted) return;
+      setState(() {
+        _going = result.going;
+        _participants = result.participants;
+      });
+    } catch (_) {
+      // Keep the screen usable even if participants fail to load.
+    }
+  }
+
+  Future<void> _toggleGoing() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final repo = context.read<EventActionRepository>();
+    try {
+      final result = _going
+          ? await repo.leaveEvent(widget.event.id)
+          : await repo.joinEvent(widget.event.id);
+      if (!mounted) return;
+      setState(() {
+        _going = result.going;
+        _participants = result.participants;
+        _busy = false;
+      });
+      // Reimprospatam dashboard-ul ca lista de evenimente (locuri ramase /
+      // numar participanti) sa reflecte imediat join-ul/leave-ul.
+      context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      final l10n = AppLocalizations.of(context)!;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.commonError)),
+      );
     }
   }
 
@@ -107,7 +140,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      // Fallback: force external application mode regardless of canLaunch result.
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
@@ -226,7 +258,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ),
 
-                // ── Meta grid ──────────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                   child: GridView(
@@ -265,12 +296,10 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ),
 
-                // ── Route map ──────────────────────────────────────────────
                 if (hasRoute)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
                     child: _mapController != null
-                        // Proper embed URL → render inline, tap to open externally
                         ? Column(
                             children: [
                               ClipRRect(
@@ -287,7 +316,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                               ),
                             ],
                           )
-                        // Share link → tappable map card opening Google Maps
                         : _RouteMapCard(
                             location: event.location,
                             activityColor: activityColor,
@@ -295,7 +323,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                           ),
                   ),
 
-                // ── About ─────────────────────────────────────────────────
                 if (event.description != null &&
                     event.description!.isNotEmpty) ...[
                   Padding(
@@ -320,44 +347,51 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ),
                 ],
 
-                // ── Participants (going) ───────────────────────────────────
-                if (_going) ...[
+                if (_participants.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
                     child: Text(
-                      l10n.eventParticipants.toUpperCase(),
+                      '${l10n.eventParticipants.toUpperCase()} · ${_participants.length}',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.8,
                           ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    child: Row(
-                      children: [
-                        NeverestAvatar(
-                          name: myProfile?.displayName ?? 'Eu',
-                          size: 34,
-                          imageB64: myProfile?.avatarB64,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          myProfile?.displayName ?? l10n.eventYouGoing,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(Icons.check_circle_rounded,
-                            size: 16, color: NeverestPalette.success),
-                      ],
+                  for (final participant in _participants)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                      child: Row(
+                        children: [
+                          NeverestAvatar(
+                            name: participant.name,
+                            size: 34,
+                            imageB64: participant.avatarB64,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              participant.userId == (myProfile?.id ?? '')
+                                  ? '${participant.name} (${l10n.eventYouGoing})'
+                                  : participant.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          if (participant.userId == (myProfile?.id ?? '')) ...[
+                            const SizedBox(width: 6),
+                            const Icon(Icons.check_circle_rounded,
+                                size: 16, color: NeverestPalette.success),
+                          ],
+                        ],
+                      ),
                     ),
-                  ),
                 ],
 
-                // ── Social links ───────────────────────────────────────────
                 if (event.stravaClubUrl != null &&
                     event.stravaClubUrl!.isNotEmpty)
                   Padding(
@@ -387,7 +421,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
 
-          // ── Bottom action bar ──────────────────────────────────────────
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -408,18 +441,26 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   : 18,
             ),
             child: FilledButton.icon(
-              onPressed: () {
-                if (canUseAdminFeatures) {
-                  Navigator.of(context).push(
-                    AppPageRoute.fadeSlide(
-                      EventCheckInScreen(event: event),
-                    ),
-                  );
-                } else {
-                  setState(() => _going = !_going);
-                }
-              },
-              icon: Icon(_going ? Icons.check_rounded : Icons.add_rounded),
+              onPressed: _busy
+                  ? null
+                  : () {
+                      if (canUseAdminFeatures) {
+                        Navigator.of(context).push(
+                          AppPageRoute.fadeSlide(
+                            EventCheckInScreen(event: event),
+                          ),
+                        );
+                      } else {
+                        _toggleGoing();
+                      }
+                    },
+              icon: _busy
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(_going ? Icons.check_rounded : Icons.add_rounded),
               label: Text(
                 canUseAdminFeatures
                     ? l10n.eventAdminCheckIn
@@ -450,8 +491,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     _ => 'One-time',
   };
 }
-
-// ── Social bar ────────────────────────────────────────────────────────────────
 
 class _SocialBar extends StatelessWidget {
   const _SocialBar({
@@ -501,8 +540,6 @@ class _SocialBar extends StatelessWidget {
     );
   }
 }
-
-// ── Route map card (for non-embeddable share links) ──────────────────────────
 
 class _RouteMapCard extends StatelessWidget {
   const _RouteMapCard({
@@ -624,8 +661,6 @@ class _OpenMapButton extends StatelessWidget {
     );
   }
 }
-
-// ── Meta tile ─────────────────────────────────────────────────────────────────
 
 class _MetaTile extends StatelessWidget {
   const _MetaTile({

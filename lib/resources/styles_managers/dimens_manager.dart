@@ -1,4 +1,3 @@
-// Simple constant tokens for margins, paddings, sizes and radius used across the app for consistency
 
 class AppMargin {
   static const double mLarge = 25.0;

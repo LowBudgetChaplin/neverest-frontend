@@ -12,6 +12,8 @@ import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/events/data/event_action_repository.dart';
 import '../features/leaderboard/data/leaderboard_repository.dart';
 import '../features/leaderboard/presentation/cubit/activity_leaderboard_cubit.dart';
+import '../features/notifications/data/notification_repository.dart';
+import '../features/notifications/presentation/cubit/notification_cubit.dart';
 import '../features/partner/data/partner_repository.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
@@ -49,6 +51,7 @@ class _MainAppState extends State<MainApp> {
   late final ProfileRepository _profileRepository;
   late final StravaRepository _stravaRepository;
   late final PartnerRepository _partnerRepository;
+  late final NotificationRepository _notificationRepository;
 
   @override
   void initState() {
@@ -69,6 +72,7 @@ class _MainAppState extends State<MainApp> {
     _profileRepository = ProfileRepository(_apiClient);
     _stravaRepository = StravaRepository(_apiClient);
     _partnerRepository = PartnerRepository(_apiClient);
+    _notificationRepository = NotificationRepository(_apiClient);
   }
 
   @override
@@ -107,6 +111,7 @@ class _MainAppState extends State<MainApp> {
         RepositoryProvider.value(value: _profileRepository),
         RepositoryProvider.value(value: _stravaRepository),
         RepositoryProvider.value(value: _partnerRepository),
+        RepositoryProvider.value(value: _notificationRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -133,6 +138,9 @@ class _MainAppState extends State<MainApp> {
           ),
           BlocProvider(
             create: (context) => StravaCubit(_stravaRepository),
+          ),
+          BlocProvider(
+            create: (context) => NotificationCubit(_notificationRepository),
           ),
           BlocProvider(
             create: (context) => ActivityLeaderboardCubit(

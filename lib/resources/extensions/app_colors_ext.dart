@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Theme extension for the application's custom palette.
-/// Allows defining/animating (copyWith/lerp) brand colors, background, text etc.
 @immutable
 class AppColorsExt extends ThemeExtension<AppColorsExt> {
   final Color primary;

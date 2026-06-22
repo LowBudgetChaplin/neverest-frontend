@@ -89,6 +89,7 @@ class EventSummary {
     required this.pointsReward,
     this.capacity,
     this.attendeeCount = 0,
+    this.participantCount = 0,
     this.description,
     this.recurrence,
     this.routeMapUrl,
@@ -106,6 +107,7 @@ class EventSummary {
       pointsReward: (json['pointsReward'] as num?)?.toInt() ?? 0,
       capacity: (json['capacity'] as num?)?.toInt(),
       attendeeCount: (json['attendeeCount'] as num?)?.toInt() ?? 0,
+      participantCount: (json['participantCount'] as num?)?.toInt() ?? 0,
       description: json['description'] as String?,
       recurrence: json['recurrence'] as String?,
       routeMapUrl: json['routeMapUrl'] as String?,
@@ -122,15 +124,24 @@ class EventSummary {
   final int pointsReward;
   final int? capacity;
   final int attendeeCount;
+  final int participantCount;
   final String? description;
   final String? recurrence;
 
-  /// Locuri ramase, daca evenimentul are capacitate setata.
   int? get spotsLeft {
     final cap = capacity;
     if (cap == null) return null;
-    final left = cap - attendeeCount;
+    final left = cap - participantCount;
     return left < 0 ? 0 : left;
+  }
+
+  bool get isPast {
+    final date = DateTime.tryParse(startsAt);
+    if (date == null) return false;
+    final eventDay = DateTime(date.year, date.month, date.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return eventDay.isBefore(today);
   }
   final String? routeMapUrl;
   final String? stravaClubUrl;
@@ -178,8 +189,18 @@ class ChallengeSummary {
     );
   }
 
-  /// True dacă provocarea e creată de un partener (are recompensă-beneficiu).
   bool get isPartnerChallenge => brand != null && brand!.isNotEmpty;
+
+  bool get isExpired {
+    final raw = endsAt;
+    if (raw == null || raw.isEmpty) return false;
+    final date = DateTime.tryParse(raw);
+    if (date == null) return false;
+    final endDay = DateTime(date.year, date.month, date.day);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return endDay.isBefore(today);
+  }
 
   final String id;
   final String title;
@@ -232,7 +253,6 @@ class RewardSummary {
     );
   }
 
-  /// True dacă userul a folosit deja cuponul (one-time) și e încă în fereastra de rotație.
   bool get couponUsed => couponStatus == 'USED';
 
   final String id;
@@ -243,19 +263,14 @@ class RewardSummary {
   final String? address;
   final String? description;
 
-  /// Imaginea recompensei ca data URI base64 (null = se folosesc cercurile default).
   final String? imageB64;
 
-  /// Categoria recompensei, stocată în DB (BOOKS/CAFE/MUSIC/PRINT/GOODS/PARTNER).
   final String? category;
 
-  /// Starea cuponului per user: AVAILABLE / USED.
   final String? couponStatus;
 
-  /// Codul unic de cupon al userului (când a fost revendicat).
   final String? couponCode;
 
-  /// Când devine disponibil din nou cuponul (rotație), ISO string.
   final String? availableAgainAt;
 }
 
@@ -264,6 +279,7 @@ class LeaderboardEntrySummary {
     required this.userId,
     required this.displayName,
     required this.points,
+    this.avatarB64,
   });
 
   factory LeaderboardEntrySummary.fromJson(Map<String, dynamic> json) {
@@ -271,10 +287,12 @@ class LeaderboardEntrySummary {
       userId: json['userId'] as String? ?? '',
       displayName: json['displayName'] as String? ?? 'Unknown user',
       points: (json['points'] as num?)?.toInt() ?? 0,
+      avatarB64: json['avatarB64'] as String?,
     );
   }
 
   final String userId;
   final String displayName;
   final int points;
+  final String? avatarB64;
 }

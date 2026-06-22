@@ -56,7 +56,6 @@ class NeverestLogo extends StatelessWidget {
           'assets/images/nvr_logo.png',
           width: markSize,
           height: markSize,
-          // logo-ul e alb → pe temă deschisă îl colorăm în culoarea textului
           color: isDark ? null : color,
           errorBuilder: (_, __, ___) =>
               Icon(Icons.terrain_rounded, color: color, size: compact ? 20 : 24),
@@ -257,15 +256,12 @@ class NeverestAvatar extends StatelessWidget {
 
   final String name;
   final double size;
-  /// Optional base64-encoded image (JPEG/PNG). When set, shown instead of initials.
   final String? imageB64;
 
   @override
   Widget build(BuildContext context) {
-    // If we have a photo, show it
     if (imageB64 != null && imageB64!.isNotEmpty) {
       try {
-        // Strip data URI prefix if present
         final raw = imageB64!.contains(',') ? imageB64!.split(',').last : imageB64!;
         final bytes = base64Decode(raw);
         return ClipOval(
@@ -278,7 +274,6 @@ class NeverestAvatar extends StatelessWidget {
           ),
         );
       } catch (_) {
-        // Fall through to initials
       }
     }
     return _initialsWidget(context);
@@ -320,8 +315,6 @@ class NeverestAvatar extends StatelessWidget {
   }
 }
 
-/// Imaginea unei recompense: foloseste poza base64 daca exista, altfel afiseaza
-/// arta default (cercurile topografice) peste [fallbackColor].
 class NeverestRewardImage extends StatelessWidget {
   const NeverestRewardImage({
     super.key,
@@ -349,7 +342,6 @@ class NeverestRewardImage extends StatelessWidget {
           errorBuilder: (_, __, ___) => _fallback(),
         );
       } catch (_) {
-        // Fall through to default art.
       }
     }
     return _fallback();

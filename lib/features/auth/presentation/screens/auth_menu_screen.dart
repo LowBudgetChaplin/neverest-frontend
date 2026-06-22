@@ -295,7 +295,6 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Optional profile photo
         Center(
           child: GestureDetector(
             onTap: isLoading ? null : _pickRegisterAvatar,
@@ -524,9 +523,6 @@ class _AuthMenuScreenState extends State<AuthMenuScreen> {
   }
 }
 
-/// Segmented Login / Register selector styled in the app theme.
-/// Selected segment = orange pill with white text; unselected = transparent
-/// with muted text. Clear contrast on dark or light backgrounds.
 class _AuthSegmentedTabs extends StatelessWidget {
   const _AuthSegmentedTabs({
     required this.isLogin,

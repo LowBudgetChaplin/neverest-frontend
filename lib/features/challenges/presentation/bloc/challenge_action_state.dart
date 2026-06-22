@@ -1,5 +1,15 @@
 part of 'challenge_action_bloc.dart';
 
+enum ChallengeFeedback {
+  submitApproved,
+  submitPending,
+  reviewApproved,
+  reviewRejected,
+  loadFailed,
+  submitFailed,
+  reviewFailed,
+}
+
 final class ChallengeActionState extends Equatable {
   const ChallengeActionState({
     required this.isLoading,
@@ -8,7 +18,7 @@ final class ChallengeActionState extends Equatable {
     required this.adminView,
     required this.submissions,
     this.errorMessage,
-    this.successMessage,
+    this.feedback,
   });
 
   const ChallengeActionState.initial()
@@ -26,7 +36,7 @@ final class ChallengeActionState extends Equatable {
   final bool adminView;
   final List<ChallengeSubmissionItem> submissions;
   final String? errorMessage;
-  final String? successMessage;
+  final ChallengeFeedback? feedback;
 
   ChallengeActionState copyWith({
     bool? isLoading,
@@ -35,7 +45,7 @@ final class ChallengeActionState extends Equatable {
     bool? adminView,
     List<ChallengeSubmissionItem>? submissions,
     String? errorMessage,
-    String? successMessage,
+    ChallengeFeedback? feedback,
     bool clearMessages = false,
   }) {
     return ChallengeActionState(
@@ -45,8 +55,7 @@ final class ChallengeActionState extends Equatable {
       adminView: adminView ?? this.adminView,
       submissions: submissions ?? this.submissions,
       errorMessage: clearMessages ? null : (errorMessage ?? this.errorMessage),
-      successMessage:
-          clearMessages ? null : (successMessage ?? this.successMessage),
+      feedback: clearMessages ? null : (feedback ?? this.feedback),
     );
   }
 
@@ -58,6 +67,6 @@ final class ChallengeActionState extends Equatable {
         adminView,
         submissions,
         errorMessage,
-        successMessage,
+        feedback,
       ];
 }

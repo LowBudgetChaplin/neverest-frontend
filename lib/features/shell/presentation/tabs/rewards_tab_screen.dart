@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../app/services/api_client.dart';
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../../partner/data/partner_repository.dart';
 import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../rewards/presentation/screens/offer_edit_screen.dart';
 import '../../../rewards/presentation/screens/reward_details_screen.dart';
 import '../../../rewards/presentation/screens/reward_edit_screen.dart';
 import '../../../rewards/presentation/screens/reward_history_screen.dart';
@@ -24,6 +27,39 @@ class RewardsTabScreen extends StatefulWidget {
 
 class _RewardsTabScreenState extends State<RewardsTabScreen> {
   String _category = 'ALL';
+
+  Future<void> _confirmDeleteOffer(OfferSummary offer) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.offerDeleteTitle),
+        content: Text(l10n.offerDeleteConfirm(offer.title)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await context.read<PartnerRepository>().adminDeleteOffer(offer.id);
+      if (!mounted) return;
+      context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.offerDeletedToast)));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +76,6 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
         final dbCategories =
             state.data?.rewardCategories ?? const <RewardCategory>[];
         final localeCode = Localizations.localeOf(context).languageCode;
-        // Filter chips come straight from the DB categories table.
         final categories = <String>['ALL', ...dbCategories.map((c) => c.code)];
         final filtered = _category == 'ALL'
             ? source
@@ -102,8 +137,21 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: state.data!.offers.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) =>
-                      OfferCard(offer: state.data!.offers[index]),
+                  itemBuilder: (context, index) {
+                    final offer = state.data!.offers[index];
+                    return OfferCard(
+                      offer: offer,
+                      onEdit: isAdmin
+                          ? () => Navigator.of(context).push(
+                                AppPageRoute.fadeSlide(
+                                  OfferEditScreen(offer: offer),
+                                ),
+                              )
+                          : null,
+                      onDelete:
+                          isAdmin ? () => _confirmDeleteOffer(offer) : null,
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 16),
@@ -273,7 +321,9 @@ class _RewardGridCard extends StatelessWidget {
     final canRedeem = myPoints >= reward.pointsCost;
     final accent = _rewardAccent(reward);
 
-    return InkWell(
+    return Opacity(
+      opacity: reward.couponUsed ? 0.5 : 1.0,
+      child: InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
       child: Ink(
@@ -302,7 +352,6 @@ class _RewardGridCard extends StatelessWidget {
                     fallbackColor: accent,
                     ringCount: 6,
                   ),
-                  // gradient pentru lizibilitatea numelui peste o poza
                   if (reward.imageB64 != null && reward.imageB64!.isNotEmpty)
                     const Positioned.fill(
                       child: DecoratedBox(
@@ -366,7 +415,6 @@ class _RewardGridCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   if (reward.couponUsed)
-                    // Cupon folosit (one-time) — disabled, cu codul userului.
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -436,6 +484,7 @@ class _RewardGridCard extends StatelessWidget {
           ],
         ),
       ),
+      ),
     );
   }
 }
@@ -446,7 +495,6 @@ String _shortDate(String iso) {
   return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 }
 
-// Categoria vine din baza de date (coloana `category` din nev_rewards).
 String _rewardCategory(RewardSummary reward) {
   final c = reward.category;
   if (c == null || c.trim().isEmpty) return 'PARTNER';
@@ -454,9 +502,11 @@ String _rewardCategory(RewardSummary reward) {
 }
 
 class OfferCard extends StatelessWidget {
-  const OfferCard({required this.offer});
+  const OfferCard({super.key, required this.offer, this.onEdit, this.onDelete});
 
   final OfferSummary offer;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   Future<void> _open() async {
     final url = offer.linkUrl;
@@ -480,7 +530,7 @@ class OfferCard extends StatelessWidget {
       } catch (_) {}
     }
 
-    return InkWell(
+    final card = InkWell(
       borderRadius: BorderRadius.circular(16),
       onTap: offer.linkUrl != null && offer.linkUrl!.isNotEmpty ? _open : null,
       child: Container(
@@ -553,6 +603,66 @@ class OfferCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+
+    if (onEdit == null && onDelete == null) {
+      return card;
+    }
+    return Stack(
+      children: [
+        card,
+        Positioned(
+          top: 6,
+          right: 6,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (onEdit != null)
+                _OfferAdminButton(
+                  icon: Icons.edit_outlined,
+                  color: NeverestPalette.orange,
+                  onTap: onEdit!,
+                ),
+              if (onDelete != null) ...[
+                const SizedBox(width: 6),
+                _OfferAdminButton(
+                  icon: Icons.delete_outline_rounded,
+                  color: NeverestPalette.danger,
+                  onTap: onDelete!,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OfferAdminButton extends StatelessWidget {
+  const _OfferAdminButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(99),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.55),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, size: 16, color: color),
       ),
     );
   }

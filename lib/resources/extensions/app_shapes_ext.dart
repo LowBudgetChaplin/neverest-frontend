@@ -1,8 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// Theme extension that centralizes shape-related tokens:
-/// radius, elevation, sizes etc.
 /// Enables consistent UI geometry and smooth transitions (copyWith/lerp)
 @immutable
 class AppShapesExt extends ThemeExtension<AppShapesExt> {

@@ -59,7 +59,7 @@ class ChallengeActionBloc
       emit(
         state.copyWith(
           isLoading: false,
-          errorMessage: 'Could not load challenge submissions.',
+          feedback: ChallengeFeedback.loadFailed,
         ),
       );
     }
@@ -72,7 +72,7 @@ class ChallengeActionBloc
     emit(state.copyWith(isSubmitting: true, clearMessages: true));
 
     try {
-      await _repository.submit(
+      final result = await _repository.submit(
         challengeId: event.challengeId,
         proofText: event.proofText,
         metricValue: event.metricValue,
@@ -85,12 +85,15 @@ class ChallengeActionBloc
         userId: event.userId,
       );
 
+      final approved = result.status.toUpperCase() == 'APPROVED';
       emit(
         state.copyWith(
           isSubmitting: false,
           submissions: submissions,
           adminView: false,
-          successMessage: 'Challenge submission sent successfully.',
+          feedback: approved
+              ? ChallengeFeedback.submitApproved
+              : ChallengeFeedback.submitPending,
         ),
       );
     } on ApiException catch (error) {
@@ -104,7 +107,7 @@ class ChallengeActionBloc
       emit(
         state.copyWith(
           isSubmitting: false,
-          errorMessage: 'Could not submit challenge.',
+          feedback: ChallengeFeedback.submitFailed,
         ),
       );
     }
@@ -135,9 +138,9 @@ class ChallengeActionBloc
           isReviewing: false,
           submissions: submissions,
           adminView: true,
-          successMessage: event.approved
-              ? 'Submission approved successfully.'
-              : 'Submission rejected successfully.',
+          feedback: event.approved
+              ? ChallengeFeedback.reviewApproved
+              : ChallengeFeedback.reviewRejected,
         ),
       );
     } on ApiException catch (error) {
@@ -151,7 +154,7 @@ class ChallengeActionBloc
       emit(
         state.copyWith(
           isReviewing: false,
-          errorMessage: 'Could not review submission.',
+          feedback: ChallengeFeedback.reviewFailed,
         ),
       );
     }

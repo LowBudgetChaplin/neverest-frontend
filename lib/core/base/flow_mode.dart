@@ -1,4 +1,3 @@
-// UI lifecycle states
 enum FlowState {
   idle,
   loading,
@@ -8,7 +7,6 @@ enum FlowState {
   empty
 }
 
-// Bool conventions for a readable UI logic
 extension FlowStateExtension on FlowState {
   bool get isLoading => this == FlowState.loading;
   bool get isError => this == FlowState.error;
@@ -18,7 +16,6 @@ extension FlowStateExtension on FlowState {
   bool get isIdle => this == FlowState.idle;
 }
 
-// How errors can be shown to the user
 enum ErrorDisplayType {
   none,
   dialog,
