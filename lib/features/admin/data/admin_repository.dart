@@ -137,12 +137,22 @@ class AdminRepository {
     );
   }
 
+  Future<List<RewardCategory>> getRewardCategories() async {
+    final response = await _apiClient.get('/api/v1/reward-categories');
+    return _toList<RewardCategory>(
+      response.data,
+      mapper: RewardCategory.fromJson,
+      errorMessage: 'Invalid reward categories payload.',
+    );
+  }
+
   Future<void> createReward({
     required String title,
     required String partnerName,
     required String description,
     required int pointsCost,
     required int? stock,
+    String? category,
   }) async {
     await _apiClient.post(
       '/api/v1/rewards',
@@ -152,8 +162,13 @@ class AdminRepository {
         'description': description.trim(),
         'pointsCost': pointsCost,
         'stock': stock,
+        if (category != null && category.isNotEmpty) 'category': category,
       },
     );
+  }
+
+  Future<void> deleteReward(String rewardId) async {
+    await _apiClient.delete('/api/v1/rewards/$rewardId');
   }
 
   Future<void> updateReward({
@@ -167,6 +182,7 @@ class AdminRepository {
     String? address,
     String? imageB64,
     bool clearImage = false,
+    String? category,
   }) async {
     await _apiClient.patch(
       '/api/v1/rewards/$rewardId',
@@ -180,6 +196,7 @@ class AdminRepository {
         if (address != null) 'address': address.trim(),
         if (imageB64 != null) 'imageB64': imageB64,
         if (clearImage) 'clearImage': true,
+        if (category != null) 'category': category,
       },
     );
   }

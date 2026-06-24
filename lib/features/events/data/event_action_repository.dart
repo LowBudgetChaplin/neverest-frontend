@@ -6,6 +6,7 @@ class EventParticipant {
     required this.userId,
     required this.name,
     this.avatarB64,
+    this.checkedIn = false,
   });
 
   factory EventParticipant.fromJson(Map<String, dynamic> json) {
@@ -13,35 +14,42 @@ class EventParticipant {
       userId: json['userId'] as String? ?? '',
       name: json['name'] as String? ?? '—',
       avatarB64: json['avatarB64'] as String?,
+      checkedIn: json['checkedIn'] as bool? ?? false,
     );
   }
 
   final String userId;
   final String name;
   final String? avatarB64;
+  final bool checkedIn;
 }
 
 class EventParticipants {
   const EventParticipants({
     required this.going,
     required this.count,
+    required this.checkedInCount,
     required this.participants,
   });
 
   factory EventParticipants.fromJson(Map<String, dynamic> json) {
     final rawList = json['participants'] as List<dynamic>? ?? const [];
+    final parsed = rawList
+        .whereType<Map<String, dynamic>>()
+        .map(EventParticipant.fromJson)
+        .toList();
     return EventParticipants(
       going: json['going'] as bool? ?? false,
-      count: (json['count'] as num?)?.toInt() ?? rawList.length,
-      participants: rawList
-          .whereType<Map<String, dynamic>>()
-          .map(EventParticipant.fromJson)
-          .toList(),
+      count: (json['count'] as num?)?.toInt() ?? parsed.length,
+      checkedInCount: (json['checkedInCount'] as num?)?.toInt() ??
+          parsed.where((p) => p.checkedIn).length,
+      participants: parsed,
     );
   }
 
   final bool going;
   final int count;
+  final int checkedInCount;
   final List<EventParticipant> participants;
 }
 

@@ -2032,6 +2032,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Offer deleted.'**
   String get offerDeletedToast;
+
+  /// No description provided for @rewardDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete reward'**
+  String get rewardDeleteTitle;
+
+  /// No description provided for @rewardDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \"{title}\"? This action cannot be undone.'**
+  String rewardDeleteConfirm(String title);
+
+  /// No description provided for @rewardDeletedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Reward deleted.'**
+  String get rewardDeletedToast;
+
+  /// No description provided for @rewardEditFieldCategory.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get rewardEditFieldCategory;
+
+  /// No description provided for @rewardCategoryNone.
+  ///
+  /// In en, this message translates to:
+  /// **''**
+  String get rewardCategoryNone;
+
+  /// No description provided for @showQRCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR code'**
+  String get showQRCode;
+
+  /// No description provided for @eventCheckedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked in'**
+  String get eventCheckedIn;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

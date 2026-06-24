@@ -101,8 +101,6 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
         _participants = result.participants;
         _busy = false;
       });
-      // Reimprospatam dashboard-ul ca lista de evenimente (locuri ramase /
-      // numar participanti) sa reflecte imediat join-ul/leave-ul.
       context.read<DashboardBloc>().add(const DashboardRefreshRequested());
     } catch (_) {
       if (!mounted) return;
@@ -382,10 +380,13 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                           ),
-                          if (participant.userId == (myProfile?.id ?? '')) ...[
+                          if (participant.checkedIn) ...[
                             const SizedBox(width: 6),
-                            const Icon(Icons.check_circle_rounded,
-                                size: 16, color: NeverestPalette.success),
+                            Tooltip(
+                              message: l10n.eventCheckedIn,
+                              child: const Icon(Icons.check_circle_rounded,
+                                  size: 18, color: NeverestPalette.success),
+                            ),
                           ],
                         ],
                       ),
@@ -445,11 +446,15 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
                   ? null
                   : () {
                       if (canUseAdminFeatures) {
-                        Navigator.of(context).push(
-                          AppPageRoute.fadeSlide(
-                            EventCheckInScreen(event: event),
-                          ),
-                        );
+                        Navigator.of(context)
+                            .push(
+                              AppPageRoute.fadeSlide(
+                                EventCheckInScreen(event: event),
+                              ),
+                            )
+                            // La intoarcerea din scanner reincarcam participantii
+                            // ca sa apara bifa verde pentru cei tocmai scanati.
+                            .then((_) => _loadParticipants());
                       } else {
                         _toggleGoing();
                       }

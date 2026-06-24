@@ -33,6 +33,9 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
   bool _imageChanged = false;
   bool _saving = false;
 
+  List<RewardCategory> _categories = const [];
+  String? _selectedCategory;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +48,28 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
         TextEditingController(text: r.stock?.toString() ?? '');
     _addressController = TextEditingController(text: r.address ?? '');
     _imageB64 = r.imageB64;
+    _selectedCategory =
+        (r.category != null && r.category!.trim().isNotEmpty)
+            ? r.category!.trim().toUpperCase()
+            : null;
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final cats = await context.read<AdminRepository>().getRewardCategories();
+      if (!mounted) return;
+      setState(() {
+        _categories = cats;
+        // Daca valoarea curenta nu e in lista, o pastram doar daca exista.
+        if (_selectedCategory != null &&
+            !cats.any((c) => c.code == _selectedCategory)) {
+          _selectedCategory = null;
+        }
+      });
+    } catch (_) {
+      // Optional; daca nu se incarca, dropdown-ul ramane fara optiuni.
+    }
   }
 
   @override
@@ -101,6 +126,30 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
             controller: _partnerController,
             enabled: !_saving,
             decoration: InputDecoration(labelText: l10n.rewardEditFieldPartner),
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: _selectedCategory,
+            isExpanded: true,
+            decoration:
+                InputDecoration(labelText: l10n.rewardEditFieldCategory),
+            items: [
+              DropdownMenuItem<String>(
+                value: null,
+                child: Text(l10n.rewardCategoryNone),
+              ),
+              ..._categories.map(
+                (c) => DropdownMenuItem<String>(
+                  value: c.code,
+                  child: Text(
+                    c.label(Localizations.localeOf(context).languageCode),
+                  ),
+                ),
+              ),
+            ],
+            onChanged: _saving
+                ? null
+                : (value) => setState(() => _selectedCategory = value),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -199,7 +248,6 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
     final l10n = AppLocalizations.of(context)!;
     final points = int.tryParse(_pointsController.text.trim());
     if (_titleController.text.trim().isEmpty ||
-        _partnerController.text.trim().isEmpty ||
         points == null ||
         points <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -223,6 +271,7 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
             address: _addressController.text,
             imageB64: (_imageChanged && _imageB64 != null) ? _imageB64 : null,
             clearImage: _imageChanged && _imageB64 == null,
+            category: _selectedCategory ?? '',
           );
       if (!mounted) return;
       context.read<DashboardBloc>().add(const DashboardRefreshRequested());

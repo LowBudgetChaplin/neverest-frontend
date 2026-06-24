@@ -196,6 +196,18 @@ class PartnerRepository {
         .toList();
   }
 
+  Future<List<RewardCategory>> getRewardCategories() async {
+    final response = await _apiClient.get('/api/v1/reward-categories');
+    final data = response.data;
+    if (data is! List) {
+      throw ApiException('Invalid reward categories payload.');
+    }
+    return data
+        .whereType<Map<String, dynamic>>()
+        .map(RewardCategory.fromJson)
+        .toList();
+  }
+
   Future<void> createReward({
     required String title,
     required String partnerName,
@@ -203,6 +215,7 @@ class PartnerRepository {
     required int pointsCost,
     int? stock,
     int? rotationDays,
+    String? category,
   }) async {
     await _apiClient.post(
       '/api/v1/partner-rewards',
@@ -213,6 +226,7 @@ class PartnerRepository {
         'pointsCost': pointsCost,
         if (stock != null) 'stock': stock,
         if (rotationDays != null) 'rotationDays': rotationDays,
+        if (category != null && category.isNotEmpty) 'category': category,
       },
     );
   }
@@ -225,6 +239,7 @@ class PartnerRepository {
     int? pointsCost,
     int? stock,
     int? rotationDays,
+    String? category,
   }) async {
     await _apiClient.patch(
       '/api/v1/partner-rewards/$rewardId',
@@ -235,6 +250,7 @@ class PartnerRepository {
         if (pointsCost != null) 'pointsCost': pointsCost,
         if (stock != null) 'stock': stock,
         if (rotationDays != null) 'rotationDays': rotationDays,
+        if (category != null) 'category': category,
       },
     );
   }

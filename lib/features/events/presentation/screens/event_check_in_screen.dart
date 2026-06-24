@@ -50,6 +50,34 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
   void initState() {
     super.initState();
     _capacity = widget.event.capacity;
+    _loadAlreadyCheckedIn();
+  }
+
+  // Preincarcam prezentele deja facute, ca lista si contorul sa nu se reseteze
+  // cand iesi si reintri in ecranul de scanare.
+  Future<void> _loadAlreadyCheckedIn() async {
+    try {
+      final result = await context
+          .read<EventActionRepository>()
+          .getParticipants(widget.event.id);
+      if (!mounted) return;
+      final already = result.participants
+          .where((p) => p.checkedIn)
+          .map((p) => _ScanEntry(
+                userId: p.userId,
+                name: p.name,
+                avatarB64: p.avatarB64,
+              ))
+          .toList();
+      setState(() {
+        _checkedIn = result.checkedInCount;
+        _recentEntries
+          ..clear()
+          ..addAll(already);
+      });
+    } catch (_) {
+      // Daca nu se pot incarca, ecranul ramane functional pentru scanari noi.
+    }
   }
 
   @override
@@ -292,7 +320,10 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                                                 ),
                                           ),
                                           Text(
-                                            '${entry.time} · +${entry.points} pts',
+                                            entry.points != null &&
+                                                    entry.time != null
+                                                ? '${entry.time} · +${entry.points} pts'
+                                                : l10n.eventCheckedIn,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
@@ -377,7 +408,7 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              l10n.adminScanPointsCredited(_lastSuccess!.points),
+                              l10n.adminScanPointsCredited(_lastSuccess!.points ?? 0),
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: Colors.white.withOpacity(0.72),
                                   ),
@@ -495,8 +526,8 @@ class _EventCheckInViewState extends State<_EventCheckInView> {
 class _ScanEntry {
   const _ScanEntry({
     required this.userId,
-    required this.points,
-    required this.time,
+    this.points,
+    this.time,
     this.name,
     this.avatarB64,
   });
@@ -504,8 +535,8 @@ class _ScanEntry {
   final String userId;
   final String? name;
   final String? avatarB64;
-  final int points;
-  final String time;
+  final int? points;
+  final String? time;
 
   String get label => (name != null && name!.isNotEmpty) ? name! : userId;
 }

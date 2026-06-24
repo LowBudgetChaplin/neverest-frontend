@@ -1038,4 +1038,27 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get offerDeletedToast => 'Oferta stearsa.';
+
+  @override
+  String get rewardDeleteTitle => 'Sterge beneficiul';
+
+  @override
+  String rewardDeleteConfirm(String title) {
+    return 'Sigur stergi \"$title\"? Actiunea nu poate fi anulata.';
+  }
+
+  @override
+  String get rewardDeletedToast => 'Beneficiu sters.';
+
+  @override
+  String get rewardEditFieldCategory => '';
+
+  @override
+  String get rewardCategoryNone => '';
+
+  @override
+  String get showQRCode => 'Arata codul QR';
+
+  @override
+  String get eventCheckedIn => 'Prezent';
 }

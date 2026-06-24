@@ -320,6 +320,7 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
     required String description,
     required int pointsCost,
     required int? stock,
+    String? category,
   }) async {
     emit(state.copyWith(isBusy: true, clearMessage: true));
     try {
@@ -329,6 +330,7 @@ class AdminPanelCubit extends Cubit<AdminPanelState> {
         description: description,
         pointsCost: pointsCost,
         stock: stock,
+        category: category,
       );
       emit(
         state.copyWith(

@@ -61,6 +61,16 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
     }
   }
 
+  Future<void> _onRefresh() async {
+    final bloc = context.read<DashboardBloc>();
+    bloc.add(const DashboardRefreshRequested());
+    // Asteptam pana cand reincarcarea se termina, ca animatia de pull-to-refresh
+    // sa nu dispara inainte sa apara datele noi.
+    await bloc.stream.firstWhere(
+      (state) => state.status != DashboardStatus.loading,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -71,7 +81,10 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
       builder: (context, state) {
         final source = state.data?.challenges ?? const <ChallengeSummary>[];
         if (source.isEmpty) {
-          return ListView(
+          return RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: EdgeInsets.only(
               left: 0,
               right: 0,
@@ -104,6 +117,7 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                 ),
               ),
             ],
+          ),
           );
         }
         final items = _toChallengeItems(source, l10n);
@@ -146,7 +160,10 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
         final hasPartnerChallenges =
             items.any((item) => item.summary.isPartnerChallenge);
 
-        return ListView(
+        return RefreshIndicator(
+          onRefresh: _onRefresh,
+          child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: EdgeInsets.only(
             left: 0,
             right: 0,
@@ -284,6 +301,7 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
                 ),
             ],
           ],
+          ),
         );
       },
     );

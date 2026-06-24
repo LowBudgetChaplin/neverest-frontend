@@ -1038,4 +1038,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get offerDeletedToast => 'Offer deleted.';
+
+  @override
+  String get rewardDeleteTitle => 'Delete reward';
+
+  @override
+  String rewardDeleteConfirm(String title) {
+    return 'Are you sure you want to delete \"$title\"? This action cannot be undone.';
+  }
+
+  @override
+  String get rewardDeletedToast => 'Reward deleted.';
+
+  @override
+  String get rewardEditFieldCategory => '';
+
+  @override
+  String get rewardCategoryNone => '';
+
+  @override
+  String get showQRCode => 'Show QR code';
+
+  @override
+  String get eventCheckedIn => 'Checked in';
 }

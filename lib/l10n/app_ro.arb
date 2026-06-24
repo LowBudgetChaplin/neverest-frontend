@@ -542,5 +542,19 @@
       }
     }
   },
-  "offerDeletedToast": "Oferta stearsa."
+  "offerDeletedToast": "Oferta stearsa.",
+  "rewardDeleteTitle": "Sterge beneficiul",
+  "rewardDeleteConfirm": "Sigur stergi \"{title}\"? Actiunea nu poate fi anulata.",
+  "@rewardDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardDeletedToast": "Beneficiu sters.",
+  "rewardEditFieldCategory": "",
+  "rewardCategoryNone": "",
+  "showQRCode": "Arata codul QR",
+  "eventCheckedIn": "Prezent"
 }

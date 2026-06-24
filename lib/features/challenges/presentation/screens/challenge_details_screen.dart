@@ -773,15 +773,15 @@ class _VerificationResult extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: onClear,
-            icon: const Icon(Icons.refresh_rounded, size: 14),
-            label: Text(l10n.stravaVerifyAgain),
-          ),
-        ),
+        // const SizedBox(height: 8),
+        // SizedBox(
+        //   width: double.infinity,
+        //   child: OutlinedButton.icon(
+        //     onPressed: onClear,
+        //     icon: const Icon(Icons.refresh_rounded, size: 14),
+        //     label: Text(l10n.stravaVerifyAgain),
+        //   ),
+        // ),
       ],
     );
   }

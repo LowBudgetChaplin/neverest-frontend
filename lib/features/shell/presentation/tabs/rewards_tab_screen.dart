@@ -8,6 +8,7 @@ import '../../../../app/services/api_client.dart';
 import '../../../../core/navigation/app_page_route.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
+import '../../../admin/data/admin_repository.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../../partner/data/partner_repository.dart';
@@ -54,6 +55,39 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
       context.read<DashboardBloc>().add(const DashboardRefreshRequested());
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(l10n.offerDeletedToast)));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(error.message)));
+    }
+  }
+
+  Future<void> _confirmDeleteReward(RewardSummary reward) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.rewardDeleteTitle),
+        content: Text(l10n.rewardDeleteConfirm(reward.title)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.commonDelete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await context.read<AdminRepository>().deleteReward(reward.id);
+      if (!mounted) return;
+      context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.rewardDeletedToast)));
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -210,6 +244,8 @@ class _RewardsTabScreenState extends State<RewardsTabScreen> {
                             );
                           }
                         : null,
+                    onDelete:
+                        isAdmin ? () => _confirmDeleteReward(reward) : null,
                   );
                 },
               ),
@@ -305,6 +341,7 @@ class _RewardGridCard extends StatelessWidget {
     required this.pointsLabel,
     required this.onTap,
     this.onEdit,
+    this.onDelete,
   });
 
   final RewardSummary reward;
@@ -314,6 +351,7 @@ class _RewardGridCard extends StatelessWidget {
   final String pointsLabel;
   final VoidCallback onTap;
   final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -364,35 +402,42 @@ class _RewardGridCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        reward.partnerName.toUpperCase(),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                            ),
+                  if (reward.partnerName.trim().isNotEmpty)
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          reward.partnerName.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
                       ),
                     ),
-                  ),
-                  if (onEdit != null)
+                  if (onEdit != null || onDelete != null)
                     Positioned(
                       top: 6,
                       right: 6,
-                      child: Material(
-                        color: Colors.black.withOpacity(0.45),
-                        shape: const CircleBorder(),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: onEdit,
-                          child: const Padding(
-                            padding: EdgeInsets.all(6),
-                            child: Icon(Icons.edit_rounded,
-                                size: 16, color: Colors.white),
-                          ),
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (onDelete != null) ...[
+                            _OfferAdminButton(
+                              icon: Icons.delete_outline_rounded,
+                              color: NeverestPalette.danger,
+                              onTap: onDelete!,
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          if (onEdit != null)
+                            _OfferAdminButton(
+                              icon: Icons.edit_rounded,
+                              color: Colors.white,
+                              onTap: onEdit!,
+                            ),
+                        ],
                       ),
                     ),
                 ],

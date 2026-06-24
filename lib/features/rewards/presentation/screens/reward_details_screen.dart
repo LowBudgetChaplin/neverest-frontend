@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../dashboard/domain/dashboard_data.dart';
@@ -253,42 +254,49 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                     ),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.dark
-                              ? NeverestPalette.inkRaised
-                              : NeverestPalette.paperRaised,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: (widget.reward.address != null &&
+                                widget.reward.address!.trim().isNotEmpty)
+                            ? () => _openInMaps(widget.reward.address!)
+                            : null,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
                             color: Theme.of(context).brightness == Brightness.dark
-                                ? NeverestPalette.inkLine
-                                : NeverestPalette.paperLine,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.location_on_outlined, size: 18),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.reward.address ?? l10n.rewardLocationAddress,
-                                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                  ),
-                                  Text(
-                                    l10n.rewardLocationSchedule(stockLabel),
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
+                                ? NeverestPalette.inkRaised
+                                : NeverestPalette.paperRaised,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? NeverestPalette.inkLine
+                                  : NeverestPalette.paperLine,
                             ),
-                            const Icon(Icons.arrow_outward_rounded, size: 16),
-                          ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on_outlined, size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.reward.address ?? l10n.rewardLocationAddress,
+                                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    Text(
+                                      l10n.rewardLocationSchedule(stockLabel),
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_outward_rounded, size: 16),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -345,7 +353,7 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                             accent,
                           ),
                           icon: const Icon(Icons.qr_code_2_rounded),
-                          label: const Text('Arata codul QR'),
+                          label: Text(l10n.showQRCode),
                         )
                       : FilledButton(
                           onPressed: state.isRedeeming || !canRedeem
@@ -384,6 +392,18 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
 
   String? _profileUserId() {
     return context.read<ProfileBloc>().state.profile?.id;
+  }
+
+  Future<void> _openInMaps(String address) async {
+    final query = Uri.encodeComponent(address.trim());
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$query',
+    );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../resources/widgets/app_illustrated_state.dart';
 import '../../../access/presentation/cubit/access_cubit.dart';
+import '../../../dashboard/domain/dashboard_data.dart';
 import '../../../dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../../data/admin_repository.dart';
 import '../../domain/admin_models.dart';
@@ -113,6 +114,25 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
   static const _activityTypes = ['PADEL', 'MOUNTAIN', 'RUNNING'];
   static const _challengeModes = ['ONLINE', 'OFFLINE'];
   static const _challengeFrequencies = ['WEEKLY', 'MONTHLY'];
+
+  List<RewardCategory> _rewardCategories = const [];
+  String? _selectedRewardCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRewardCategories();
+  }
+
+  Future<void> _loadRewardCategories() async {
+    try {
+      final cats = await context.read<AdminRepository>().getRewardCategories();
+      if (!mounted) return;
+      setState(() => _rewardCategories = cats);
+    } catch (_) {
+      // Categoriile sunt optionale; daca nu se incarca, dropdown-ul ramane gol.
+    }
+  }
 
   @override
   void dispose() {
@@ -387,21 +407,21 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
                 ),
               ),
             ],
-            const Divider(height: 28),
-            Text('Retry announcements',
-                style: Theme.of(context).textTheme.titleSmall),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _eventRetryIdController,
-              enabled: !isBusy,
-              decoration: const InputDecoration(labelText: 'Event ID'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: isBusy ? null : _retryAnnouncements,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry announcements'),
-            ),
+            // const Divider(height: 28),
+            // Text('Retry announcements',
+            //     style: Theme.of(context).textTheme.titleSmall),
+            // const SizedBox(height: 8),
+            // TextField(
+            //   controller: _eventRetryIdController,
+            //   enabled: !isBusy,
+            //   decoration: const InputDecoration(labelText: 'Event ID'),
+            // ),
+            // const SizedBox(height: 8),
+            // OutlinedButton.icon(
+            //   onPressed: isBusy ? null : _retryAnnouncements,
+            //   icon: const Icon(Icons.refresh),
+            //   label: const Text('Retry announcements'),
+            // ),
             if (state.lastAnnouncementRetry.isNotEmpty) ...[
               const SizedBox(height: 8),
               ...state.lastAnnouncementRetry.map(
@@ -600,6 +620,30 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     );
   }
 
+  Widget _buildRewardCategoryDropdown(BuildContext context, bool isBusy) {
+    final localeCode = Localizations.localeOf(context).languageCode;
+    return DropdownButtonFormField<String>(
+      value: _selectedRewardCategory,
+      isExpanded: true,
+      decoration: const InputDecoration(labelText: 'Category (optional)'),
+      items: [
+        const DropdownMenuItem<String>(
+          value: null,
+          child: Text('No category'),
+        ),
+        ..._rewardCategories.map(
+          (c) => DropdownMenuItem<String>(
+            value: c.code,
+            child: Text(c.label(localeCode)),
+          ),
+        ),
+      ],
+      onChanged: isBusy
+          ? null
+          : (value) => setState(() => _selectedRewardCategory = value),
+    );
+  }
+
   Widget _buildRewardSection(BuildContext context, bool isBusy) {
     return Card(
       child: Padding(
@@ -629,6 +673,8 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
               maxLines: 3,
               decoration: const InputDecoration(labelText: 'Description'),
             ),
+            const SizedBox(height: 8),
+            _buildRewardCategoryDropdown(context, isBusy),
             const SizedBox(height: 8),
             Row(
               children: [
@@ -1068,12 +1114,8 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
     final stockText = _rewardStockController.text.trim();
     final stock = stockText.isEmpty ? null : int.tryParse(stockText);
 
-    if (title.isEmpty ||
-        partner.isEmpty ||
-        description.isEmpty ||
-        points == null) {
-      _showValidation(
-          'Reward title, partner, description and points are required.');
+    if (title.isEmpty || description.isEmpty || points == null) {
+      _showValidation('Reward title, description and points are required.');
       return;
     }
     if (stockText.isNotEmpty && stock == null) {
@@ -1087,6 +1129,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
           description: description,
           pointsCost: points,
           stock: stock,
+          category: _selectedRewardCategory,
         );
   }
 
@@ -1120,6 +1163,7 @@ class _AdminCenterViewState extends State<_AdminCenterView> {
       _rewardDescriptionController.clear();
       _rewardPointsController.clear();
       _rewardStockController.clear();
+      _selectedRewardCategory = null;
     });
   }
 
@@ -1306,7 +1350,7 @@ class _AuthMeCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Auth /me', style: Theme.of(context).textTheme.titleMedium),
+            // Text('Auth /me', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 6),
             Text('Subject: ${authMe!.subject}'),
             // Text('Authenticated: ${authMe!.authenticated}'),

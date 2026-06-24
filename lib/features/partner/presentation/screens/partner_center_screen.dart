@@ -48,7 +48,9 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
   final _rwCostController = TextEditingController();
   final _rwStockController = TextEditingController();
   String? _editingRewardId;
+  String? _rwCategory;
   List<RewardSummary> _myRewards = const [];
+  List<RewardCategory> _rwCategories = const [];
 
   static const _activityTypes = ['RUNNING', 'MOUNTAIN', 'PADEL'];
 
@@ -83,11 +85,13 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
       final offers = await repo.getMyOffers();
       final challenges = await repo.getMyChallenges();
       final rewards = await repo.getMyRewards();
+      final categories = await repo.getRewardCategories();
       if (!mounted) return;
       setState(() {
         _offers = offers;
         _myChallenges = challenges;
         _myRewards = rewards;
+        _rwCategories = categories;
       });
     } catch (e) {
       _toast('${AppLocalizations.of(context)!.commonError}: $e');
@@ -192,6 +196,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
           description: _rwDescriptionController.text,
           pointsCost: cost,
           stock: stock,
+          category: _rwCategory ?? '',
         );
       } else {
         await repo.createReward(
@@ -202,6 +207,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
               : _rwDescriptionController.text,
           pointsCost: cost,
           stock: stock,
+          category: _rwCategory,
         );
       }
       _cancelRewardEdit();
@@ -224,6 +230,12 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
       _rwDescriptionController.text = r.description ?? '';
       _rwCostController.text = r.pointsCost.toString();
       _rwStockController.text = r.stock?.toString() ?? '';
+      final code = r.category?.trim().toUpperCase();
+      _rwCategory = (code != null &&
+              code.isNotEmpty &&
+              _rwCategories.any((c) => c.code == code))
+          ? code
+          : null;
     });
   }
 
@@ -235,6 +247,7 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
       _rwDescriptionController.clear();
       _rwCostController.clear();
       _rwStockController.clear();
+      _rwCategory = null;
     });
   }
 
@@ -759,6 +772,29 @@ class _PartnerCenterScreenState extends State<PartnerCenterScreen> {
                     maxLines: 3,
                     decoration: InputDecoration(
                         labelText: l10n.partnerDescriptionField),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _rwCategory,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                        labelText: l10n.rewardEditFieldCategory),
+                    items: [
+                      DropdownMenuItem<String>(
+                        value: null,
+                        child: Text(l10n.rewardCategoryNone),
+                      ),
+                      ..._rwCategories.map(
+                        (c) => DropdownMenuItem<String>(
+                          value: c.code,
+                          child: Text(c.label(
+                              Localizations.localeOf(context).languageCode)),
+                        ),
+                      ),
+                    ],
+                    onChanged: _busy
+                        ? null
+                        : (value) => setState(() => _rwCategory = value),
                   ),
                   const SizedBox(height: 8),
                   Row(

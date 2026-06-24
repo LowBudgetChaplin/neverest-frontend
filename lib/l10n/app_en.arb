@@ -549,5 +549,19 @@
       }
     }
   },
-  "offerDeletedToast": "Offer deleted."
+  "offerDeletedToast": "Offer deleted.",
+  "rewardDeleteTitle": "Delete reward",
+  "rewardDeleteConfirm": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+  "@rewardDeleteConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "rewardDeletedToast": "Reward deleted.",
+  "rewardEditFieldCategory": "",
+  "rewardCategoryNone": "",
+  "showQRCode": "Show QR code",
+  "eventCheckedIn": "Checked in"
 }

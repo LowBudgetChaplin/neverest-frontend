@@ -23,18 +23,42 @@ class MainShellScreen extends StatefulWidget {
   State<MainShellScreen> createState() => _MainShellScreenState();
 }
 
-class _MainShellScreenState extends State<MainShellScreen> {
+class _MainShellScreenState extends State<MainShellScreen>
+    with WidgetsBindingObserver {
   int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
       _syncShellDataForCurrentAuthState();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Cand aplicatia revine in prim-plan, reincarcam datele ca sa apara
+    // instant continutul nou creat intre timp (ex: challenge-uri de la admin).
+    if (state == AppLifecycleState.resumed && mounted) {
+      _refreshShellData();
+    }
+  }
+
+  void _refreshShellData() {
+    final authState = context.read<AuthBloc>().state;
+    if (authState.status != AuthStatus.authenticated) return;
+    context.read<DashboardBloc>().add(const DashboardRefreshRequested());
+    context.read<NotificationCubit>().refreshUnreadCount();
   }
 
   @override
@@ -158,6 +182,10 @@ class _MainShellScreenState extends State<MainShellScreen> {
     setState(() {
       _selectedIndex = value;
     });
+    // La fiecare schimbare de tab reincarcam dashboard-ul, ca utilizatorul sa
+    // vada imediat continutul nou (challenge-uri, evenimente etc.) fara sa fie
+    // nevoit sa iasa si sa reintre in aplicatie.
+    _refreshShellData();
     if (value == 0) {
       _refreshProfilePoints();
     }
