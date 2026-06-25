@@ -61,14 +61,12 @@ class _RewardEditScreenState extends State<RewardEditScreen> {
       if (!mounted) return;
       setState(() {
         _categories = cats;
-        // Daca valoarea curenta nu e in lista, o pastram doar daca exista.
         if (_selectedCategory != null &&
             !cats.any((c) => c.code == _selectedCategory)) {
           _selectedCategory = null;
         }
       });
     } catch (_) {
-      // Optional; daca nu se incarca, dropdown-ul ramane fara optiuni.
     }
   }
 

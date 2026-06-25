@@ -41,6 +41,11 @@ class _RewardDetailsView extends StatefulWidget {
 }
 
 class _RewardDetailsViewState extends State<_RewardDetailsView> {
+  // Codul tocmai revendicat in aceasta sesiune. widget.reward e static (vine din
+  // lista) si nu se actualizeaza dupa redeem, asa ca tinem local statusul ca
+  // butonul sa devina "Arata QR" imediat, fara sa iesi si sa reintri in ecran.
+  String? _redeemedCode;
+
   @override
   void initState() {
     super.initState();
@@ -90,6 +95,7 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                   ),
                 );
             context.read<RewardActionBloc>().add(const RewardMessagesCleared());
+            setState(() => _redeemedCode = state.lastRedemption!.redemptionCode);
             _showRedeemDialog(context, state.lastRedemption!, widget.reward, accent);
           }
         },
@@ -98,6 +104,9 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
             (bloc) => bloc.state.profile?.availablePoints ?? 1840,
           );
           final canRedeem = points >= widget.reward.pointsCost;
+          // Cod revendicat: fie cel din sesiunea curenta, fie cel deja folosit.
+          final usedCode = _redeemedCode ??
+              (widget.reward.couponUsed ? widget.reward.couponCode : null);
 
           return Column(
             children: [
@@ -343,12 +352,11 @@ class _RewardDetailsViewState extends State<_RewardDetailsView> {
                 ),
                 child: SizedBox(
                   width: double.infinity,
-                  child: (widget.reward.couponUsed &&
-                          widget.reward.couponCode != null)
+                  child: usedCode != null
                       ? FilledButton.icon(
                           onPressed: () => _showQrDialog(
                             context,
-                            widget.reward.couponCode!,
+                            usedCode,
                             widget.reward,
                             accent,
                           ),
