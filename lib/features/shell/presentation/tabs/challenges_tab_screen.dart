@@ -64,8 +64,6 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
   Future<void> _onRefresh() async {
     final bloc = context.read<DashboardBloc>();
     bloc.add(const DashboardRefreshRequested());
-    // Asteptam pana cand reincarcarea se termina, ca animatia de pull-to-refresh
-    // sa nu dispara inainte sa apara datele noi.
     await bloc.stream.firstWhere(
       (state) => state.status != DashboardStatus.loading,
     );
@@ -125,7 +123,6 @@ class _ChallengesTabScreenState extends State<ChallengesTabScreen> {
             .where((item) => !item.done && !_challengeExpired(item.summary))
             .toList();
         final done = items.where((item) => item.done).toList();
-        // Obiectivele expirate (neterminate) raman doar pentru admin, ca arhiva.
         final expired = items
             .where((item) => !item.done && _challengeExpired(item.summary))
             .toList()
@@ -394,10 +391,8 @@ class _ChallengeCard extends StatelessWidget {
           isDark ? NeverestPalette.inkMuted : NeverestPalette.paperMuted;
       final base =
           isDark ? NeverestPalette.inkRaised : NeverestPalette.paperRaised;
-      // tenta de fundal preia culoarea sportului (sau gri pentru cele done)
       final lineColor =
           isDark ? NeverestPalette.inkLine : NeverestPalette.paperLine;
-      // (gri pentru provocarile finalizate)
       final watermark =
           (item.done ? muted : sportColor).withOpacity(isDark ? 0.08 : 0.06);
 
@@ -529,7 +524,7 @@ class _ChallengeCard extends StatelessWidget {
                     if (item.summary.isPartnerChallenge) ...[
                       Icon(Icons.card_giftcard_rounded, size: 18, color: accent),
                       const SizedBox(width: 6),
-                      Flexible(
+                      Expanded(
                         child: Text(
                           item.summary.rewardLabel ?? '',
                           maxLines: 1,
@@ -562,8 +557,8 @@ class _ChallengeCard extends StatelessWidget {
                                   ),
                         ),
                       ),
+                      const Spacer(),
                     ],
-                    const Spacer(),
                     Container(
                       width: 38,
                       height: 38,
